@@ -31,3 +31,12 @@ services:
     App\Service\GenealogyService:
         arguments:
             $relationshipCodes: '%app.relationship_codes%' # <-- INJECTION ICI
+    
+    App\DataFixtures\AppFixtures:
+        arguments:
+            # Injection des paramètres hérités par AppFixtures
+            $hasher: '@Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface'
+            $parameterBag: '@parameter_bag'
+            # Injection des variables d'environnement
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPassword: '%env(ADMIN_PASSWORD)%'
