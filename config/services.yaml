@@ -6,7 +6,14 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+# config/services.yaml (ou un fichier custom/relationships.yaml)
 parameters:
+    app.relationship_codes:
+        GRAND_PARENT_PETIT_ENFANT: 'R_GPPE'
+        PARENT_ENFANT: 'R_PE'
+        FRERE_SOEUR: 'R_FS'
+        ONCLE_NEVEU: 'R_ON'
+        TIERS: 'R_T'
 
 services:
     # default configuration for services in *this* file
@@ -21,3 +28,6 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Service\GenealogyService:
+        arguments:
+            $relationshipCodes: '%app.relationship_codes%' # <-- INJECTION ICI
