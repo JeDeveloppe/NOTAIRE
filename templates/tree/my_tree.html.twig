@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Matrice de Parenté{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        
+        <h1 class="text-center text-primary mb-4">
+            <i class="fas fa-table me-3"></i> Matrice de Parenté Analytique
+        </h1>
+        <p class="text-center text-secondary mb-4">
+            La relation de la **Personne en Ligne** envers la **Personne en Colonne** est affichée dans la cellule.
+        </p>
+
+        <div class="matrix-table shadow-lg rounded">
+            <table class="table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        {# Cellule vide du coin #}
+                        <th scope="col" class="bg-light">Personnes</th> 
+                        
+                        {# Titres des colonnes (Personne B) #}
+                        {% for personB in people %}
+                            {% set birthDate = personB.dateOfBirth ? 'Né(e) le ' ~ personB.dateOfBirth|date('d/m/Y') : 'Date de naissance inconnue' %}
+                            <th scope="col" 
+                                class="bg-primary text-white" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="top"
+                                title="{{ birthDate }}">
+                                
+                                {{ personB.firstName }}<br>{{ personB.lastName }}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Lignes de la matrice (Personne A) #}
+                    {% for personA in people %}
+                        <tr>
+                            {# Titre de la ligne #}
+                            {% set birthDate = personA.dateOfBirth ? 'Né(e) le ' ~ personA.dateOfBirth|date('d/m/Y') : 'Date de naissance inconnue' %}
+                            <th scope="row" 
+                                class="bg-light text-nowrap" 
+                                data-bs-toggle="tooltip" 
+                                data-bs-placement="right"
+                                title="{{ birthDate }}">
+                                
+                                {{ personA.firstName }} {{ personA.lastName }}
+                            </th>
+                            
+                            {# Cellules de relation #}
+                            {% for personB in people %}
+                                {% set relation = formatterService.getRelationship(personA, personB) %}
+                                
+                                {% set class = '' %}
+                                {% if relation == 'Self' %}
+                                    {% set class = 'relation-self' %}
+                                {% elseif relation == 'Parent' or relation == 'Enfant' %}
+                                    {% set class = 'relation-parent-enfant' %}
+                                {% elseif relation == 'Frère/Sœur' %}
+                                    {% set class = 'relation-fratrie' %}
+                                {% else %}
+                                    {% set class = 'relation-inconnu' %}
+                                {% endif %}
+                                
+                                <td class="{{ class }}">
+                                    {% if relation == 'Self' or relation == 'Inconnu' %}
+                                        —
+                                    {% else %}
+                                        {{ relation }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

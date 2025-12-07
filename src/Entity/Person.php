@@ -41,12 +41,14 @@ class Person
     private ?User $owner = null;
 
     /**
+     * **Relation Parents (Côté Propriétaire de la jointure)**
      * @var Collection<int, self>
      */
     #[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'children')]
     private Collection $parents;
 
     /**
+     * **Relation Enfants (Côté Inverse de la jointure)**
      * @var Collection<int, self>
      */
     #[ORM\ManyToMany(targetEntity: self::class, mappedBy: 'parents')]
@@ -226,6 +228,7 @@ class Person
     {
         if (!$this->children->contains($child)) {
             $this->children->add($child);
+            // ⭐ GESTION BIDIRECTIONNELLE : L'enfant doit pointer vers ce parent.
             $child->addParent($this);
         }
 
@@ -235,7 +238,10 @@ class Person
     public function removeChild(self $child): static
     {
         if ($this->children->removeElement($child)) {
-            $child->removeParent($this);
+            // ⭐ GESTION BIDIRECTIONNELLE : L'enfant doit être retiré de la liste de parents.
+            if ($child->getParents()->contains($this)) {
+                $child->removeParent($this);
+            }
         }
 
         return $this;
