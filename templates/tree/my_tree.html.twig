@@ -3,13 +3,20 @@
 {% block title %}Matrice de Parenté{% endblock %}
 
 {% block body %}
-    <div class="container my-5">
+    <div class="container-fluid my-5">
         
-        <h1 class="text-center text-primary mb-4">
-            <i class="fas fa-table me-3"></i> Matrice de Parenté Analytique
+        <h1 class="text-center text-primary mb-3">
+            <i class="fas fa-table me-2"></i> Matrice de Parenté Analytique
         </h1>
-        <p class="text-center text-secondary mb-4">
-            La relation de la **Personne en Ligne** envers la **Personne en Colonne** est affichée dans la cellule.
+        
+        <div class="text-center mb-5">
+            <a href="{{ path('app_tree_new_person') }}" class="btn btn-success btn-lg shadow">
+                <i class="fas fa-user-plus me-2"></i> Ajouter une Nouvelle Personne
+            </a>
+        </div>
+        
+        <p class="text-center text-muted mb-4">
+            La relation de la **Personne de la Ligne** envers la **Personne de la Colonne** est indiquée dans la cellule.
         </p>
 
         <div class="matrix-table shadow-lg rounded">
@@ -17,18 +24,22 @@
                 <thead>
                     <tr>
                         {# Cellule vide du coin #}
-                        <th scope="col" class="bg-light">Personnes</th> 
+                        <th scope="col" class="bg-dark text-white text-center border-bottom-0" style="height: 120px; width: 150px;">
+                            Ligne / Colonne
+                        </th> 
                         
                         {# Titres des colonnes (Personne B) #}
                         {% for personB in people %}
                             {% set birthDate = personB.dateOfBirth ? 'Né(e) le ' ~ personB.dateOfBirth|date('d/m/Y') : 'Date de naissance inconnue' %}
                             <th scope="col" 
-                                class="bg-primary text-white" 
+                                class="bg-primary text-white p-1" 
                                 data-bs-toggle="tooltip" 
                                 data-bs-placement="top"
-                                title="{{ birthDate }}">
+                                title="{{ personB.firstName }} {{ personB.lastName }} | {{ birthDate }}">
                                 
-                                {{ personB.firstName }}<br>{{ personB.lastName }}
+                                <span class="d-block text-truncate">
+                                    {{ personB.firstName }} {{ personB.lastName }}
+                                </span>
                             </th>
                         {% endfor %}
                     </tr>
@@ -40,7 +51,7 @@
                             {# Titre de la ligne #}
                             {% set birthDate = personA.dateOfBirth ? 'Né(e) le ' ~ personA.dateOfBirth|date('d/m/Y') : 'Date de naissance inconnue' %}
                             <th scope="row" 
-                                class="bg-light text-nowrap" 
+                                class="bg-light text-nowrap text-dark fw-bold border-end" 
                                 data-bs-toggle="tooltip" 
                                 data-bs-placement="right"
                                 title="{{ birthDate }}">
@@ -53,21 +64,26 @@
                                 {% set relation = formatterService.getRelationship(personA, personB) %}
                                 
                                 {% set class = '' %}
+                                {% set cellContent = relation %}
+                                
+                                {# Détermination de la classe CSS #}
                                 {% if relation == 'Self' %}
                                     {% set class = 'relation-self' %}
+                                    {% set cellContent = '—' %} {# ⭐ MODIFICATION ICI : Remplacer 'Vous-même' par '—' #}
                                 {% elseif relation == 'Parent' or relation == 'Enfant' %}
                                     {% set class = 'relation-parent-enfant' %}
                                 {% elseif relation == 'Frère/Sœur' %}
                                     {% set class = 'relation-fratrie' %}
                                 {% else %}
                                     {% set class = 'relation-inconnu' %}
+                                    {% set cellContent = '—' %}
                                 {% endif %}
                                 
                                 <td class="{{ class }}">
-                                    {% if relation == 'Self' or relation == 'Inconnu' %}
+                                    {% if cellContent == 'Self' or cellContent == 'Inconnu' %}
                                         —
                                     {% else %}
-                                        {{ relation }}
+                                        {{ cellContent }}
                                     {% endif %}
                                 </td>
                             {% endfor %}
