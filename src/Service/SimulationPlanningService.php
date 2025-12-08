@@ -40,21 +40,18 @@ class SimulationPlanningService
         $actions = []; 
         
         // --- ÉTAPE 1: Filtrage et Initialisation ---
-        // FILTRE : Ne garder que les personnes SANS date de décès renseignée
         $nonDeceasedPeople = [];
 
         foreach ($allPeople as $person) {
             
             // Si la date de décès n'est PAS renseignée
             if ($person->getDateOfDeath() === null) { 
-                
-                // Et que la personne est considérée comme "vivante"
                 if ($this->isPersonAliveInYear($person, $currentYear)) {
                      $nonDeceasedPeople[] = $person;
                 }
             } 
             
-            // Initialisation de la donnée personne (pour l'affichage de l'historique de vie complet)
+            // Initialisation de la donnée personne
             $plan['people'][$person->getId()] = [
                 'name' => $person->getFirstName() . ' ' . $person->getLastName(),
                 'events' => $this->getPersonLifeEvents($person, $startDate)
@@ -72,23 +69,19 @@ class SimulationPlanningService
                     continue;
                 }
                 
-                // Détermination du lien fiscal (parent_enfant, frere_soeur, etc.)
                 $linkType = $this->determineFiscalRelationship($donor, $beneficiary); 
                 
-                // Si la relation a un abattement configuré (ex: 100 000€)
                 if ($linkType && isset($this->abatementAmountsInCents[$linkType])) {
                     
                     $maxAbatement = $this->abatementAmountsInCents[$linkType];
                     $abatementSarkozy = $this->abatementAmountsInCents['don_sarkozy_cumulable'] ?? 0;
                     
-                    // 1. Récupération des données du cycle actuel
                     $lastAct = $this->actRepository->findLatestActForPair(
                         $donor->getId(), $beneficiary->getId()
                     );
                     
                     $cycleData = $this->getCycleStatus($donor, $beneficiary, $maxAbatement, $lastAct, $currentYear);
                     
-                    // ⚠️ CORRECTION DE LA CLÉ DE L'ARRAY UTILISÉE ICI : 'abattementAvailableNow'
                     $abattementAvailableNow = $cycleData['abattementAvailableNow']; 
                     $nextFullResetYear = $cycleData['nextFullResetYear'];
                     $donorAge = $cycleData['donorAge'];
@@ -109,7 +102,8 @@ class SimulationPlanningService
                     // --- LOGIQUE 1B : OPPORTUNITÉ IMMÉDIATE - DON SARKOZY (31865€) ---
                     if ($abatementSarkozy > 0 && 
                         in_array($linkType, ['parent_enfant', 'grand_parent_petit_enfant']) && 
-                        $donorAge < 80 && $beneficiaryAge >= 18
+                        $donorAge < 80 && 
+                        $beneficiaryAge >= 18 // ⭐ Condition de Majorité (18 ans) INTÉGRÉE ⭐
                     ) {
                         $sarkozyAvailable = $this->isSarkozyAvailableForCycle($donor, $beneficiary, $lastAct, $currentYear);
 
@@ -126,7 +120,6 @@ class SimulationPlanningService
                         $donorAgeReset = $this->getAgeInYear($donor, $year);
                         $beneficiaryAgeReset = $this->getAgeInYear($beneficiary, $year);
 
-                        // Arrêter la planification si un des deux est "décédé" (basé sur dateOfDeath uniquement)
                         if (!$this->isPersonAliveInYear($donor, $year) || !$this->isPersonAliveInYear($beneficiary, $year)) {
                             continue;
                         }
@@ -136,7 +129,7 @@ class SimulationPlanningService
                             $donor, $beneficiary, $linkType, $maxAbatement, 'Abattement_Classique', $year, $donorAgeReset, $beneficiaryAgeReset
                         );
 
-                        // Planification Don Sarkozy (si le donateur est encore de moins de 80 ans)
+                        // Planification Don Sarkozy (Doit respecter les deux conditions d'âge)
                         if ($donorAgeReset < 80 && $beneficiaryAgeReset >= 18) {
                             if ($abatementSarkozy > 0 && 
                                 in_array($linkType, ['parent_enfant', 'grand_parent_petit_enfant'])) 
@@ -147,7 +140,19 @@ class SimulationPlanningService
                             }
                         }
                         
-                        // Alerte Impérative 80 ans Don Sarkozy
+                        // ⭐ NOUVELLE ALERTE : Majorité du bénéficiaire (18 ans) ⭐
+                        // Utile si le bénéficiaire est mineur AUJOURD'HUI mais devient majeur pendant le cycle
+                        if ($beneficiaryAgeReset < 18 && $this->getAgeInYear($beneficiary, $currentYear) < 18) {
+                            $yearTurns18 = $this->getYearTurnsAge($beneficiary, 18);
+                            
+                            if ($yearTurns18 > $year && $yearTurns18 <= $year + self::ABATEMENT_CYCLE_YEARS) {
+                                $actions[] = $this->createImperativeActionEntry(
+                                    $beneficiary, $yearTurns18, 'Beneficiary_18_ans_eligibility'
+                                );
+                            }
+                        }
+                        
+                        // Alerte Impérative 80 ans Don Sarkozy du donateur
                         if ($donorAgeReset < 80) {
                             $yearTurns80 = $this->getYearTurns80($donor);
                             if ($yearTurns80 > $year && $yearTurns80 <= $year + self::ABATEMENT_CYCLE_YEARS - 1) {
@@ -171,9 +176,6 @@ class SimulationPlanningService
     // FONCTIONS D'AIDE PRINCIPALES
     // -----------------------------------------------------------------
 
-    /**
-     * Détermine la relation familiale et fiscale entre deux personnes (utilisé pour les clés d'abattement).
-     */
     private function determineFiscalRelationship(Person $donor, Person $beneficiary): ?string
     {
         // 1. Parent à Enfant
@@ -199,25 +201,17 @@ class SimulationPlanningService
             }
         }
 
-        // 4. Autres relations (null)
         return null;
     }
 
-    /**
-     * Récupère la dernière année de vie (réelle) ou retourne 9999 si aucune date n'est renseignée (sans limite de 90 ans).
-     */
     private function getSimulatedLastYear(Person $person): int
     {
         if ($person->getDateOfDeath()) {
             return (int) $person->getDateOfDeath()->format('Y');
         }
-        // Pas de date de décès réelle = pas de fin de simulation
         return 9999; 
     }
 
-    /**
-     * Vérifie si la personne est "vivante" dans l'année donnée (si l'année est inférieure ou égale à l'année de décès réelle).
-     */
     private function isPersonAliveInYear(Person $person, int $year): bool
     {
         $lastYear = $this->getSimulatedLastYear($person);
@@ -247,7 +241,6 @@ class SimulationPlanningService
         );
         $abatementAvailableNow = max(0, $maxAbatement - $consumedAbatement);
 
-        // ⚠️ CORRECTION DE LA CLÉ DE L'ARRAY EN SORTIE : 'abattementAvailableNow'
         return [
             'abattementAvailableNow' => $abatementAvailableNow, 
             'nextFullResetYear' => $nextFullResetYear,
@@ -285,6 +278,9 @@ class SimulationPlanningService
         return $actFoundCount === 0;
     }
     
+    /**
+     * Retourne l'âge de la personne dans l'année donnée.
+     */
     private function getAgeInYear(Person $person, int $year): ?int
     {
         if ($person->getDateOfBirth()) {
@@ -293,12 +289,20 @@ class SimulationPlanningService
         return null;
     }
     
-    private function getYearTurns80(Person $person): int
+    /**
+     * Retourne l'année où la personne atteint un certain âge (ex: 18, 80 ans).
+     */
+    private function getYearTurnsAge(Person $person, int $targetAge): int
     {
         if ($person->getDateOfBirth()) {
-            return (int) $person->getDateOfBirth()->format('Y') + 80;
+            return (int) $person->getDateOfBirth()->format('Y') + $targetAge;
         }
         return 9999;
+    }
+    
+    private function getYearTurns80(Person $person): int
+    {
+        return $this->getYearTurnsAge($person, 80);
     }
 
     private function groupActionsByDonorAndBeneficiary(array $actions): array
@@ -335,18 +339,31 @@ class SimulationPlanningService
         ];
     }
     
-    private function createImperativeActionEntry(Person $donor, int $limitYear, string $type): array
+    private function createImperativeActionEntry(Person $person, int $limitYear, string $type): array
     {
+        $name = $person->getFirstName() . ' ' . $person->getLastName();
+        
         $limitText = match ($type) {
-            'Don_Sarkozy_80_ans_limite' => "Limite d'âge de 80 ans pour le Don Sarkozy.",
+            'Don_Sarkozy_80_ans_limite' => "Limite d'âge de 80 ans pour le Don Sarkozy. L'opportunité sera bloquée après cette date.",
+            'Beneficiary_18_ans_eligibility' => "Éligibilité au Don Sarkozy : Le bénéficiaire devient majeur et éligible.", 
             default => "Limite de don"
         };
         
         return [
-            'donor_id' => $donor->getId(), 'donor_name' => $donor->getFirstName(), 'beneficiary_id' => null, 'beneficiary_name' => null,
-            'relationship' => 'ALERTE IMPÉRATIVE', 'abattement' => 0,
-            'detail' => sprintf("Le Don Sarkozy pour %s est impératif avant le %s, année où il atteint les 80 ans. L'opportunité sera bloquée après cette date.", $donor->getFirstName(), $limitYear),
-            'type' => $type, 'year' => $limitYear, 'donor_age' => 80, 'beneficiary_age' => null, 'is_imperative' => true 
+            'donor_id' => $person->getId(), 
+            'donor_name' => $person->getFirstName(), 
+            'beneficiary_id' => null, 
+            'beneficiary_name' => null,
+            'relationship' => 'ALERTE IMPÉRATIVE', 
+            'abattement' => 0,
+            'detail' => sprintf("Alerte %s: %s atteint l'âge de %d ans en %d. %s", 
+                $type === 'Don_Sarkozy_80_ans_limite' ? 'Donateur' : 'Bénéficiaire',
+                $name, 
+                $type === 'Don_Sarkozy_80_ans_limite' ? 80 : 18, 
+                $limitYear, 
+                $limitText
+            ),
+            'type' => $type, 'year' => $limitYear, 'donor_age' => null, 'beneficiary_age' => null, 'is_imperative' => true 
         ];
     }
 

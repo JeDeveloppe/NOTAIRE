@@ -6,33 +6,37 @@
     <div class="container-fluid my-5">
         
         <h1 class="text-center text-primary mb-3">
-            <i class="fas fa-table me-2"></i> Matrice de Parenté Analytique
+            <i class="fas fa-sitemap me-2"></i> Aperçu des Relations
         </h1>
         
-        <div class="text-center mb-5">
-            <a href="{{ path('app_tree_new_person') }}" class="btn btn-success btn-lg shadow">
-                <i class="fas fa-user-plus me-2"></i> Ajouter une Nouvelle Personne
+        {# 1. Bouton d'action et Filtre/Recherche (Suggestion UX) #}
+        <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+            <p class="text-muted d-none d-md-block m-0">
+                La matrice affiche la relation entre la personne de la ligne et celle de la colonne.
+            </p>
+
+            <a href="{{ path('app_tree_new_person') }}" class="btn btn-success btn-lg shadow-sm">
+                <i class="fas fa-user-plus me-2"></i> Ajouter une Personne
             </a>
         </div>
         
-        <p class="text-center text-muted mb-4">
-            La relation de la **Personne de la Ligne** envers la **Personne de la Colonne** est indiquée dans la cellule.
-        </p>
+        <hr>
 
+        {# 2. Conteneur de la Matrice (Gère le défilement horizontal) #}
         <div class="matrix-table shadow-lg rounded">
-            <table class="table table-bordered table-sm">
+            <table class="table table-bordered table-hover table-sm">
                 <thead>
                     <tr>
-                        {# Cellule vide du coin #}
-                        <th scope="col" class="bg-dark text-white text-center border-bottom-0" style="height: 120px; width: 150px;">
-                            Ligne / Colonne
+                        {# Cellule du coin - Étiquette pour la lecture #}
+                        <th scope="col" class="bg-dark text-white text-center border-bottom-0 corner-cell">
+                            Personne Ligne / Personne Colonne
                         </th> 
                         
                         {# Titres des colonnes (Personne B) #}
                         {% for personB in people %}
                             {% set birthDate = personB.dateOfBirth ? 'Né(e) le ' ~ personB.dateOfBirth|date('d/m/Y') : 'Date de naissance inconnue' %}
                             <th scope="col" 
-                                class="bg-primary text-white p-1" 
+                                class="bg-primary text-white p-1 matrix-header-col" 
                                 data-bs-toggle="tooltip" 
                                 data-bs-placement="top"
                                 title="{{ personB.firstName }} {{ personB.lastName }} | {{ birthDate }}">
@@ -47,11 +51,11 @@
                 <tbody>
                     {# Lignes de la matrice (Personne A) #}
                     {% for personA in people %}
-                        <tr>
+                        <tr class="{% if personA.id is null %}mock-row{% endif %}"> {# Marque les lignes de mocks #}
                             {# Titre de la ligne #}
                             {% set birthDate = personA.dateOfBirth ? 'Né(e) le ' ~ personA.dateOfBirth|date('d/m/Y') : 'Date de naissance inconnue' %}
                             <th scope="row" 
-                                class="bg-light text-nowrap text-dark fw-bold border-end" 
+                                class="bg-light text-nowrap text-dark fw-bold border-end matrix-header-row" 
                                 data-bs-toggle="tooltip" 
                                 data-bs-placement="right"
                                 title="{{ birthDate }}">
@@ -69,7 +73,7 @@
                                 {# Détermination de la classe CSS #}
                                 {% if relation == 'Self' %}
                                     {% set class = 'relation-self' %}
-                                    {% set cellContent = '—' %} {# ⭐ MODIFICATION ICI : Remplacer 'Vous-même' par '—' #}
+                                    {% set cellContent = '—' %}
                                 {% elseif relation == 'Parent' or relation == 'Enfant' %}
                                     {% set class = 'relation-parent-enfant' %}
                                 {% elseif relation == 'Frère/Sœur' %}
@@ -79,7 +83,7 @@
                                     {% set cellContent = '—' %}
                                 {% endif %}
                                 
-                                <td class="{{ class }}">
+                                <td class="{{ class }} {% if personB.id is null %}mock-cell{% endif %}">
                                     {% if cellContent == 'Self' or cellContent == 'Inconnu' %}
                                         —
                                     {% else %}

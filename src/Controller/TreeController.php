@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/arbre-genealogique', name: 'app_tree')]
@@ -78,12 +79,14 @@ class TreeController extends AbstractController
      * Affiche la Matrice de Parenté (Vue Analytique), garantissant un minimum de 8 personnes.
      */
     #[Route('/', name: '_my_tree', methods: ['GET'])]
-    public function matrix(PersonRepository $personRepository, TreeFormatterService $formatterService): Response
+    public function matrix(
+        PersonRepository $personRepository,
+        TreeFormatterService $formatterService,
+        #[Autowire('%app.tree.min_people_count%')] int $minPeople
+        ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
-        
-        $minPeople = 8;
         
         // 1. Récupérer TOUTES les personnes réelles de l'utilisateur
         $people = $personRepository->findBy(['owner' => $user], ['lastName' => 'ASC', 'firstName' => 'ASC']);

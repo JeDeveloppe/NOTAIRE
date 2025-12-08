@@ -8,6 +8,9 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 # config/services.yaml (ou un fichier custom/relationships.yaml)
 parameters:
+    # nombre de personnes minimun dans l'affichage d'un arbre généalogique
+    app.tree.min_people_count: 4
+
     app.relationship_codes:
         GRAND_PARENT_PETIT_ENFANT: 'R_GPPE'
         PARENT_ENFANT: 'R_PE'
