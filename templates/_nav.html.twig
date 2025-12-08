@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{{ path('app_home') }}">Planificateur de Dons</a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_simulation_planning_donataires') }}">Vue Bénéficiaires</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('app_simulation_planning_donateurs') }}">Vue Donateurs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold text-warning" href="{{ path('app_tree_my_tree') }}">
+                                <i class="fas fa-user-plus me-1"></i> Mon arbre
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-bold text-warning" href="{{ path('app_tree_new_person') }}">
+                                <i class="fas fa-user-plus me-1"></i> Ajouter une Personne
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    {# Affichage du bouton de déconnexion si l'utilisateur est connecté #}
+                    {% if app.user %}
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link btn btn-sm btn-outline-light ms-2" href="{{ path('app_logout') }}">Déconnexion</a>
+                            </li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>

@@ -8,12 +8,21 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 # config/services.yaml (ou un fichier custom/relationships.yaml)
 parameters:
+    # nombre de personnes minimun dans l'affichage d'un arbre généalogique
+    app.tree.min_people_count: 4
+
     app.relationship_codes:
         GRAND_PARENT_PETIT_ENFANT: 'R_GPPE'
         PARENT_ENFANT: 'R_PE'
         FRERE_SOEUR: 'R_FS'
         ONCLE_NEVEU: 'R_ON'
         TIERS: 'R_T'
+
+    app.fiscal_abatement_amounts_in_cents:
+        parent_enfant: 10000000
+        grand_parent_petit_enfant: 3186500
+        epoux: 8072400
+        don_sarkozy_cumulable: 3186500
 
 services:
     # default configuration for services in *this* file
@@ -40,3 +49,10 @@ services:
             # Injection des variables d'environnement
             $adminEmail: '%env(ADMIN_EMAIL)%'
             $adminPassword: '%env(ADMIN_PASSWORD)%'
+
+    App\Service\SimulationPlanningService:
+            arguments:
+                $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
+            # La ligne ci-dessous est souvent nécessaire si vous utilisez un custom service
+            # mais l'autowiring devrait suffire si les arguments sont typés.
+            # autowire: true

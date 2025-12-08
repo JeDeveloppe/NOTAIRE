@@ -1,0 +1,242 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planification des Cycles de Donation - Vue Bénéficiaire{% endblock %}
+
+{% block body %}
+    <div class="container-fluid my-5">
+        <h1 class="mb-5 text-center text-success"><i class="fas fa-sync-alt me-2"></i> Opportunités de Donation : Vue Bénéficiaire</h1>
+        
+        <div class="alert alert-info text-center shadow-sm">
+            <i class="fas fa-info-circle me-2"></i> Affichage centré sur ce que vous (le bénéficiaire) pouvez recevoir, groupé par année.
+        </div>
+        
+        {# Vérification de base inchangée #}
+        {% if plan.cycles is empty %}
+            <div class="alert alert-warning text-center mt-5">
+                <i class="fas fa-exclamation-triangle me-2"></i> Aucune opportunité d'abattement n'a été calculée pour l'instant.
+            </div>
+        {% else %}
+        
+            {% set current_year = ("now"|date("Y")) + 0 %} 
+            {% set future_cycles = [] %}
+            
+            {% for cycle in plan.cycles %}
+                {% if cycle.year >= current_year %}
+                    {% set future_cycles = future_cycles|merge([cycle]) %}
+                {% endif %}
+            {% endfor %}
+
+            {% set cycles_to_display = future_cycles|slice(0, 2) %}
+
+            {% if cycles_to_display is empty %}
+                <div class="alert alert-info text-center mt-5">
+                    Aucune opportunité future ou cycle en cours n'a été trouvé dans les données.
+                </div>
+            {% else %}
+            
+                {# --- 1. RESTRUCTURATION DES DONNÉES PAR BÉNÉFICIAIRE (DONATAIRE) --- #}
+                {% set beneficiary_opportunities = {} %}
+                
+                {% for cycle in cycles_to_display %}
+                    {% for donorId, donorData in cycle.actions_grouped %}
+                        {% for beneficiaryId, actions in donorData.actions_by_beneficiary %}
+                            
+                            {% set beneficiary_key = cycle.year ~ '_' ~ beneficiaryId %}
+                            
+                            {# Initialisation du bénéficiaire pour l'année #}
+                            {% if beneficiary_opportunities[beneficiary_key] is not defined %}
+                                {% set first_action_ben = actions|first %}
+                                {% set beneficiary_opportunities = beneficiary_opportunities|merge({
+                                    (beneficiary_key): {
+                                        'year': cycle.year,
+                                        'id': beneficiaryId,
+                                        'name': first_action_ben.beneficiary_name,
+                                        'age': first_action_ben.beneficiary_age,
+                                        'donors': []
+                                    }
+                                }) %}
+                            {% endif %}
+                            
+                            {# Ajout des informations du Donateur #}
+                            {% set donor_info = {
+                                'donor_name': donorData.actions_by_beneficiary|first|first.donor_name,
+                                'donor_age': donorData.actions_by_beneficiary|first|first.donor_age,
+                                'actions': actions 
+                            } %}
+                            {% set current_ben_data = beneficiary_opportunities[beneficiary_key] %}
+                            
+                            {# Ajouter le donateur à la liste des donneurs du bénéficiaire #}
+                            {% set current_ben_data = current_ben_data|merge({
+                                'donors': current_ben_data.donors|merge([donor_info])
+                            }) %}
+                            {% set beneficiary_opportunities = beneficiary_opportunities|merge({(beneficiary_key): current_ben_data}) %}
+                            
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+                
+                {# Tri des bénéficiaires par Année puis par Nom #}
+                {% set sorted_opportunities = [] %}
+                {% for key, data in beneficiary_opportunities %}
+                    {% set sorted_opportunities = sorted_opportunities|merge([data]) %}
+                {% endfor %}
+                {% set sorted_opportunities = sorted_opportunities|sort((a, b) => (a.year <=> b.year) ?: a.name <=> b.name) %}
+
+
+                {# --- 2. AFFICHAGE FINAL PAR BÉNÉFICIAIRE --- #}
+                
+                {% set current_year_display = null %}
+                
+                {% for opportunity in sorted_opportunities %}
+                    
+                    {% set year = opportunity.year %}
+                    {% set is_current_year = year == current_year %}
+                    {% set beneficiary_unique_id = 'ben-' ~ year ~ '-' ~ opportunity.id %}
+                    
+                    {# Séparateur d'Année : on crée la carte du cycle uniquement si l'année change #}
+                    {% if year != current_year_display %}
+                        {% if current_year_display is not null %}
+                            </div></div></div> 
+                        {% endif %}
+                        {% set current_year_display = year %}
+
+                        <div class="card mb-5 shadow-lg {% if is_current_year %}border-danger{% else %}border-success{% endif %}">
+                            <div class="card-header bg-{% if is_current_year %}danger{% else %}success{% endif %} text-white p-3">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-calendar-check me-2"></i> Cycle disponible en Année {{ year }}
+                                    {% if is_current_year %}
+                                        <span class="badge bg-light text-danger ms-2">OPPORTUNITÉ IMMÉDIATE</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-success ms-2">PROCHAIN CYCLE FISCAL</span>
+                                    {% endif %}
+                                </h4>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="accordion accordion-flush" id="accordionCycleBen{{ year }}">
+                    {% endif %}
+                    
+                    {# --- ITEM ACCORDÉON : LE BÉNÉFICIAIRE (DONATAIRE) --- #}
+                    <div class="accordion-item border-top">
+                        <h2 class="accordion-header" id="heading{{ beneficiary_unique_id }}">
+                            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ beneficiary_unique_id }}" aria-expanded="false" aria-controls="collapse{{ beneficiary_unique_id }}">
+                                <i class="fas fa-user-tag me-2 text-primary"></i> 
+                                Bénéficiaire : **{{ opportunity.name }}** ({{ opportunity.age }} ans)
+                                <span class="badge bg-secondary ms-3">{{ opportunity.donors|length }} Donateur(s) Potentiel(s)</span>
+                            </button>
+                        </h2>
+                        
+                        <div id="collapse{{ beneficiary_unique_id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ beneficiary_unique_id }}" data-bs-parent="#accordionCycleBen{{ year }}">
+                            
+                            {# --- CONTENU À DEUX COLONNES --- #}
+                            <div class="accordion-body p-3">
+                                <div class="row">
+                                
+                                    {# COLONNE GAUCHE (4/12) : CARTE DU BÉNÉFICIAIRE PRINCIPAL #}
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <div class="card bg-light border-primary h-100 shadow-sm">
+                                            <div class="card-header bg-primary text-white">
+                                                <i class="fas fa-hand-holding-usd me-1"></i> Bénéficiaire Principal
+                                            </div>
+                                            <div class="card-body">
+                                                <h5 class="card-title text-primary">{{ opportunity.name }}</h5>
+                                                <p class="card-text small mb-1">
+                                                    <i class="fas fa-birthday-cake me-1"></i> Âge actuel : {{ opportunity.age }} ans
+                                                </p>
+                                                <p class="card-text small text-muted mb-0">
+                                                    Liste des donateurs pouvant lui transmettre des fonds sans droits fiscaux.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                
+                                    {# COLONNE DROITE (8/12) : LISTE DES DONATEURS ET ALERTES #}
+                                    <div class="col-md-8">
+                                        <h6 class="mb-2">Sources de Donation disponibles :</h6>
+                                        <ul class="list-group list-group-flush border rounded">
+                                        
+                                        {# ITÉRATION SUR LES DONATEURS QUI PEUVENT DONNER À CE BÉNÉFICIAIRE #}
+                                        {% for donor_info in opportunity.donors %}
+                                            
+                                            {% set first_action = donor_info.actions|first %}
+                                            {% set is_imperative_alert = first_action.is_imperative %}
+                                            {% set relationship = first_action.relationship %}
+                                            
+                                            {% if is_imperative_alert %}
+                                                {# --- CAS 1 : ALERTE IMPÉRATIVE (LIÉE AU DONATEUR) --- #}
+                                                <li class="list-group-item d-flex flex-column bg-danger-subtle p-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-exclamation-triangle fa-2x me-3 text-danger"></i>
+                                                        <div>
+                                                            <h6 class="mb-0 text-danger fw-bold text-uppercase">
+                                                                ALERTE URGENTE : {{ donor_info.donor_name }} ({{ relationship }})
+                                                            </h6>
+                                                            <p class="mb-0 small text-dark">{{ first_action.detail }}</p>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            {% else %}
+                                                {# --- CAS 2 : OPPORTUNITÉ CLASSIQUE --- #}
+                                                
+                                                {% set relationship_icon = (
+                                                    relationship == 'parent_enfant' ? 'fas fa-user-friends' : 
+                                                    relationship == 'grand_parent_petit_enfant' ? 'fas fa-baby-carriage' : 
+                                                    relationship == 'frere_soeur' ? 'fas fa-handshake' : 
+                                                    'fas fa-user'
+                                                ) %}
+
+                                                <li class="list-group-item d-flex flex-column p-3">
+                                                    
+                                                    {# Ligne Donateur et Relation #}
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <h6 class="mb-0 text-dark">
+                                                            <i class="{{ relationship_icon }} me-2 text-primary"></i> **Donateur : {{ donor_info.donor_name }}** ({{ donor_info.donor_age }} ans)
+                                                            <span class="badge bg-secondary ms-2">{{ relationship | replace({'_': ' '}) }}</span>
+                                                        </h6>
+                                                    </div>
+                                                    
+                                                    <hr class="my-2">
+
+                                                    {# Détails des Abattements #}
+                                                    {% for action in donor_info.actions %}
+                                                        {% set is_sarkozy = action.type == 'Don_Sarkozy_Cumulable' %}
+                                                        
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small text-muted">
+                                                                {{ is_sarkozy ? 'Don Sarkozy disponible' : 'Abattement Patrimonial disponible' }} :
+                                                            </span>
+                                                            <span class="fw-bold {% if is_sarkozy %}text-info{% else %}text-success{% endif %}" style="font-size: 1.1em;">
+                                                                <i class="fas fa-euro-sign me-1"></i> {{ (action.abattement / 100) | number_format(0, ',', ' ') }} €
+                                                            </span>
+                                                        </div>
+                                                    {% endfor %}
+                                                    
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-primary shadow-sm">Simuler l'Acte de Donation</button>
+                                                    </div>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        </ul>
+                                    </div>
+                                    {# FIN COLONNE DROITE #}
+                                    
+                                </div>
+                            </div>
+                            {# --- FIN CONTENU À DEUX COLONNES --- #}
+                            
+                        </div>
+                    </div>
+                    
+                {% endfor %}
+                
+                {# Fermeture du dernier bloc de cycle #}
+                {% if current_year_display is not null %}
+                    </div></div></div> 
+                {% endif %}
+
+            {% endif %}
+        
+        {% endif %}
+    </div>
+{% endblock %}

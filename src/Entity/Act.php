@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
+use App\Validator\Constraints\NotSameDonorAndBeneficiary;
 use App\Repository\ActRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ActRepository::class)]
+#[NotSameDonorAndBeneficiary]
 class Act
 {
     #[ORM\Id]

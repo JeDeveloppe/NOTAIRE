@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Votre Première Personne{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg p-4">
+                    <h1 class="text-center text-primary mb-4">
+                        <i class="fas fa-user-circle me-2"></i> Qui êtes-vous ?
+                    </h1>
+                    <p class="text-center text-muted">
+                        Veuillez renseigner vos informations pour démarrer votre arbre généalogique.
+                    </p>
+
+                    {{ form_start(personForm) }}
+                        
+                        {# 1. Champ Prénom #}
+                        {{ form_row(personForm.firstName, {
+                            'label': 'Prénom', 
+                            'attr': {'placeholder': 'Votre Prénom'}
+                        }) }}
+                        
+                        {# 2. Champ Nom de Famille #}
+                        {{ form_row(personForm.lastName, {
+                            'label': 'Nom de Famille', 
+                            'attr': {'placeholder': 'Votre Nom'}
+                        }) }}
+                        
+                        {# 3. ⭐ AJOUT DU CHAMP DATE DE NAISSANCE ⭐ #}
+                        {{ form_row(personForm.dateOfBirth, {
+                            'label': 'Date de Naissance', 
+                            'help': 'Format JJ/MM/AAAA'
+                        }) }}
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i> Enregistrer et Démarrer
+                            </button>
+                        </div>
+                    {{ form_end(personForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
