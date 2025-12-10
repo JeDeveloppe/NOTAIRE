@@ -1,0 +1,115 @@
+{# Fichier : templates/simulation/fiscal_acts_summary.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Lexique Fiscal et Règles des Donations{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <header class="text-center mb-5">
+            <h1 class="display-5 text-primary fw-bold">
+                <i class="fas fa-balance-scale me-3"></i> Lexique et Règles de la Donation
+            </h1>
+            <p class="lead text-muted">Comprenez les mécanismes fiscaux utilisés pour optimiser votre transmission de patrimoine.</p>
+        </header>
+        
+        <div class="alert alert-warning border-0 shadow-sm p-3">
+            <i class="fas fa-exclamation-circle me-2 text-warning"></i> 
+            Les montants indiqués ci-dessous correspondent à l'abattement, c'est-à-dire la fraction du don exonérée d'impôt.
+        </div>
+
+        <div class="accordion accordion-flush mt-4" id="fiscalActsAccordion">
+
+        {% for actType in fiscalActs %}
+            {% set is_sarkozy = actType.code == 'SARKOZY' %}
+            {% set is_classique = actType.code == 'CLASSIQUE' %}
+            {% set header_id = 'heading' ~ loop.index %}
+            {% set collapse_id = 'collapse' ~ loop.index %}
+
+            <div class="card mb-3 border-{% if is_sarkozy %}info{% elseif is_classique %}success{% else %}secondary{% endif %} shadow-sm">
+                
+                {# HEADER de l'ACTE (Clique pour ouvrir) #}
+                <div class="card-header p-0" id="{{ header_id }}">
+                    <h2 class="mb-0">
+                        <button class="btn btn-block w-100 text-start p-3 fw-bold text-{% if is_sarkozy %}info{% elseif is_classique %}success{% else %}dark{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#{{ collapse_id }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="{{ collapse_id }}">
+                            <i class="fas fa-{{ is_sarkozy ? 'coins' : (is_classique ? 'hand-holding-usd' : 'file-invoice') }} me-3"></i> 
+                            {{ actType.name }} 
+                            <span class="badge bg-{% if is_sarkozy %}info{% elseif is_classique %}success{% else %}secondary{% endif %} float-end mt-1">
+                                {{ actType.isCyclical ? 'Renouvelable (15 ans)' : 'Unique (À vie)' }}
+                            </span>
+                        </button>
+                    </h2>
+                </div>
+
+                {# CONTENU DÉTAILLÉ #}
+                <div id="{{ collapse_id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="{{ header_id }}" data-bs-parent="#fiscalActsAccordion">
+                    <div class="card-body bg-light">
+                        
+                        <div class="row">
+                            {# COLONNE 1: PÉRIODICITÉ ET RÈGLE #}
+                            <div class="col-md-6 border-end">
+                                <h5 class="text-primary"><i class="fas fa-sync-alt me-2"></i> Périodicité & Reconstitution</h5>
+                                
+                                <p class="mb-1 fw-bold">Renouvellement : {{ actType.isCyclical ? 'Tous les 15 ans' : 'Unique (Non renouvelable)' }}</p>
+                                <p class="small text-muted fst-italic">
+                                    {{ actType.fiscalRule }}
+                                </p>
+                            </div>
+
+                            {# COLONNE 2: CONDITIONS ET MONTANT #}
+                            <div class="col-md-6">
+                                <h5 class="text-primary"><i class="fas fa-gavel me-2"></i> Conditions d'Application</h5>
+                                
+                                {% if actType.conditions %}
+                                    <p class="small text-dark">{{ actType.conditions }}</p>
+                                {% else %}
+                                    <p class="small text-muted">Pas de conditions d'éligibilité particulières pour ce type d'acte.</p>
+                                {% endif %}
+
+                                {% if is_sarkozy %}
+                                    {# Montant Sarkozy (Fixe) #}
+                                    {% set sarkozy_amount = abatementAmountsInCents['don_sarkozy_cumulable'] ?? 0 %}
+                                    <h5 class="text-info mt-3"><i class="fas fa-piggy-bank me-2"></i> Montant Abattement (Art. 790 G)</h5>
+                                    <p class="h4 fw-bold text-info">
+                                        {{ (sarkozy_amount / 100)|number_format(0, ',', ' ') }} €
+                                        <span class="small text-muted">par Donateur et par Bénéficiaire.</span>
+                                    </p>
+                                {% elseif is_classique %}
+                                    {# Montant Classique (Variable selon la relation) #}
+                                    <h5 class="text-success mt-3"><i class="fas fa-sitemap me-2"></i> Montant Abattement (Variable)</h5>
+                                    <p>Le montant varie en fonction du lien de parenté. Principaux exemples :</p>
+                                    <ul class="list-unstyled small">
+                                        {% for key, amount in abatementAmountsInCents %}
+                                            {# Afficher seulement les abattements classiques pertinents #}
+                                            {% if key not in ['don_sarkozy_cumulable', 'tiers'] %}
+                                            <li>
+                                                <i class="fas fa-chevron-right me-1 text-success"></i> 
+                                                <span class="fw-bold">{{ key|replace({'_':' '})|capitalize }}</span> : 
+                                                {{ (amount / 100)|number_format(0, ',', ' ') }} €
+                                            </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        
+        </div>
+        
+        {# BOUTONS D'ACTION #}
+        <div class="mt-5 text-center p-3 border-top">
+            <h5 class="mb-3">Prêt à lancer votre simulation ?</h5>
+            <a href="{{ path('app_acts_declared') }}" class="btn btn-lg btn-secondary shadow me-3">
+                <i class="fas fa-file-invoice-dollar me-2"></i> Vérifier mes actes déclarés
+            </a>
+            <a href="{{ path('app_simulation_planning_donataires') }}" class="btn btn-lg btn-primary shadow">
+                <i class="fas fa-chart-line me-2"></i> Lancer la Planification Fiscale
+            </a>
+        </div>
+        
+    </div>
+{% endblock %}

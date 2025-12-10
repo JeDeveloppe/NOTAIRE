@@ -1,0 +1,22 @@
+{# templates/tree/edit_person.html.twig #}
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ person.firstName }} {{ person.lastName }}{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        
+        <div class="p-4 p-md-5 bg-white rounded shadow-lg">
+            
+            {% include 'tree/_form.html.twig' with {
+                form: form,
+                title: 'Modification de la personne : <span class="fw-bold">' ~ person.firstName ~ ' ' ~ person.lastName ~ '</span>',
+                icon: 'fas fa-edit',
+                submit_button_text: 'Enregistrer les Modifications',
+                submit_button_class: 'btn-primary'
+            } %}
+        
+        </div>
+    </div>
+{% endblock %}

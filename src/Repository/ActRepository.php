@@ -1,4 +1,5 @@
 <?php
+// src/Repository/ActRepository.php
 
 namespace App\Repository;
 
@@ -8,18 +9,86 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use DateTimeImmutable;
 
-/**
- * @extends ServiceEntityRepository<Act>
- */
-class ActRepository extends ServiceEntityRepository
+class ActRepository extends ServiceEntityRepository 
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Act::class);
     }
+    
+    // =======================================================
+    // Méthodes requises par SimulationPlanningService
+    // =======================================================
 
     /**
-     * 1. Trouve le dernier acte entre le donateur et le bénéficiaire.
+     * Calcule le montant total (en centimes) du Don Sarkozy (Art. 790 G) consommé 
+     * entre une paire donnée (Donateur -> Bénéficiaire).
+     */
+    public function getConsumedSarkozyAmount(Person $donor, Person $beneficiary): int
+    {
+        // Supposons que TypeAct::CODE_SARKOZY corresponde au code fiscal 'SARKOZY'
+        $sarkozyCode = \App\Service\ActService::CODE_SARKOZY;
+
+        return (int) $this->createQueryBuilder('a')
+            ->select('SUM(a.value)')
+            ->leftJoin('a.typeOfAct', 't')
+            ->where('a.donor = :donor')
+            ->andWhere('a.beneficiary = :beneficiary')
+            ->andWhere('t.code = :sarkozyCode')
+            ->setParameter('donor', $donor)
+            ->setParameter('beneficiary', $beneficiary)
+            ->setParameter('sarkozyCode', $sarkozyCode)
+            ->getQuery()
+            ->getSingleScalarResult(); // Retourne le résultat directement sous forme de scalaire (int)
+    }
+
+    /**
+     * Récupère tous les Actes de type Sarkozy passés pour une paire Donateur/Bénéficiaire.
+     */
+    public function findSarkozyActs(Person $donor, Person $beneficiary): array
+    {
+        $sarkozyCode = \App\Service\ActService::CODE_SARKOZY;
+
+        return $this->createQueryBuilder('a')
+            ->leftJoin('a.typeOfAct', 't')
+            ->where('a.donor = :donor')
+            ->andWhere('a.beneficiary = :beneficiary')
+            ->andWhere('t.code = :sarkozyCode')
+            ->setParameter('donor', $donor)
+            ->setParameter('beneficiary', $beneficiary)
+            ->setParameter('sarkozyCode', $sarkozyCode)
+            ->orderBy('a.dateOfAct', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+    
+    // (Incluses pour la complétude, si vous ne l'aviez pas fait pour l'erreur findNonPrescribedActs)
+
+    /**
+     * Trouve tous les Actes qui ne sont pas encore prescrits par la date donnée.
+     */
+    public function findNonPrescribedActs(Person $donor, Person $beneficiary, DateTimeImmutable $prescriptionDate): array
+    {
+        return $this->createQueryBuilder('a')
+            ->select('a')
+            ->where('a.donor = :donor')
+            ->andWhere('a.beneficiary = :beneficiary')
+            ->andWhere('a.dateOfAct > :prescriptionDate') 
+            ->setParameter('donor', $donor)
+            ->setParameter('beneficiary', $beneficiary)
+            ->setParameter('prescriptionDate', $prescriptionDate)
+            ->getQuery()
+            ->getResult();
+    }
+    
+    // ... (Ajouter ici les autres méthodes qui pourraient manquer : findLatestActForPair, getConsumedAbatementForCycle)
+    
+    // =======================================================
+    // Autres méthodes de ActRepository (à vérifier)
+    // =======================================================
+    
+    /**
+     * Trouve l'acte de donation le plus récent entre un donateur et un bénéficiaire.
      */
     public function findLatestActForPair(int $donorId, int $beneficiaryId): ?Act
     {
@@ -33,39 +102,29 @@ class ActRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-
+    
     /**
-     * 2. Récupère la somme totale des abattements consommés depuis une date de début de cycle.
+     * Calcule l'abattement classique consommé depuis la date de début de cycle.
      */
     public function getConsumedAbatementForCycle(Person $donor, Person $beneficiary, DateTimeImmutable $cycleStartDate): int
     {
-        return $this->createQueryBuilder('a')
-            ->select('SUM(a.consumedAbatement)')
-            ->where('a.donor = :donor')
-            ->andWhere('a.beneficiary = :beneficiary')
-            ->andWhere('a.dateOfAct >= :startDate')
-            ->setParameter('donor', $donor)
-            ->setParameter('beneficiary', $beneficiary)
-            ->setParameter('startDate', $cycleStartDate)
-            ->getQuery()
-            ->getSingleScalarResult() ?? 0;
-    }
+        // Supposons que nous excluons les actes SARKOZY dans cette somme
+        $sarkozyCode = \App\Service\ActService::CODE_SARKOZY;
 
-    /**
-     * 3. ✅ MÉTHODE MANQUANTE : Vérifie l'existence d'un acte de type "Don Sarkozy" dans le cycle en cours.
-     */
-    public function findSarkozyActForCycle(Person $donor, Person $beneficiary, DateTimeImmutable $cycleStartDate): int
-    {
-        return $this->createQueryBuilder('a')
-            ->select('COUNT(a.id)')
+        $consumed = $this->createQueryBuilder('a')
+            ->select('SUM(a.value)')
+            ->leftJoin('a.typeOfAct', 't')
             ->where('a.donor = :donor')
             ->andWhere('a.beneficiary = :beneficiary')
-            ->andWhere('a.dateOfAct >= :startDate')
-            // NOTE : Si vous avez un champ 'type' sur votre entité Act pour filtrer le type Sarkozy, ajoutez-le ici.
+            ->andWhere('a.dateOfAct >= :cycleStartDate') // Seulement les actes DANS la fenêtre des 15 ans
+            ->andWhere('t.code != :sarkozyCode') // Exclure Sarkozy car il a sa propre enveloppe
             ->setParameter('donor', $donor)
             ->setParameter('beneficiary', $beneficiary)
-            ->setParameter('startDate', $cycleStartDate)
+            ->setParameter('cycleStartDate', $cycleStartDate)
+            ->setParameter('sarkozyCode', $sarkozyCode)
             ->getQuery()
             ->getSingleScalarResult();
+
+        return (int) $consumed;
     }
 }

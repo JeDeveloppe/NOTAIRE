@@ -37,10 +37,11 @@ class TreeController extends AbstractController
             
             $person->setOwner($user);
 
-            // --- GESTION DE LA PERSISTANCE BIDIRECTIONNELLE ---
+            // --- GESTION DE LA PERSISTANCE BIDIRECTIONNELLE (Ajout) ---
             
             // 1. Mise à jour forcée des Enfants existants (pour mettre à jour leur collection 'parents')
             foreach ($person->getChildren() as $child) {
+                // S'assurer que la relation bidirectionnelle est établie si l'enfant existe déjà
                 if (!$child->getParents()->contains($person)) {
                     $child->addParent($person);
                 }
@@ -51,6 +52,7 @@ class TreeController extends AbstractController
 
             // 2. Mise à jour forcée des Parents existants (pour mettre à jour leur collection 'children')
             foreach ($person->getParents() as $parent) {
+                // S'assurer que la relation bidirectionnelle est établie si le parent existe déjà
                 if (!$parent->getChildren()->contains($person)) {
                     $parent->addChild($person);
                 }
@@ -74,6 +76,94 @@ class TreeController extends AbstractController
             'form' => $form,
         ]);
     }
+    
+    /**
+     * Permet de consulter et modifier les détails et les relations d'une personne existante.
+     */
+    #[Route('/modifier-personne/{id}', name: '_edit_person', methods: ['GET', 'POST'])]
+    public function edit(
+        Request $request, 
+        Person $person, // Injection du paramètre dans l'entité
+        EntityManagerInterface $em
+    ): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        
+        // 1. Vérification de la propriété (Sécurité)
+        if ($person->getOwner() !== $user) {
+            $this->addFlash('danger', 'Vous n\'avez pas la permission de modifier cette personne.');
+            return $this->redirectToRoute('app_tree_my_tree');
+        }
+        
+        // --- PRÉPARATION (pour gestion des relations retirées) ---
+        // Cloner les collections originales avant que le formulaire ne les modifie
+        $originalParents = clone $person->getParents();
+        $originalChildren = clone $person->getChildren();
+        
+        // 2. Création du formulaire
+        $form = $this->createForm(PersonType::class, $person);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            
+            // 3. Gestion de la persistance bidirectionnelle et du nettoyage
+            
+            // a) Nettoyage des ANCIENNES relations retirées
+            
+            // Nettoyage des Parents : Parcourir les anciens parents qui ne sont PLUS dans la collection
+            foreach ($originalParents as $parent) {
+                if (!$person->getParents()->contains($parent)) {
+                    $parent->removeChild($person); // Retirer la personne de la collection 'children' du parent
+                    $em->persist($parent);
+                }
+            }
+
+            // Nettoyage des Enfants : Parcourir les anciens enfants qui ne sont PLUS dans la collection
+            foreach ($originalChildren as $child) {
+                if (!$person->getChildren()->contains($child)) {
+                    $child->removeParent($person); // Retirer la personne de la collection 'parents' de l'enfant
+                    $em->persist($child);
+                }
+            }
+
+            // b) Mise à jour des NOUVELLES relations ajoutées
+            
+            // Mise à jour forcée des Parents (pour mettre à jour leur collection 'children')
+            foreach ($person->getParents() as $parent) {
+                if (!$parent->getChildren()->contains($person)) {
+                    $parent->addChild($person);
+                }
+                if ($parent->getId() !== null) { 
+                    $em->persist($parent);
+                }
+            }
+            
+            // Mise à jour forcée des Enfants (pour mettre à jour leur collection 'parents')
+            foreach ($person->getChildren() as $child) {
+                if (!$child->getParents()->contains($person)) {
+                    $child->addParent($person);
+                }
+                if ($child->getId() !== null) { 
+                    $em->persist($child);
+                }
+            }
+
+            // 4. Persistance de la personne modifiée
+            $em->persist($person); 
+            $em->flush(); 
+
+            $this->addFlash('success', 'La personne ' . $person->getFirstName() . ' ' . $person->getLastName() . ' a été mise à jour.');
+
+            return $this->redirectToRoute('app_tree_my_tree');
+        }
+
+        return $this->render('tree/edit_person.html.twig', [
+            'person' => $person,
+            'form' => $form,
+        ]);
+    }
+
 
     /**
      * Affiche la Matrice de Parenté (Vue Analytique), garantissant un minimum de 8 personnes.
@@ -93,6 +183,7 @@ class TreeController extends AbstractController
         $currentCount = count($people);
 
         // Si l'utilisateur n'a aucune personne, on le redirige pour qu'il crée la première.
+        // Cette redirection est une sécurité, mais le Subscriber gère déjà l'interception.
         if ($currentCount === 0) {
             $this->addFlash('info', 'Veuillez ajouter votre première personne pour démarrer la matrice.');
             return $this->redirectToRoute('app_tree_initial_person_creation');

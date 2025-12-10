@@ -1,0 +1,148 @@
+{# templates/tree/_form.html.twig #}
+{# 
+   Ce template est inclus par new_person.html.twig et edit_person.html.twig.
+   Il gère l'affichage commun des formulaires de création et de modification de personne.
+   
+   Variables attendues :
+   - form: L'objet formulaire Symfony
+   - title: Le titre principal (Ajouter un membre / Modification de X). Utilise |raw car le titre de l'édition contient du HTML (span fw-bold).
+   - icon: L'icône Font Awesome pour le titre (fas fa-user-plus / fas fa-edit)
+   - submit_button_text: Texte du bouton de soumission (Enregistrer la Personne / Enregistrer les Modifications)
+   - submit_button_class: Classe du bouton (btn-success / btn-primary)
+#}
+
+{{ form_start(form) }}
+    
+    <h1 class="mb-5 text-primary text-center">
+        <i class="{{ icon }} me-3"></i> {{ title|raw }}
+    </h1>
+
+    {# --- SECTION 1 : INFORMATIONS DE BASE --- #}
+    <fieldset class="mb-5">
+        <legend class="border-bottom pb-2 mb-4 text-secondary h3">
+            <i class="fas fa-info-circle me-2"></i> Informations de base
+        </legend>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_row(form.firstName) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {{ form_row(form.lastName) }}
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_row(form.dateOfBirth) }}
+            </div>
+            <div class="col-md-6 mb-3">
+                {# Le champ dateOfDeath est rendu avec l'input-group #}
+                <div class="form-group">
+                    {{ form_label(form.dateOfDeath) }}
+                    <div class="input-group">
+                        {{ form_widget(form.dateOfDeath) }}
+                        <span class="input-group-text text-muted small">(Optionnel)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+
+    {# --- SECTION 2 : LIAISON DE PARENTÉ --- #}
+    {# Les champs 'parents' et 'children' sont définis dans le PersonType uniquement si 'is_initial_creation' est false. #}
+    {% if form.parents is defined %}
+        <fieldset class="mb-5">
+            <legend class="border-bottom pb-2 mb-4 text-secondary h3">
+                <i class="fas fa-link me-2"></i> Lier aux personnes existantes
+            </legend>
+            
+            <div class="row">
+                
+                {# OPTION 1 : Parents (à gauche) #}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-primary h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white fw-bold">
+                            <i class="fas fa-baby me-2"></i> OPTION 1 : Parents de cette personne
+                        </div>
+                        <div class="card-body">
+                            <p class="alert alert-light small mb-3">
+                                Sélectionnez les personnes existantes qui sont les **parents** de cette personne.
+                            </p>
+                            
+                            <div class="form-group mb-0">
+                                <label class="form-label mb-2 fw-semibold">Parents existants (Triés) :</label>
+                                
+                                <div class="border p-1 rounded" style="max-height: 250px; overflow-y: auto;">
+                                    
+                                    {# Utilisation de form_widget et form_label pour les checkboxes #}
+                                    {% for parent in form.parents %}
+                                        <div class="form-check p-1 d-flex align-items-center">
+                                            {{ form_widget(parent, {'attr': {'class': 'form-check-input me-2'}}) }} 
+                                            {{ form_label(parent, null, {'label_attr': {'class': 'form-check-label'}} ) }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form_errors(form.parents) }} 
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                {# OPTION 2 : Enfants (à droite) #}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-success h-100 shadow-sm">
+                        <div class="card-header bg-success text-white fw-bold">
+                            <i class="fas fa-user-friends me-2"></i> OPTION 2 : Enfants de cette personne
+                        </div>
+                        <div class="card-body">
+                            <p class="alert alert-light small mb-3">
+                                Sélectionnez les personnes existantes qui sont les **enfants** de cette personne.
+                            </p>
+                            
+                            <div class="form-group mb-0">
+                                <label class="form-label mb-2 fw-semibold">Enfants existants (Triés) :</label>
+                                
+                                <div class="border p-1 rounded" style="max-height: 250px; overflow-y: auto;">
+                                    
+                                    {% for child in form.children %}
+                                        <div class="form-check p-1 d-flex align-items-center">
+                                            {{ form_widget(child, {'attr': {'class': 'form-check-input me-2'}}) }}
+                                            {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}} ) }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                {{ form_errors(form.children) }}
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info text-center mt-3">
+                <i class="fas fa-info-circle me-2"></i> Vous pouvez lier cette personne en tant qu'enfant, parent, les deux, ou aucune des options. Les choix sont triés par Nom, Prénom et Date de Naissance.
+            </div>
+        </fieldset>
+    {% endif %}
+
+    {{ form_errors(form) }}
+
+    {# --- BOUTONS D'ACTION (Adaptation mobile : empilement vertical) --- #}
+    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-5 pt-3 border-top">
+        
+        {# Bouton de retour : prend toute la largeur sur mobile, auto sur desktop #}
+        <a href="{{ path('app_tree_my_tree') }}" class="btn btn-secondary w-100 w-md-auto">
+            <i class="fas fa-arrow-left me-2"></i> Retour à la Matrice
+        </a>
+        
+        {# Bouton de soumission : prend toute la largeur sur mobile, auto sur desktop #}
+        <button class="btn {{ submit_button_class }} btn-lg w-100 w-md-auto">
+            <i class="fas fa-save me-2"></i> {{ submit_button_text }}
+        </button>
+    </div>
+    
+{{ form_end(form) }}

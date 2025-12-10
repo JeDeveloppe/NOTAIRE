@@ -19,8 +19,6 @@ class PersonType extends AbstractType
 
     public function __construct(Security $security)
     {
-        // Nous n'injectons plus PersonRepository directement ici
-        // car il est déjà passé au query_builder dans buildForm.
         $this->security = $security;
     }
 
@@ -28,22 +26,36 @@ class PersonType extends AbstractType
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
+        
+        // 1. Récupérer l'ID de la personne en cours d'édition/création
+        /** @var Person|null $currentPerson */
+        $currentPerson = $options['data'];
+        $currentPersonId = $currentPerson ? $currentPerson->getId() : null;
 
         // ⭐ Récupérer l'option passée par le contrôleur
         $isInitialCreation = $options['is_initial_creation'] ?? false;
 
-        // Query Builder optimisé pour un tri UX
-        $qb = function (PersonRepository $repo) use ($currentUser) {
+        // Query Builder optimisé pour un tri UX et l'exclusion
+        $qb = function (PersonRepository $repo) use ($currentUser, $currentPersonId) {
             if (!$currentUser) {
                 // Empêche l'affichage si aucun utilisateur n'est connecté
                 return $repo->createQueryBuilder('p')->where('1 = 0');
             }
-            return $repo->createQueryBuilder('p')
+            
+            $qb = $repo->createQueryBuilder('p')
                 ->where('p.owner = :owner')
                 ->setParameter('owner', $currentUser)
                 ->orderBy('p.lastName', 'ASC')
                 ->addOrderBy('p.firstName', 'ASC')
                 ->addOrderBy('p.dateOfBirth', 'ASC');
+            
+            // 2. EXCLUSION : Si nous sommes en mode édition, exclure la personne actuelle
+            if ($currentPersonId) {
+                $qb->andWhere('p.id != :current_person_id')
+                   ->setParameter('current_person_id', $currentPersonId);
+            }
+
+            return $qb;
         };
 
         // Fonction de rappel pour afficher Nom et Date de Naissance dans les choix (pour les relations)
@@ -56,7 +68,7 @@ class PersonType extends AbstractType
             // --- INFORMATIONS DE BASE (TOUJOURS AFFICHÉES) ---
             ->add('firstName', TextType::class, [
                 'label' => 'Prénom',
-                'required' => true, // On rend les champs obligatoires pour la personne initiale
+                'required' => true,
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Nom',
@@ -64,6 +76,12 @@ class PersonType extends AbstractType
             ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Date de naissance',
+                'widget' => 'single_text',
+                'html5' => true,
+                'required' => false,
+            ])
+            ->add('dateOfDeath', DateType::class, [
+                'label' => 'Date de décès',
                 'widget' => 'single_text',
                 'html5' => true,
                 'required' => false,
@@ -76,22 +94,22 @@ class PersonType extends AbstractType
             $builder->add('parents', EntityType::class, [
                 'class' => Person::class,
                 'choice_label' => $choiceLabelCallback,
-                'label' => 'Parents', // Ajout d'une étiquette pour le mode non-initial
+                'label' => 'Parents',
                 'multiple' => true,
                 'expanded' => true,
                 'required' => false,
-                'query_builder' => $qb,
+                'query_builder' => $qb, // ⬅️ Utilisation du QB modifié
             ]);
             
             // Option 2 : Est parent de (relations 'children')
             $builder->add('children', EntityType::class, [
                 'class' => Person::class,
                 'choice_label' => $choiceLabelCallback,
-                'label' => 'Enfants', // Ajout d'une étiquette pour le mode non-initial
+                'label' => 'Enfants',
                 'multiple' => true,
                 'expanded' => true,
                 'required' => false,
-                'query_builder' => $qb,
+                'query_builder' => $qb, // ⬅️ Utilisation du QB modifié
             ]);
         }
     }
@@ -100,8 +118,10 @@ class PersonType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Person::class,
-            // ⭐ Définir la nouvelle option avec une valeur par défaut de false
+            // Définir la nouvelle option avec une valeur par défaut de false
             'is_initial_creation' => false, 
         ]);
+        // Autoriser l'option 'data' qui contient l'entité Person en cours
+        $resolver->setAllowedTypes('data', [Person::class, 'null']); 
     }
 }

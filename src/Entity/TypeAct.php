@@ -18,8 +18,41 @@ class TypeAct
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    /**
+     * Code fiscal unique de l'acte (ex: 'SARKOZY', 'CLASSIQUE').
+     * Utilisé par le TypeActService pour les calculs d'abattement consommé.
+     */
+    #[ORM\Column(length: 50, unique: true)] 
+    private ?string $code = null; 
+
     #[ORM\Column]
     private ?bool $isTaxReductible = null;
+
+    // =======================================================
+    // ⭐ NOUVELLES PROPRIÉTÉS POUR LE LEXIQUE FISCAL ⭐
+    // =======================================================
+
+    /**
+     * Règle fiscale principale (ex: "L'abattement se reconstitue 15 ans après...", "Enveloppe unique...").
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $fiscalRule = null;
+    
+    /**
+     * Conditions d'éligibilité (ex: "Donateur < 80 ans, Bénéficiaire > 18 ans").
+     */
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $conditions = null;
+    
+    /**
+     * Indique si l'abattement se renouvelle (true pour Classique / 15 ans, false pour Sarkozy / unique).
+     */
+    #[ORM\Column(type: 'boolean')]
+    private bool $isCyclical = true; 
+
+    // =======================================================
+    // ⭐ FIN NOUVELLES PROPRIÉTÉS ⭐
+    // =======================================================
 
     /**
      * @var Collection<int, Act>
@@ -56,6 +89,18 @@ class TypeAct
         return $this;
     }
 
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): static
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
     public function isTaxReductible(): ?bool
     {
         return $this->isTaxReductible;
@@ -67,6 +112,47 @@ class TypeAct
 
         return $this;
     }
+    
+    // =======================================================
+    // ⭐ GETTERS/SETTERS DES NOUVELLES PROPRIÉTÉS ⭐
+    // =======================================================
+
+    public function getFiscalRule(): ?string
+    {
+        return $this->fiscalRule;
+    }
+
+    public function setFiscalRule(?string $fiscalRule): static
+    {
+        $this->fiscalRule = $fiscalRule;
+        return $this;
+    }
+    
+    public function getConditions(): ?string
+    {
+        return $this->conditions;
+    }
+
+    public function setConditions(?string $conditions): static
+    {
+        $this->conditions = $conditions;
+        return $this;
+    }
+
+    public function isIsCyclical(): bool
+    {
+        return $this->isCyclical;
+    }
+
+    public function setIsCyclical(bool $isCyclical): static
+    {
+        $this->isCyclical = $isCyclical;
+        return $this;
+    }
+
+    // =======================================================
+    // ⭐ FIN GETTERS/SETTERS DES NOUVELLES PROPRIÉTÉS ⭐
+    // =======================================================
 
     /**
      * @return Collection<int, Act>

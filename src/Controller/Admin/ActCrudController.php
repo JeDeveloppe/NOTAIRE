@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Act;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -29,5 +30,14 @@ class ActCrudController extends AbstractCrudController
             AssociationField::new('beneficiary', 'Bénéficiaire'),
             AssociationField::new('typeOfAct', 'Type d\'acte'),
         ];
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if (!$entityInstance instanceof Act) return;
+
+        $entityInstance->setOwner($this->getUser());
+        $entityManager->persist($entityInstance);
+        $entityManager->flush();
     }
 }

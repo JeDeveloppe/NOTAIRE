@@ -1,0 +1,59 @@
+/* Sticky headers */
+.matrix-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+
+.sticky-left {
+    position: sticky;
+    left: 0;
+    z-index: 21; /* un peu plus que thead pour éviter les overlaps bizarres */
+}
+
+/* Hover léger */
+.matrix-container td {
+    transition: background-color 0.15s ease;
+}
+
+.matrix-container td:hover {
+    background-color: rgba(52, 152, 219, 0.15) !important; /* proche du primary Flatly */
+}
+
+/* Relation: Self (diagonale) */
+.relation-self {
+    background-color: var(--bs-secondary-bg, #e9ecef) !important;
+    color: #6c757d;
+}
+
+/* Parent / Enfant */
+.relation-parent-enfant {
+    background-color: rgba(24, 188, 156, 0.18) !important; /* vert Flatly (success-ish) */
+    color: #0f5132; /* proche de .text-success-dark */
+    font-weight: 600;
+}
+
+/* Fratrie */
+.relation-fratrie {
+    background-color: rgba(52, 152, 219, 0.18) !important; /* bleu Flatly (primary-ish) */
+    color: #0b3c5d;
+    font-weight: 600;
+}
+
+/* Aucun lien / inconnu */
+.relation-inconnu {
+    background-color: var(--bs-light, #f8f9fa) !important;
+    color: #adb5bd;
+}
+
+/* Table */
+.matrix-container table {
+    min-width: max-content;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.matrix-container .table th,
+.matrix-container .table td {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}

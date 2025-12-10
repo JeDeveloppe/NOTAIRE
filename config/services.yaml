@@ -37,22 +37,35 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    
+    # Configuration du service pour l'injection des codes relationnels
     App\Service\GenealogyService:
         arguments:
             $relationshipCodes: '%app.relationship_codes%' # <-- INJECTION ICI
-    
+
+    # -------------------------------------------------------------------------
+    # CONFIGURATION DES FIXTURES DE TEST (AppFixtures)
+    # -------------------------------------------------------------------------
     App\DataFixtures\AppFixtures:
         arguments:
-            # Injection des paramètres hérités par AppFixtures
-            $hasher: '@Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface'
-            $parameterBag: '@parameter_bag'
-            # Injection des variables d'environnement
+            # Les services (hasher, parameterBag) sont autowirés si autowire: true est activé
+            # Injection des variables d'environnement (string)
             $adminEmail: '%env(ADMIN_EMAIL)%'
             $adminPassword: '%env(ADMIN_PASSWORD)%'
+            # Injection du paramètre (array)
+            $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
 
+    # -------------------------------------------------------------------------
+    # CONFIGURATION DES FIXTURES D'INITIALISATION (InitFixtures) - NOUVEAU BLOC
+    # -------------------------------------------------------------------------
+    App\DataFixtures\InitFixtures:
+        arguments:
+            # Utilise les mêmes injections explicites que AppFixtures
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $adminPassword: '%env(ADMIN_PASSWORD)%'
+            $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
+
+    # Configuration du service de Simulation
     App\Service\SimulationPlanningService:
             arguments:
                 $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
-            # La ligne ci-dessous est souvent nécessaire si vous utilisez un custom service
-            # mais l'autowiring devrait suffire si les arguments sont typés.
-            # autowire: true

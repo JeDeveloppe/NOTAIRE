@@ -2,42 +2,38 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Act; 
 use App\Entity\Person;
 use App\Entity\TaxCatalog;
 use App\Entity\TypeAct;
 use App\Entity\User;
-use App\Entity\Hypothesis; // Assurez-vous d'avoir créé cette entité
+use App\Entity\Hypothesis; 
+use App\Service\ActService; // ⬅️ Utilisation de TypeActService pour les constantes fiscales
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use DateTimeImmutable;
 
 class AppFixtures extends Fixture
 {
-    // Valeurs d'abattement en € (fixées ici pour le TaxCatalog, car elles ne sont pas dans services.yaml)
-    private const ABATEMENT_MAP = [
-        'R_PE' => 100000,   // Parent/Enfant
-        'R_GPPE' => 31865,  // Grand-Parent/Petit-Enfant
-        'R_FS' => 15932,    // Frère/Sœur
-        'R_ON' => 7967,     // Oncle/Neveu
-        'R_T' => 1594       // Tiers Éloigné
-    ];
-    
     private array $relationshipCodes;
+    private array $abatementAmountsInCents;
     private string $adminEmail;
     private string $adminPassword;
 
     public function __construct(
         private UserPasswordHasherInterface $hasher,
         ParameterBagInterface $parameterBag,
-        string $adminEmail, // Injecté depuis %env(ADMIN_EMAIL)%
-        string $adminPassword // Injecté depuis %env(ADMIN_PASSWORD)%
+        string $adminEmail, 
+        string $adminPassword,
+        array $abatementAmountsInCents
     )
     {
-        // Récupère le tableau des codes de relation depuis config/services.yaml
         $this->relationshipCodes = $parameterBag->get('app.relationship_codes');
         $this->adminEmail = $adminEmail;
         $this->adminPassword = $adminPassword;
+        $this->abatementAmountsInCents = $abatementAmountsInCents;
     }
 
     public function load(ObjectManager $manager): void
@@ -45,113 +41,162 @@ class AppFixtures extends Fixture
         // ----------------------------------------------------
         // 1. UTILISATEURS
         // ----------------------------------------------------
-
-        // 1.b Utilisateur Administrateur (depuis .env.dev)
         $user = new User();
         $user->setEmail($this->adminEmail); 
         $user->setPassword($this->hasher->hashPassword($user, $this->adminPassword));
         $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
         $manager->persist($user);
-
-
+        $this->addReference('admin-user', $user);
+        
         // ----------------------------------------------------
-        // 2. CATALOGUE FISCAL (TaxCatalog) - Synchronisé avec services.yaml
+        // 2. CATALOGUE FISCAL (TaxCatalog)
         // ----------------------------------------------------
+        
+        $relationKeyMap = $this->createRelationKeyMap();
+
         foreach ($this->relationshipCodes as $name => $code) {
-            $taxRule = new TaxCatalog();
             
-            // Le code (ex: 'R_PE') est tiré de la configuration YAML
-            $taxRule->setRelationshipBetweenThe2People($code);
-            
-            // L'abattement est tiré de notre map interne via le code YAML
-            $taxRule->setAbatementAmount(self::ABATEMENT_MAP[$code] * 100); // En centimes
-            
-            $taxRule->setTaxRateLower(5); 
-            $taxRule->setTaxRateUpper(45); 
-            $manager->persist($taxRule);
+            if (isset($relationKeyMap[$code])) {
+                $abatementKey = $relationKeyMap[$code];
+                
+                if (isset($this->abatementAmountsInCents[$abatementKey])) {
+                    $taxRule = new TaxCatalog();
+                    
+                    $taxRule->setRelationshipBetweenThe2People($code);
+                    $taxRule->setAbatementAmount($this->abatementAmountsInCents[$abatementKey]); 
+                    $taxRule->setTaxRateLower(5); 
+                    $taxRule->setTaxRateUpper(45); 
+                    $manager->persist($taxRule);
+                }
+            }
         }
 
         // ----------------------------------------------------
-        // 3. TYPES D'ACTE (TypeAct)
+        // 3. TYPES D'ACTE (TypeAct) - CORRECTION DE L'UNICITÉ
         // ----------------------------------------------------
+        
+        // Type 1 : CLASSIQUE Pleine Propriété
         $donationSimple = new TypeAct();
-        $donationSimple->setName('Donation Pleine Propriété');
+        $donationSimple->setName('Donation Pleine Propriété Classique');
+        $donationSimple->setCode(ActService::CODE_CLASSIQUE); 
         $donationSimple->setIsTaxReductible(true);
         $manager->persist($donationSimple);
+        $this->addReference('type-classique', $donationSimple);
         
+        // Type 2 : USUFRUIT (Nouveau code unique pour éviter l'erreur)
         $donationUsufruit = new TypeAct();
         $donationUsufruit->setName('Donation Usufruit');
+        $donationUsufruit->setCode(ActService::CODE_USUFRUIT ?? 'USUFRUIT'); // Utiliser la constante si définie, sinon une chaîne
         $donationUsufruit->setIsTaxReductible(true);
         $manager->persist($donationUsufruit);
+        $this->addReference('type-usufruit', $donationUsufruit);
 
+        // Type 3 : SARKOZY
+        $donationSarkozy = new TypeAct();
+        $donationSarkozy->setName('Donation Familiale d\'Argent (Sarkozy)');
+        $donationSarkozy->setCode(ActService::CODE_SARKOZY); 
+        $donationSarkozy->setIsTaxReductible(true);
+        $manager->persist($donationSarkozy);
+        $this->addReference('type-sarkozy', $donationSarkozy);
+        
         // ----------------------------------------------------
-        // 4. ARBRE GÉNÉALOGIQUE (Person) - Sous l'utilisateur standard ($user)
+        // 4. ARBRE GÉNÉALOGIQUE (Person)
         // ----------------------------------------------------
-
+        
         // G1 : Grands-Parents
         $grandpa = $this->createPerson('Jean', 'Wetta', '1940-05-15', $user, $manager);
         $grandma = $this->createPerson('Marie', 'Wetta', '1942-08-20', $user, $manager);
-        
-        // G2 : Enfants (Paul est le Parent direct, Sophie est la Tante)
+        // G2 : Enfants
         $parent = $this->createPerson('Paul', 'Wetta', '1970-01-01', $user, $manager);
         $aunt = $this->createPerson('Sophie', 'Wetta', '1975-11-11', $user, $manager);
-        
-        // Parenté G1 -> G2 (Frère/Sœur créé implicitement)
+        // Parenté G1 -> G2
         $parent->addParent($grandpa)->addParent($grandma);
         $aunt->addParent($grandpa)->addParent($grandma);
-
-        // G3 : Le Petit-Enfant et la Nièce/Neveu (Alice)
+        // G3 : Le Petit-Enfant (Alice)
         $me = $this->createPerson('Alice', 'Wetta', '2000-03-25', $user, $manager);
-        $me->addParent($parent); // Alice est enfant de Paul (et Petit-Enfant de Jean/Marie)
-        
-        // Cousin pour le test Oncle/Nièce
-        $cousin = $this->createPerson('Julien', 'Martin', '2005-07-07', $user, $manager);
-        $cousin->addParent($aunt); // Julien est enfant de Sophie (Nièce/Neveu de Paul)
-        
+        $me->addParent($parent); 
         // Tiers Éloigné
         $stranger = $this->createPerson('Inconnu', 'Tiers', '1980-01-01', $user, $manager);
-
-        // Personne décédée (pour test de validation)
-        $deceasedDonor = $this->createPerson('Defunt', 'X', '1950-01-01', $user, $manager, '2020-01-01');
         
+        $this->addReference('person-parent', $parent); 
+        $this->addReference('person-me', $me); 
+
         // ----------------------------------------------------
         // 5. HYPOTHÈSES DE TEST (Hypothesis)
         // ----------------------------------------------------
         
-        // H1 : Parent/Enfant (R_PE)
-        $this->createHypothesis($parent, $me, 100000, $donationSimple, $manager); // Paul -> Alice
-        $this->createHypothesis($me, $parent, 10000, $donationSimple, $manager); // Alice -> Paul (Symétrique)
+        // H1 : Parent/Enfant (R_PE) - ACTE CLASSIQUE
+        $this->createHypothesis($parent, $me, 100000, $donationSimple, $manager);
 
-        // H2 : Grand-Parent/Petit-Enfant (R_GPPE)
-        $this->createHypothesis($grandpa, $me, 50000, $donationSimple, $manager); // Jean -> Alice
+        // H6 : Test Don Sarkozy 
+        $this->createHypothesis($grandpa, $me, 31865, $donationSarkozy, $manager); 
 
-        // H3 : Frère/Sœur (R_FS)
-        $this->createHypothesis($parent, $aunt, 15000, $donationSimple, $manager); // Paul -> Sophie
-
-        // H4 : Oncle/Nièce (R_ON)
-        $this->createHypothesis($aunt, $me, 10000, $donationSimple, $manager); // Sophie (Tante) -> Alice (Nièce)
-
-        // H5 : Tiers Éloigné (R_T)
-        $this->createHypothesis($me, $stranger, 5000, $donationUsufruit, $manager);
-
-        // H6 : Test de Validation (Donateur décédé - Doit échouer la validation)
-        $this->createHypothesis($deceasedDonor, $me, 1000, $donationSimple, $manager);
+        // ----------------------------------------------------
+        // 6. ACTES DÉCLARÉS (Act) - DONATIONS PASSÉES RÉELLES
+        // ----------------------------------------------------
         
+        // A1 : Acte classique (Parent -> Enfant) il y a 5 ans
+        // Montant : 40 000 €. Consomme 40 000 € de l'abattement 100k€.
+        $this->createAct(
+            $parent, 
+            $me, 
+            40000, 
+            $donationSimple, 
+            new DateTimeImmutable('2020-01-01'), 
+            $user, 
+            $manager
+        );
+
+        // A2 : Acte classique (Parent -> Enfant) il y a 16 ans (Prescrit)
+        // Montant : 20 000 €. Ne doit plus impacter la simulation.
+        $this->createAct(
+            $parent, 
+            $me, 
+            20000, 
+            $donationSimple, 
+            new DateTimeImmutable('2009-01-01'), 
+            $user, 
+            $manager
+        );
+
+        // A3 : Don Sarkozy (Grand-père -> Petit-enfant) il y a 1 an
+        // Montant : 31 865 €. Ne consomme PAS l'abattement de 100k€ (consumedAbatement = 0).
+        $this->createAct(
+            $grandpa, 
+            $me, 
+            31865, 
+            $donationSarkozy, 
+            new DateTimeImmutable('2024-10-01'), 
+            $user, 
+            $manager
+        );
+
         $manager->flush();
     }
     
     // ----------------------------------------------------
-    // --- METHODES UTILITAIRES ---
+    // MÉTHODES UTILITAIRES
     // ----------------------------------------------------
+
+    private function createRelationKeyMap(): array
+    {
+        return [
+            $this->relationshipCodes['PARENT_ENFANT'] => 'parent_enfant',
+            $this->relationshipCodes['GRAND_PARENT_PETIT_ENFANT'] => 'grand_parent_petit_enfant',
+            $this->relationshipCodes['FRERE_SOEUR'] => 'frere_soeur',
+            $this->relationshipCodes['ONCLE_NEVEU'] => 'oncle_neveu',
+            $this->relationshipCodes['TIERS'] => 'tiers',
+        ];
+    }
     
     private function createPerson(string $firstName, string $lastName, string $dob, User $owner, ObjectManager $manager, ?string $dod = null): Person
     {
         $person = new Person();
         $person->setFirstName($firstName);
         $person->setLastName($lastName);
-        $person->setDateOfBirth(new \DateTimeImmutable($dob));
+        $person->setDateOfBirth(new DateTimeImmutable($dob));
         if ($dod) {
-             $person->setDateOfDeath(new \DateTimeImmutable($dod));
+             $person->setDateOfDeath(new DateTimeImmutable($dod));
         }
         $person->setOwner($owner);
         $manager->persist($person);
@@ -165,9 +210,45 @@ class AppFixtures extends Fixture
         $hypothesis->setBeneficiary($beneficiary);
         $hypothesis->setSimulatedValue($value * 100); // En centimes
         $hypothesis->setTypeOfActSimulated($typeAct);
-        $hypothesis->setDateOfSimulation(new \DateTimeImmutable());
+        $hypothesis->setDateOfSimulation(new DateTimeImmutable());
         $manager->persist($hypothesis);
         
         return $hypothesis;
+    }
+    
+    /**
+     * Crée un acte de donation passé (Act) pour l'historique de l'utilisateur.
+     */
+    private function createAct(
+        Person $donor, 
+        Person $beneficiary, 
+        int $value, // Valeur en euros
+        TypeAct $typeAct, 
+        DateTimeImmutable $dateOfAct, 
+        User $owner, 
+        ObjectManager $manager
+    ): Act
+    {
+        $act = new Act();
+        $act->setDonor($donor);
+        $act->setBeneficiary($beneficiary);
+        $act->setTypeOfAct($typeAct);
+        $act->setDateOfAct($dateOfAct);
+        $act->setValue($value * 100); // Stockage en centimes
+        $act->setOwner($owner);
+
+        // LOGIQUE D'ABATTEMENT CONSOMMÉ
+        // Utilise le code stocké dans l'entité TypeAct
+        if ($typeAct->getCode() === ActService::CODE_SARKOZY) {
+            $consumed = 0;
+        } else {
+            // Tous les autres codes (CLASSIQUE, USUFRUIT, etc.) consomment l'abattement
+            $consumed = $value * 100; 
+        }
+
+        $act->setConsumedAbatement($consumed);
+        $manager->persist($act);
+        
+        return $act;
     }
 }

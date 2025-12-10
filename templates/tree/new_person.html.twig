@@ -1,3 +1,5 @@
+{# templates/tree/new_person.html.twig #}
+
 {% extends 'base.html.twig' %}
 
 {% block title %}Créer une Nouvelle Personne{% endblock %}
@@ -7,121 +9,13 @@
         
         <div class="p-4 p-md-5 bg-white rounded shadow-lg">
             
-            <h1 class="mb-5 text-primary text-center">
-                <i class="fas fa-user-plus me-3"></i> Ajouter un Membre à l'Arbre Généalogique
-            </h1>
-            
-            {{ form_start(form) }}
-            
-            {# --- SECTION 1 : INFORMATIONS DE BASE (Inchagnée) --- #}
-            <fieldset class="mb-5">
-                <legend class="border-bottom pb-2 mb-4 text-secondary h3">
-                    <i class="fas fa-info-circle me-2"></i> Informations de base
-                </legend>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        {{ form_row(form.firstName) }}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        {{ form_row(form.lastName) }}
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    {{ form_row(form.dateOfBirth) }}
-                </div>
-            </fieldset>
-
-            {# --- SECTION 2 : LIAISON DE PARENTÉ --- #}
-            <fieldset class="mb-5">
-                <legend class="border-bottom pb-2 mb-4 text-secondary h3">
-                    <i class="fas fa-link me-2"></i> Lier aux personnes existantes
-                </legend>
-                
-                <div class="row">
-                    
-                    {# OPTION 1 : EST ENFANT DE (Champ parents) #}
-                    <div class="col-md-6 mb-4">
-                        <div class="card border-primary h-100 shadow-sm">
-                            <div class="card-header bg-primary text-white fw-bold">
-                                <i class="fas fa-baby me-2"></i> OPTION 1 : Parents de cette personne
-                            </div>
-                            <div class="card-body">
-                                <p class="alert alert-light small mb-3">
-                                    Sélectionnez les personnes existantes qui sont les **parents** de la personne que vous créez.
-                                </p>
-                                
-                                <div class="form-group mb-0">
-                                    <label class="form-label mb-2 fw-semibold">Parents existants (Triés) :</label>
-                                    
-                                    <div class="border p-1 rounded" style="max-height: 250px; overflow-y: auto;">
-                                        
-                                        {% for child in form.parents %}
-                                            {# Correction ultime : Enlève w-100 du label, et s'assure que le d-flex est bien là #}
-                                            <div class="form-check p-1 d-flex align-items-center">
-                                                {{ form_widget(child, {'attr': {'class': 'form-check-input me-2'}}) }} 
-                                                {# Retire w-100 du label pour éviter de pousser l'input hors du flux #}
-                                                {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}} ) }}
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    
-                                    {{ form_errors(form.parents) }} 
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-
-                    {# OPTION 2 : EST PARENT DE (Champ children) #}
-                    <div class="col-md-6 mb-4">
-                        <div class="card border-success h-100 shadow-sm">
-                            <div class="card-header bg-success text-white fw-bold">
-                                <i class="fas fa-user-friends me-2"></i> OPTION 2 : Enfants de cette personne
-                            </div>
-                            <div class="card-body">
-                                <p class="alert alert-light small mb-3">
-                                    Sélectionnez les personnes existantes qui sont les **enfants** de la personne que vous êtes en train de créer.
-                                </p>
-                                
-                                <div class="form-group mb-0">
-                                    <label class="form-label mb-2 fw-semibold">Enfants existants (Triés) :</label>
-                                    
-                                    <div class="border p-1 rounded" style="max-height: 250px; overflow-y: auto;">
-                                        
-                                        {% for child in form.children %}
-                                            <div class="form-check p-1 d-flex align-items-center">
-                                                {{ form_widget(child, {'attr': {'class': 'form-check-input me-2'}}) }}
-                                                {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}} ) }}
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    
-                                    {{ form_errors(form.children) }}
-                                </div>
-                                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
-            
-            <div class="alert alert-info text-center mt-3">
-                <i class="fas fa-info-circle me-2"></i> Vous pouvez lier la nouvelle personne en tant qu'enfant, parent, les deux, ou aucune des options. Les choix sont triés par Nom, Prénom et Date de Naissance.
-            </div>
-
-            {# --- BOUTONS D'ACTION --- #}
-            <div class="d-flex justify-content-between mt-5 pt-3 border-top">
-                <a href="{{ path('app_tree_my_tree') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i> Retour à la liste
-                </a>
-                <button class="btn btn-success btn-lg">
-                    <i class="fas fa-save me-2"></i> Enregistrer la Personne
-                </button>
-            </div>
-            
-            {{ form_end(form) }}
+            {% include 'tree/_form.html.twig' with {
+                form: form,
+                title: 'Ajouter un Membre à l\'Arbre Généalogique',
+                icon: 'fas fa-user-plus',
+                submit_button_text: 'Enregistrer la Personne',
+                submit_button_class: 'btn-success'
+            } %}
         
         </div>
     </div>

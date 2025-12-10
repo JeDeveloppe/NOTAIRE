@@ -42,9 +42,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Person::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $peopleOwned;
 
+    /**
+     * @var Collection<int, Act>
+     */
+    #[ORM\OneToMany(targetEntity: Act::class, mappedBy: 'owner', orphanRemoval: true)]
+    private Collection $acts;
+
     public function __construct()
     {
         $this->peopleOwned = new ArrayCollection();
+        $this->acts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -155,5 +162,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString()
     {
         return $this->email;
+    }
+
+    /**
+     * @return Collection<int, Act>
+     */
+    public function getActs(): Collection
+    {
+        return $this->acts;
+    }
+
+    public function addAct(Act $act): static
+    {
+        if (!$this->acts->contains($act)) {
+            $this->acts->add($act);
+            $act->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAct(Act $act): static
+    {
+        if ($this->acts->removeElement($act)) {
+            // set the owning side to null (unless already changed)
+            if ($act->getOwner() === $this) {
+                $act->setOwner(null);
+            }
+        }
+
+        return $this;
     }
 }
