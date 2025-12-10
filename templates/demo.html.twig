@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Optimisez votre Généalogie et votre Patrimoine{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+
+    {# --- SECTION 1 : ACCROCHE PRINCIPALE --- #}
+    <header class="text-center py-5 bg-light rounded-3 shadow-sm mb-5">
+        <h1 class="display-4 fw-bold text-primary mb-3">
+            <i class="fas fa-sitemap me-3"></i> Votre Arbre Familial. Votre Stratégie Fiscale.
+        </h1>
+        <p class="lead text-muted mx-auto" style="max-width: 800px;">
+            Découvrez notre solution unique pour visualiser les liens familiaux complexes et débloquer des opportunités de planification fiscale concrètes sur 15 ans.
+        </p>
+        
+        {# * LOGIQUE CONDITIONNELLE pour le Bouton principal * #}
+        {% if app.user %}
+            {# Utilisateur Connecté : L'inciter à aller à son espace de travail #}
+            <a href="{{ path('app_tree_my_tree') }}" class="btn btn-warning btn-lg mt-4 shadow fw-bold">
+                Accéder à ma Matrice de Parenté <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        {% else %}
+            {# Utilisateur Déconnecté : L'inciter à s'inscrire #}
+            <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg mt-4 shadow">
+                Commencez Votre Optimisation Maintenant <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        {% endif %}
+        
+    </header>
+
+    <div class="row g-5">
+        
+        {# --- SECTION 2 : LA MATRICE DE PARENTÉ --- #}
+        <div class="col-lg-12">
+            <h2 class="text-center text-secondary mb-5 pb-3 border-bottom"><i class="fas fa-chart-area me-2"></i> 1. La Matrice : Votre Arbre, Repensé</h2>
+            
+            <div class="row align-items-center">
+                <div class="col-md-7 mb-4">
+                    <div class="border rounded shadow-lg p-1 bg-white">
+                        <p class="text-center text-muted small p-2 mb-0">
+                            [Emplacement pour la Capture d'écran de la Matrice de Parenté]
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-5 mb-4">
+                    <h3 class="fw-bold text-primary">Visualisation instantanée des liens</h3>
+                    <p>Finis les schémas complexes : notre Matrice de Parenté vous montre, en un coup d'œil, comment chaque membre est lié à tous les autres.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Code Couleur : Identifiez immédiatement Parent/Enfant ou Frère/Sœur.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Ergonomie : Accès rapide à l'édition de chaque personne via l'icône <i class="fas fa-edit"></i>.</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Clarté : Des headers et cellules claires, même pour les grandes familles.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# --- SEPARATEUR --- #}
+        <div class="col-lg-12"><hr class="my-5"></div>
+
+        {# --- SECTION 3 : ANALYSE FISCALE DÉTAILLÉE --- #}
+        <div class="col-lg-12">
+            <h2 class="text-center text-success mb-5 pb-3 border-bottom"><i class="fas fa-piggy-bank me-2"></i> 2. Planification Fiscale : Optimisez Chaque Relation</h2>
+            
+            <div class="row align-items-center flex-md-row-reverse">
+                <div class="col-md-7 mb-4">
+                    <div class="border rounded shadow-lg p-1 bg-white">
+                        <p class="text-center text-muted small p-2 mb-0">
+                            [Emplacement pour la Capture d'écran de l'Analyse Fiscale Détaillée]
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-5 mb-4">
+                    <h3 class="fw-bold text-success">Un levier d'optimisation par couple</h3>
+                    <p>Notre outil analyse le potentiel fiscal de chaque paire Donateur ➡️ Bénéficiaire en fonction de leur lien de parenté et des lois en vigueur (dons, abattements).</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-medal text-success me-2"></i> Solde T0 : Montant précis immédiatement disponible.</li>
+                        <li class="mb-2"><i class="fas fa-clock text-success me-2"></i> Historique : Vue complète de l'utilisation passée et du solde consommé.</li>
+                        <li class="mb-2"><i class="fas fa-forward text-success me-2"></i> Plan de Reconstitution : Le calendrier exact où les abattements se reconstituent (planification sur 15 ans).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# --- SEPARATEUR --- #}
+        <div class="col-lg-12"><hr class="my-5"></div>
+
+        {# --- SECTION 4 : ANTICIPATION ET ALERTES --- #}
+        <div class="col-lg-12">
+            <h2 class="text-center text-warning mb-5 pb-3 border-bottom"><i class="fas fa-exclamation-triangle me-2"></i> 3. Anticipation : Alertes et Chronologie</h2>
+            
+            <div class="row align-items-center">
+                <div class="col-md-7 mb-4">
+                    <div class="border rounded shadow-lg p-1 bg-white">
+                        <p class="text-center text-muted small p-2 mb-0">
+                            [Emplacement pour la Capture d'écran des Alertes et Chronologie]
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-5 mb-4">
+                    <h3 class="fw-bold text-warning">Ne ratez plus aucune échéance fiscale</h3>
+                    <p>L'application calcule et met en évidence les dates critiques qui pourraient impacter vos stratégies.</p>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-bell text-warning me-2"></i> Alertes Impératives : Notifications sur les dates clés (ex: 80 ans du Donateur, fin d'un délai de 15 ans).</li>
+                        <li class="mb-2"><i class="fas fa-calendar-alt text-warning me-2"></i> Chronologie Annuelle : Un tableau qui récapitule toutes les opportunités T0 et reconstitutions futures, triées par année fiscale.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# --- SECTION 5 : APPEL À L'ACTION FINAL --- #}
+    <section class="text-center py-5 bg-primary text-white rounded-3 shadow-lg mt-5">
+        
+        {% if app.user %}
+            {# Utilisateur Connecté #}
+            <h2 class="mb-4">Votre travail vous attend !</h2>
+            <p class="lead mb-4">
+                Poursuivez la gestion de votre arbre et l'analyse de votre stratégie patrimoniale.
+            </p>
+            <a href="{{ path('app_tree_my_tree') }}" class="btn btn-light btn-xl shadow">
+                <i class="fas fa-table me-2"></i> Retourner à Mon Espace de Travail
+            </a>
+        {% else %}
+            {# Utilisateur Déconnecté #}
+            <h2 class="mb-4">Prêt à Transformer votre Généalogie en Stratégie ?</h2>
+            <p class="lead mb-4">
+                Commencez dès aujourd'hui la création de votre arbre et découvrez le potentiel fiscal de votre famille.
+            </p>
+            <a href="{{ path('app_register') }}" class="btn btn-light btn-xl shadow">
+                Créer Mon Compte Gratuitement <i class="fas fa-chevron-right ms-2"></i>
+            </a>
+        {% endif %}
+
+    </section>
+
+</div>
+{% endblock %}

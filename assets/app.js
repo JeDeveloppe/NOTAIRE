@@ -2,7 +2,7 @@
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 //theme flatly
-import './styles/flatly.min.css';
+import './styles/theme_bootstrap.min.css';
 
 // ✅ Ton CSS perso
 import './styles/app.css';

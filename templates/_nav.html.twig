@@ -1,36 +1,89 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="{{ path('app_home') }}">Planificateur de Dons</a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-lg mb-4">
+    <div class="container-fluid">
+        
+        {# Nom de l'Application / Lien Home #}
+        <a class="navbar-brand fw-bold" href="{{ path('app_home') }}">
+            <i class="fas fa-piggy-bank me-2"></i> Planificateur Patrimonial
+        </a>
+        
+        {# Bouton Toggle pour Mobile #}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            
+            {# --- SECTION GAUCHE : NAVIGATION PRINCIPALE (LIENS PUBLICS & UTILISATEUR) --- #}
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('app_simulation_planning_donataires') }}">Donations possibles</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-bold text-warning" href="{{ path('app_tree_my_tree') }}">
-                                <i class="fas fa-user-plus me-1"></i> Mon arbre
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link fw-bold text-warning" href="{{ path('app_tree_new_person') }}">
-                                <i class="fas fa-user-plus me-1"></i> Ajouter une Personne
-                            </a>
-                        </li>
-                    </ul>
+                {# Lien vers la page de Présentation / Démo (accessible à tous) #}
+                <li class="nav-item">
+                    {# J'utilise ici un nom de route générique 'app_presentation'. Adaptez-le si nécessaire. #}
+                    <a class="nav-link" href="{{ path('app_home') }}">
+                        <i class="fas fa-eye me-1"></i> Présentation
+                    </a>
+                </li>
+
+                {# Liens réservés aux Utilisateurs Connectés #}
+                {% if app.user %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ path('app_simulation_planning_donataires') }}">
+                            <i class="fas fa-chart-line me-1"></i> Planning Fiscal
+                        </a>
+                    </li>
                     
-                    {# Affichage du bouton de déconnexion si l'utilisateur est connecté #}
-                    {% if app.user %}
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link btn btn-sm btn-outline-light ms-2" href="{{ path('app_logout') }}">Déconnexion</a>
+                    {# Menu déroulant pour l'Arbre Généalogique #}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold text-warning" href="#" id="navbarDropdownTree" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-users me-1"></i> Mon Arbre
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDropdownTree">
+                            <li>
+                                <a class="dropdown-item" href="{{ path('app_tree_my_tree') }}">
+                                    <i class="fas fa-table me-2"></i> Voir la Matrice
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-success fw-bold" href="{{ path('app_tree_new_person') }}">
+                                    <i class="fas fa-user-plus me-2"></i> Ajouter une Personne
+                                </a>
                             </li>
                         </ul>
-                    {% endif %}
-                </div>
-            </div>
-        </nav>
+                    </li>
+
+                {% endif %}
+            </ul>
+            
+            {# --- SECTION DROITE : AUTHENTIFICATION (LOGIN / LOGOUT) --- #}
+            <ul class="navbar-nav">
+                
+                {% if app.user %}
+                    {# Bouton Déconnexion pour Utilisateur Connecté #}
+                    <li class="nav-item me-2 d-flex align-items-center">
+                        <span class="navbar-text small text-white-50 me-2">
+                            Connecté(e) : {{ app.user.userIdentifier }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-sm btn-outline-light" href="{{ path('app_logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i> Déconnexion
+                        </a>
+                    </li>
+                {% else %}
+                    {# Boutons Connexion / Inscription pour Visiteur #}
+                    <li class="nav-item me-2">
+                        <a class="nav-link btn btn-sm btn-outline-light" href="{{ path('app_login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Connexion
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-sm btn-success" href="{{ path('app_register') }}">
+                            <i class="fas fa-user-plus me-1"></i> Inscription
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
