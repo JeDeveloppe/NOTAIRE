@@ -13,12 +13,18 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 #[Route('/notaire', name: 'notaire_')]
-class NotaireConsultationController extends AbstractController
+class NotaireController extends AbstractController
 {
     public function __construct(
         private readonly TemporaryAccessService $accessService,
         private readonly SimulationPlanningService $planningService
     ) {
+    }
+
+    #[Route('/', name: 'dashboard')]
+    public function ddashboard(): Response
+    {
+        return $this->render('notaire/dashboard.html.twig');
     }
 
     /**

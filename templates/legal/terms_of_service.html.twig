@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions Générales d'Utilisation (CGU){% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                
+                <header class="text-center mb-5">
+                    <h1 class="display-5 text-primary">
+                        <i class="fas fa-file-contract me-2"></i> Conditions Générales d'Utilisation (CGU)
+                    </h1>
+                    <p class="text-muted">
+                        Dernière mise à jour : 15 Décembre 2025
+                    </p>
+                </header>
+
+                <section class="cgu-section">
+                    
+                    <h2 class="h4 text-secondary mb-3">1. Objet</h2>
+                    <p>
+                        Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet d'encadrer l'accès et les modalités d'utilisation de la plateforme de simulation fiscale et immobilière [Nom de Votre Plateforme]. Elles définissent les droits et obligations de l'Utilisateur et de l'Éditeur dans le cadre de l'utilisation du Service.
+                    </p>
+                    <p>
+                        L'utilisation de la Plateforme implique l'acceptation sans réserve des présentes CGU.
+                    </p>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">2. Définitions</h2>
+                    <ul>
+                        <li><strong>Plateforme :</strong> Désigne le site web et les services d'application fournis par [Nom de Votre Société].</li>
+                        <li><strong>Utilisateur :</strong> Toute personne physique ou morale accédant à la Plateforme (Client ou Notaire).</li>
+                        <li><strong>Client :</strong> Utilisateur non professionnel créant des simulations d'optimisation fiscale.</li>
+                        <li><strong>Notaire :</strong> Utilisateur professionnel validé, accédant aux données de simulation Client via un Code d'Accès Temporaire.</li>
+                    </ul>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">3. Accès aux Services</h2>
+                    <h5 class="h6 mt-3">3.1. Accès Client</h5>
+                    <p>
+                        L'accès aux fonctionnalités de simulation est réservé aux Clients ayant procédé à une inscription valide. Les données de simulation sont stockées et peuvent être consultées par un tiers (Notaire) uniquement si le Client a généré et transmis un Code d'Accès Temporaire.
+                    </p>
+                    
+                    <h5 class="h6 mt-3">3.2. Accès Notaire</h5>
+                    <p>
+                        L'accès à l'Espace Professionnel Notaire nécessite une inscription avec l'identification du statut de Notaire et est soumis à une validation administrative préalable par l'Éditeur. L'accès aux dossiers clients est strictement limité à l'utilisation de Codes d'Accès Temporaires valides, transmis par le Client.
+                    </p>
+                    
+                    <h2 class="h4 text-secondary mt-4 mb-3">4. Responsabilités</h2>
+                    <h5 class="h6 mt-3">4.1. Responsabilité de l'Éditeur</h5>
+                    <p>
+                        La Plateforme fournit des outils de simulation basés sur les données légales en vigueur. **CES SIMULATIONS NE CONSTITUENT EN AUCUN CAS UN CONSEIL LÉGAL, FISCAL ou JURIDIQUE.** L'Éditeur décline toute responsabilité quant aux décisions prises par l'Utilisateur sur la base des résultats de simulation.
+                    </p>
+
+                    <h5 class="h6 mt-3">4.2. Responsabilité de l'Utilisateur</h5>
+                    <p>
+                        Le Client est seul responsable de l'exactitude des données saisies. Le Notaire est seul responsable de l'utilisation qu'il fait des données de simulation consultées, dans le respect de ses obligations professionnelles et du secret professionnel.
+                    </p>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">5. Propriété Intellectuelle</h2>
+                    <p>
+                        Tous les éléments de la Plateforme (logiciels, données, textes, images) sont la propriété exclusive de [Nom de Votre Société] et sont protégés par le droit d'auteur.
+                    </p>
+                    
+                    <h2 class="h4 text-secondary mt-4 mb-3">6. Données Personnelles</h2>
+                    <p>
+                        Les données personnelles de l'Utilisateur sont traitées conformément à notre <a href="{{ path('app_privacy_policy') }}">Politique de Confidentialité</a> et au Règlement Général sur la Protection des Données (RGPD).
+                    </p>
+                    
+                </section>
+
+                <div class="text-center mt-5">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Retour à la page précédente
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+{% endblock %}

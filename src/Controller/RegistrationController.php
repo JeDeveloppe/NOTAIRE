@@ -36,6 +36,8 @@ class RegistrationController extends AbstractController
             // 1. Récupération de la saisie brute de localisation (Champ non mappé)
             /** @var string|null $locationInput */
             $locationInput = $form->get('locationInput')->getData();
+            /** @var string|null $selectedRole ('client' ou 'notaire') */
+            $selectedRole = $form->get('userRole')->getData();
             
             // 2. 🛡️ Validation et normalisation de la localisation via le service
             $validatedLocation = $this->cityCodeLookupService->lookupCityAndCode($locationInput ?? '');
@@ -60,12 +62,30 @@ class RegistrationController extends AbstractController
             $plainPassword = $form->get('plainPassword')->getData();
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
+            // ⭐️ 5. LOGIQUE DE GESTION DU RÔLE ET DU STATUT D'ACTIVATION ⭐️
+            if($selectedRole === 'notaire') {
+                // Rôle Notaire en attente de vérification
+                $user->setRoles(['ROLE_NOTAIRE_PENDING']);
+                $user->setIsActived(false); // BLOQUÉ tant qu'il n'est pas vérifié par l'administrateur
+            } else {
+                // Rôle Client (par défaut)
+                $user->setRoles(['ROLE_USER']);
+                $user->setIsActived(true); // Actif immédiatement
+            }
+
             // 5. Enregistrement (L'Event Listener générera le uniqueCode et codeExpiresAt ici)
             $entityManager->persist($user);
             $entityManager->flush();
 
             // 6. Redirection
-            return $this->redirectToRoute('app_tree_initial_person_creation');
+            if ($selectedRole === 'notaire') {
+                $this->addFlash(
+                    'warning',
+                    'Votre compte a été créé et est en attente de validation. Vous serez averti par e-mail une fois votre statut professionnel vérifié et votre compte activé.'
+                );
+                // Redirection vers la page de connexion ou une page d'information d'attente
+                return $this->redirectToRoute('app_tree_initial_person_creation');
+            }
         }
 
         return $this->render('registration/register.html.twig', [

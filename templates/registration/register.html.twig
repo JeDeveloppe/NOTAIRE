@@ -29,27 +29,7 @@
                             {{ form_errors(registrationForm.email) }}
                         </div>
 
-                        {# ⭐️ 3. Champ Localisation avec Autocomplétion : NOUVELLE STRUCTURE POUR L'ALIGNEMENT #}
-                        <div class="mb-3">
-                            {{ form_label(registrationForm.locationInput, 'Ville ou Code Postal', {'label_attr': {'class': 'form-label'}}) }}
-                            
-                            {# Conteneur parent relatif pour positionner la liste de suggestions #}
-                            <div class="position-relative suggestions-container"> 
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                                    {{ form_widget(registrationForm.locationInput, {
-                                        'attr': {'class': 'form-control', 'placeholder': 'Ex: 14540 Bourguébus'}
-                                    }) }}
-                                </div>
-                                {{ form_errors(registrationForm.locationInput) }}
-                                
-                                {# La liste des suggestions (position: absolute) sera injectée ici #}
-                            </div>
-                            
-                            <small class="form-text text-muted">Afin de vous localiser et de calculer votre taxe foncière. (Partagée uniquement avec votre notaire via code)</small>
-                        </div>
-                        
-                        {# 4. Champ Mot de Passe #}
+                        {# 5. Champ Mot de Passe #}
                         <div class="mb-3">
                             {{ form_label(registrationForm.plainPassword, 'Mot de Passe', {'label_attr': {'class': 'form-label'}}) }}
                             <div class="input-group">
@@ -62,14 +42,56 @@
                             <small class="form-text text-muted">Minimum 6 caractères.</small>
                         </div>
 
-                        {# 5. Case à Cocher des Conditions #}
-                        <div class="mb-3 form-check">
-                            {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-                            {{ form_label(registrationForm.agreeTerms, 'J\'accepte les conditions d\'utilisation', {'label_attr': {'class': 'form-check-label'}}) }}
+                        {# ⭐️ 3. Champ Localisation avec Autocomplétion ⭐️ #}
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.locationInput, 'Ville ou Code Postal', {'label_attr': {'class': 'form-label'}}) }}
+                            
+                            <div class="position-relative suggestions-container"> 
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    {{ form_widget(registrationForm.locationInput, {
+                                        'attr': {'class': 'form-control', 'placeholder': 'Ex: 14540 Bourguébus'}
+                                    }) }}
+                                </div>
+                                {{ form_errors(registrationForm.locationInput) }}
+                                
+                                {# La liste des suggestions sera injectée ici par JS #}
+                            </div>
+                            
+                            <small class="form-text text-muted">Afin de vous localiser et de calculer votre taxe foncière.</small>
+                        </div>
+                        
+                        
+                        {# ⭐️ 4. SÉLECTION DU RÔLE (ChoiceType) et Avertissement ⭐️ #}
+                        <div class="mb-4" id="roleSelectionBlock">
+                            {{ form_label(registrationForm.userRole, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            
+                            <div class="d-flex justify-content-around p-2 border rounded bg-light" id="userRoleContainer">
+                                {{ form_widget(registrationForm.userRole) }}
+                            </div>
+                            {{ form_errors(registrationForm.userRole) }}
+                            
+                            {# Conteneur pour le message d'avertissement dynamique #}
+                            <small class="form-text text-muted mt-2" id="notaireWarning">
+                                *Les comptes Notaire requièrent une validation manuelle.
+                            </small>
+                        </div>
+
+                        {# 6. Case à Cocher des Conditions avec Lien HTML et Alignement Corrigé #}
+                        <div class="mb-3 form-check d-flex align-items-start"> 
+                            
+                            {# 1. AFFICHEZ SEULEMENT LE WIDGET (la case à cocher) #}
+                            {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input mt-1 me-2'}}) }} 
+                            
+                            {# 2. CONSTRUISEZ LE LIBELLÉ MANUELLEMENT AVEC LE LIEN #}
+                            <label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">
+                                J'accepte les <a href="{{ path('app_terms_of_service') }}" target="_blank">conditions d'utilisation</a> et la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a>.
+                            </label>
+                            
                             {{ form_errors(registrationForm.agreeTerms) }}
                         </div>
 
-                        {# 6. Bouton d'Inscription #}
+                        {# 7. Bouton d'Inscription #}
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-check-circle me-2"></i> S'inscrire
@@ -78,7 +100,7 @@
                         
                     {{ form_end(registrationForm) }}
 
-                    {# 7. Lien de Connexion #}
+                    {# 8. Lien de Connexion #}
                     <p class="text-center mt-3">
                         Déjà un compte ? <a href="{{ path('app_login') }}">Connectez-vous ici</a>.
                     </p>
@@ -92,15 +114,63 @@
 {{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // ====================================================
+    // 1. LOGIQUE DYNAMIQUE DE SÉLECTION DE RÔLE (Notaire/Client)
+    // ====================================================
+    
+    const roleContainer = document.getElementById('userRoleContainer');
+    const notaireWarning = document.getElementById('notaireWarning');
+    
+    function updateRoleDisplay() {
+        const radioInputs = roleContainer.querySelectorAll('input[type="radio"]');
+        
+        radioInputs.forEach(input => {
+            const isChecked = input.checked;
+            const label = roleContainer.querySelector(`label[for="${input.id}"]`);
+            
+            if (label) {
+                // Mise en gras et couleur pour l'élément sélectionné
+                if (isChecked) {
+                    label.classList.add('fw-bold', 'text-primary');
+                } else {
+                    label.classList.remove('fw-bold', 'text-primary');
+                }
+            }
+            
+            // LOGIQUE D'AFFICHAGE DU MESSAGE NOTAIRE
+            if (input.value === 'notaire') {
+                if (isChecked) {
+                    notaireWarning.innerHTML = '<strong class="text-danger">ATTENTION :</strong> En sélectionnant "Notaire", vous acceptez d\'être contacté par l\'administrateur pour la vérification obligatoire de votre statut professionnel avant l\'activation complète de votre compte.';
+                    notaireWarning.classList.remove('text-muted');
+                    notaireWarning.classList.add('text-danger');
+                } else if (!document.querySelector('input[value="notaire"]').checked) {
+                    // Revenir au message par défaut si client est sélectionné
+                    notaireWarning.innerHTML = '*Les comptes Notaire requièrent une validation manuelle.';
+                    notaireWarning.classList.add('text-muted');
+                    notaireWarning.classList.remove('text-danger');
+                }
+            }
+        });
+    }
+
+    // Écouter les changements et initialiser l'affichage
+    if (roleContainer) {
+        roleContainer.addEventListener('change', updateRoleDisplay);
+        updateRoleDisplay();
+    }
+
+
+    // ====================================================
+    // 2. LOGIQUE D'AUTOCOMPLÉTION DE GÉOLOCALISATION
+    // ====================================================
+    
     const inputField = document.getElementById('{{ registrationForm.locationInput.vars.id }}');
-    // Cible le nouveau conteneur dédié à la position relative
     const suggestionsContainer = inputField.closest('.suggestions-container'); 
     
-    // Création de la liste déroulante
     let suggestionsList = document.createElement('ul');
     suggestionsList.className = 'list-group position-absolute w-100 shadow-sm';
     suggestionsList.style.zIndex = '1050'; 
-    // ⭐️ AJOUT DE LA LISTE AU CONTENEUR DÉDIÉ
     suggestionsContainer.appendChild(suggestionsList); 
 
     let debounceTimer;
@@ -115,32 +185,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         debounceTimer = setTimeout(() => {
-            fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`)
+            
+            // Utilisation du filtre type=municipality pour éviter les doublons de ville
+            const apiUrl = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&type=municipality&limit=5`;
+            
+            fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
                     suggestionsList.innerHTML = ''; 
-
+                    const uniqueSuggestions = new Set(); // Pour garantir l'unicité
+                    
                     if (data.features && data.features.length > 0) {
-                        // ⭐️ CORRECTION ALIGNEMENT : Positionne la liste juste en dessous de l'input field
-                        // On utilise offsetHeight de l'input car il est à l'intérieur du container relatif
                         suggestionsList.style.top = `${inputField.offsetHeight}px`; 
                         suggestionsList.style.left = '0';
                         
                         data.features.forEach(feature => {
                             const properties = feature.properties;
                             
-                            if (properties.postcode && properties.city) {
+                            if (properties.type === 'municipality' && properties.postcode && properties.city) {
                                 const fullLabel = `${properties.postcode} ${properties.city}`;
                                 
-                                let listItem = document.createElement('li');
-                                listItem.className = 'list-group-item list-group-item-action py-2';
-                                listItem.textContent = fullLabel;
+                                if (!uniqueSuggestions.has(fullLabel)) {
+                                    uniqueSuggestions.add(fullLabel);
+                                    
+                                    let listItem = document.createElement('li');
+                                    listItem.className = 'list-group-item list-group-item-action py-2';
+                                    listItem.textContent = fullLabel;
 
-                                listItem.addEventListener('click', () => {
-                                    inputField.value = fullLabel; 
-                                    suggestionsList.innerHTML = ''; 
-                                });
-                                suggestionsList.appendChild(listItem);
+                                    listItem.addEventListener('click', () => {
+                                        inputField.value = fullLabel; 
+                                        suggestionsList.innerHTML = ''; 
+                                    });
+                                    suggestionsList.appendChild(listItem);
+                                }
                             }
                         });
                     }

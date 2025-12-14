@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
@@ -22,7 +23,9 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
 
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private AuthorizationCheckerInterface $authorizationChecker)
     {
     }
 
@@ -48,9 +51,28 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        // For example:
-        // return new RedirectResponse($this->urlGenerator->generate('some_route'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        /** @var User $user */
+        $user = $token->getUser();
+        
+        // 1. VÉRIFICATION ET REDIRECTION SPÉCIFIQUE DU NOTAIRE
+        // On utilise l'AuthorizationChecker pour vérifier si l'utilisateur a le rôle.
+        if ($this->authorizationChecker->isGranted('ROLE_NOTAIRE', $user)) {
+            // ⭐️ Rediriger vers la route spécifique aux Notaires ⭐️
+            // REMPLACEZ 'app_notaire_dashboard' par le nom de votre route pour les notaires
+            return new RedirectResponse($this->urlGenerator->generate('notaire_dashboard'));
+        }
+        
+        // 2. REDIRECTION DU CLIENT/UTILISATEUR STANDARD
+        
+        // Vérifiez si l'utilisateur doit compléter son profil de personne initiale
+        if ($user->getPeopleOwned()->isEmpty()) {
+            // Si l'utilisateur n'a pas de personne associée, on le redirige vers le parcours initial
+            return new RedirectResponse($this->urlGenerator->generate('app_tree_initial_person_creation'));
+        }
+        
+        // 3. Redirection par défaut (par exemple, vers le tableau de bord standard ou la liste des actes)
+        // REMPLACEZ 'app_default_dashboard' par la route de votre tableau de bord général
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
 
     protected function getLoginUrl(Request $request): string

@@ -51,6 +51,7 @@ class AppFixtures extends Fixture
         $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
         $user->setPostalCode(14540); // Code postal fictif pour l'admin
         $user->setCity('Bourguébus'); // Ville fictive pour l'admin
+        $user->setIsActived(true);
         $manager->persist($user);
 
         // ----------------------------------------------------

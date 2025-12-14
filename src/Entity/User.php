@@ -60,6 +60,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $city = null;
 
+    #[ORM\Column]
+    private ?bool $isActived = null;
+
     public function __construct()
     {
         $this->peopleOwned = new ArrayCollection();
@@ -250,6 +253,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCity(string $city): static
     {
         $this->city = $city;
+
+        return $this;
+    }
+
+    public function isActived(): ?bool
+    {
+        return $this->isActived;
+    }
+
+    public function setIsActived(bool $isActived): static
+    {
+        $this->isActived = $isActived;
 
         return $this;
     }

@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de Confidentialité{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                
+                <header class="text-center mb-5">
+                    <h1 class="display-5 text-success">
+                        <i class="fas fa-user-shield me-2"></i> Politique de Confidentialité
+                    </h1>
+                    <p class="text-muted">
+                        Dernière mise à jour : 15 Décembre 2025 (Conformité RGPD)
+                    </p>
+                </header>
+
+                <section class="privacy-section">
+                    
+                    <h2 class="h4 text-secondary mb-3">1. Responsable du Traitement</h2>
+                    <p>
+                        Le responsable du traitement des données personnelles collectées via la Plateforme est [Nom de Votre Société], [Adresse complète], joignable à l'adresse e-mail [Email de Contact].
+                    </p>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">2. Données Collectées et Finalités</h2>
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Type de Donnée</th>
+                                <th>Finalité</th>
+                                <th>Base Légale (RGPD)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Adresse e-mail, Mot de passe haché</td>
+                                <td>Gestion du compte utilisateur, Sécurité.</td>
+                                <td>Exécution du contrat (CGU).</td>
+                            </tr>
+                            <tr>
+                                <td>Localisation (Ville/CP), Données de simulation fiscale</td>
+                                <td>Calcul des simulations immobilières et fiscales.</td>
+                                <td>Consentement de l'utilisateur.</td>
+                            </tr>
+                            <tr>
+                                <td>Statut Notaire (sur option), Informations de contact</td>
+                                <td>Vérification et activation de l'accès professionnel.</td>
+                                <td>Intérêt légitime et respect des obligations légales.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">3. Durée de Conservation</h2>
+                    <p>
+                        Les données de compte sont conservées tant que l'Utilisateur n'a pas demandé la suppression de son compte. Les données de simulation non liées à un compte actif sont conservées pour une durée maximale de 24 mois pour des raisons statistiques et d'amélioration du service.
+                    </p>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">4. Partage des Données</h2>
+                    <p>
+                        Vos données de simulation (y compris la localisation et le détail des calculs) sont transmises aux Utilisateurs ayant le rôle de Notaire **UNIQUEMENT** si vous leur fournissez le Code d'Accès Temporaire. Nous ne vendons ni ne louons vos données personnelles à des tiers.
+                    </p>
+                    <p>
+                        Des prestataires techniques tiers peuvent avoir accès à ces données pour l'hébergement et la maintenance.
+                    </p>
+
+                    <h2 class="h4 text-secondary mt-4 mb-3">5. Vos Droits (RGPD)</h2>
+                    <p>
+                        Conformément au RGPD, vous disposez des droits suivants sur vos données : droit d'accès, droit de rectification, droit d'effacement (droit à l'oubli), droit à la limitation du traitement, droit à la portabilité des données. Vous pouvez exercer ces droits en nous contactant à [Email de Contact].
+                    </p>
+
+                </section>
+
+                <div class="text-center mt-5">
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Retour à la page précédente
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+{% endblock %}
