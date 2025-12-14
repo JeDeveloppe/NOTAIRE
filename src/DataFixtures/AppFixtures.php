@@ -2,23 +2,23 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Act; 
-use App\Entity\Person;
+use App\Entity\FiscalAbatementRule;
 use App\Entity\TaxCatalog;
 use App\Entity\TypeAct;
 use App\Entity\User;
-use App\Entity\Hypothesis; 
-use App\Service\ActService; // ⬅️ Utilisation de TypeActService pour les constantes fiscales
+use App\Repository\FiscalAbatementRuleRepository;
+use App\Service\ActService; // <--- S'assurer que les constantes fiscales sont là
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface as FixturesBundleFixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use DateTimeImmutable;
+use Doctrine\Common\DataFixtures\FixtureGroupInterface;
 
 class AppFixtures extends Fixture
 {
+    // ... (Propriétés et Constructeur inchangés - car ils sont propres) ...
     private array $relationshipCodes;
-    private array $abatementAmountsInCents;
     private string $adminEmail;
     private string $adminPassword;
 
@@ -27,29 +27,39 @@ class AppFixtures extends Fixture
         ParameterBagInterface $parameterBag,
         string $adminEmail, 
         string $adminPassword,
-        array $abatementAmountsInCents
+        private readonly FiscalAbatementRuleRepository $fiscalAbatementRuleRepository 
     )
     {
         $this->relationshipCodes = $parameterBag->get('app.relationship_codes');
         $this->adminEmail = $adminEmail;
         $this->adminPassword = $adminPassword;
-        $this->abatementAmountsInCents = $abatementAmountsInCents;
     }
 
+    public static function getGroups(): array
+    {
+        return ['init'];
+    }
+    
     public function load(ObjectManager $manager): void
     {
         // ----------------------------------------------------
-        // 1. UTILISATEURS
+        // 1. UTILISATEURS DE BASE
         // ----------------------------------------------------
         $user = new User();
         $user->setEmail($this->adminEmail); 
         $user->setPassword($this->hasher->hashPassword($user, $this->adminPassword));
         $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+        $user->setPostalCode(14540); // Code postal fictif pour l'admin
+        $user->setCity('Bourguébus'); // Ville fictive pour l'admin
         $manager->persist($user);
-        $this->addReference('admin-user', $user);
+
+        // ----------------------------------------------------
+        // 2. RÈGLES D'ABATTEMENT FISCAL (FiscalAbatementRule)
+        // ----------------------------------------------------
+        $this->createFiscalAbatementRules($manager);
         
         // ----------------------------------------------------
-        // 2. CATALOGUE FISCAL (TaxCatalog)
+        // 3. CATALOGUE FISCAL (TaxCatalog) - Taux
         // ----------------------------------------------------
         
         $relationKeyMap = $this->createRelationKeyMap();
@@ -57,127 +67,148 @@ class AppFixtures extends Fixture
         foreach ($this->relationshipCodes as $name => $code) {
             
             if (isset($relationKeyMap[$code])) {
-                $abatementKey = $relationKeyMap[$code];
-                
-                if (isset($this->abatementAmountsInCents[$abatementKey])) {
-                    $taxRule = new TaxCatalog();
-                    
-                    $taxRule->setRelationshipBetweenThe2People($code);
-                    $taxRule->setAbatementAmount($this->abatementAmountsInCents[$abatementKey]); 
-                    $taxRule->setTaxRateLower(5); 
-                    $taxRule->setTaxRateUpper(45); 
-                    $manager->persist($taxRule);
-                }
+                $taxRule = new TaxCatalog();
+                $taxRule->setRelationshipBetweenThe2People($code);
+                $taxRule->setTaxRateLower(5); 
+                $taxRule->setTaxRateUpper(45); 
+                $manager->persist($taxRule);
             }
         }
 
         // ----------------------------------------------------
-        // 3. TYPES D'ACTE (TypeAct) - CORRECTION DE L'UNICITÉ
+        // 4. TYPES D'ACTE (TypeAct)
         // ----------------------------------------------------
+        // (Codes des TypeAct doivent correspondre aux codes utilisés dans ActService)
         
         // Type 1 : CLASSIQUE Pleine Propriété
         $donationSimple = new TypeAct();
-        $donationSimple->setName('Donation Pleine Propriété Classique');
-        $donationSimple->setCode(ActService::CODE_CLASSIQUE); 
+        $donationSimple->setName('Donation pleine propriété classique');
+        $donationSimple->setCode(ActService::CODE_CLASSIQUE); // Utilisation de ActService
         $donationSimple->setIsTaxReductible(true);
+        $donationSimple->setIsCyclical(true);
+        $donationSimple->setFiscalRule('L\'abattement se reconstitue 15 ans après la date de chaque donation passée. Le montant de l\'abattement dépend du lien de parenté (parent/enfant, grand-parent/petit-enfant, etc.).');
+        $donationSimple->setConditions('Aucune condition d\'âge spécifique. Applicable aux donations de biens ou de sommes d\'argent.');
         $manager->persist($donationSimple);
-        $this->addReference('type-classique', $donationSimple);
         
-        // Type 2 : USUFRUIT (Nouveau code unique pour éviter l'erreur)
+        // Type 2 : USUFRUIT
         $donationUsufruit = new TypeAct();
-        $donationUsufruit->setName('Donation Usufruit');
-        $donationUsufruit->setCode(ActService::CODE_USUFRUIT ?? 'USUFRUIT'); // Utiliser la constante si définie, sinon une chaîne
+        $donationUsufruit->setName('Donation usufruit');
+        $donationUsufruit->setCode(ActService::CODE_USUFRUIT ?? 'USUFRUIT'); // Utilisation de ActService
         $donationUsufruit->setIsTaxReductible(true);
+        $donationUsufruit->setIsCyclical(true);
+        $donationUsufruit->setFiscalRule('Règles similaires à la donation classique, mais la valeur taxable est déterminée par l\'âge de l\'usufruitier.');
+        $donationUsufruit->setConditions('Nécessite une évaluation de la valeur de l\'usufruit selon le barème fiscal en vigueur.');
         $manager->persist($donationUsufruit);
-        $this->addReference('type-usufruit', $donationUsufruit);
 
-        // Type 3 : SARKOZY
+        // Type 3 : SARKOZY (Don familial de sommes d'argent)
         $donationSarkozy = new TypeAct();
-        $donationSarkozy->setName('Donation Familiale d\'Argent (Sarkozy)');
-        $donationSarkozy->setCode(ActService::CODE_SARKOZY); 
+        $donationSarkozy->setName('Donation familiale d\'argent (Sarkozy)');
+        $donationSarkozy->setCode(ActService::CODE_SARKOZY); // Utilisation de ActService
         $donationSarkozy->setIsTaxReductible(true);
+        $donationSarkozy->setIsCyclical(false); 
+        $donationSarkozy->setFiscalRule('C\'est une enveloppe d\'abattement forfaitaire unique et non renouvelable qui se cumule avec l\'abattement classique. Elle est utilisée en priorité.');
+        $donationSarkozy->setConditions(
+            '1. Le donateur doit avoir moins de 80 ans au jour du don. 
+             2. Le bénéficiaire doit être majeur ou émancipé. 
+             3. Applicable uniquement aux dons de sommes d\'argent (virement, chèque, espèces).'
+        );
         $manager->persist($donationSarkozy);
-        $this->addReference('type-sarkozy', $donationSarkozy);
         
         // ----------------------------------------------------
-        // 4. ARBRE GÉNÉALOGIQUE (Person)
+        // Finalisation
         // ----------------------------------------------------
-        
-        // G1 : Grands-Parents
-        $grandpa = $this->createPerson('Jean', 'Wetta', '1940-05-15', $user, $manager);
-        $grandma = $this->createPerson('Marie', 'Wetta', '1942-08-20', $user, $manager);
-        // G2 : Enfants
-        $parent = $this->createPerson('Paul', 'Wetta', '1970-01-01', $user, $manager);
-        $aunt = $this->createPerson('Sophie', 'Wetta', '1975-11-11', $user, $manager);
-        // Parenté G1 -> G2
-        $parent->addParent($grandpa)->addParent($grandma);
-        $aunt->addParent($grandpa)->addParent($grandma);
-        // G3 : Le Petit-Enfant (Alice)
-        $me = $this->createPerson('Alice', 'Wetta', '2000-03-25', $user, $manager);
-        $me->addParent($parent); 
-        // Tiers Éloigné
-        $stranger = $this->createPerson('Inconnu', 'Tiers', '1980-01-01', $user, $manager);
-        
-        $this->addReference('person-parent', $parent); 
-        $this->addReference('person-me', $me); 
-
-        // ----------------------------------------------------
-        // 5. HYPOTHÈSES DE TEST (Hypothesis)
-        // ----------------------------------------------------
-        
-        // H1 : Parent/Enfant (R_PE) - ACTE CLASSIQUE
-        $this->createHypothesis($parent, $me, 100000, $donationSimple, $manager);
-
-        // H6 : Test Don Sarkozy 
-        $this->createHypothesis($grandpa, $me, 31865, $donationSarkozy, $manager); 
-
-        // ----------------------------------------------------
-        // 6. ACTES DÉCLARÉS (Act) - DONATIONS PASSÉES RÉELLES
-        // ----------------------------------------------------
-        
-        // A1 : Acte classique (Parent -> Enfant) il y a 5 ans
-        // Montant : 40 000 €. Consomme 40 000 € de l'abattement 100k€.
-        $this->createAct(
-            $parent, 
-            $me, 
-            40000, 
-            $donationSimple, 
-            new DateTimeImmutable('2020-01-01'), 
-            $user, 
-            $manager
-        );
-
-        // A2 : Acte classique (Parent -> Enfant) il y a 16 ans (Prescrit)
-        // Montant : 20 000 €. Ne doit plus impacter la simulation.
-        $this->createAct(
-            $parent, 
-            $me, 
-            20000, 
-            $donationSimple, 
-            new DateTimeImmutable('2009-01-01'), 
-            $user, 
-            $manager
-        );
-
-        // A3 : Don Sarkozy (Grand-père -> Petit-enfant) il y a 1 an
-        // Montant : 31 865 €. Ne consomme PAS l'abattement de 100k€ (consumedAbatement = 0).
-        $this->createAct(
-            $grandpa, 
-            $me, 
-            31865, 
-            $donationSarkozy, 
-            new DateTimeImmutable('2024-10-01'), 
-            $user, 
-            $manager
-        );
-
         $manager->flush();
     }
-    
-    // ----------------------------------------------------
-    // MÉTHODES UTILITAIRES
-    // ----------------------------------------------------
 
+    /**
+     * Crée et persiste les règles d'abattement dans la nouvelle entité FiscalAbatementRule.
+     */
+    private function createFiscalAbatementRules(ObjectManager $manager): void
+    {
+        // Montants en centimes pour les Fixtures
+        $ABATEMENT_AMOUNTS = [
+            'parent_enfant' => 10000000, // 100 000 €
+            'grand_parent_petit_enfant' => 3186500, // 31 865 €
+            'epoux' => 8072400, // 80 724 €
+            'frere_soeur' => 1593200, // 15 932 €
+            'neveu_niece' => 796700, // 7 967 €
+            'tiers' => 159400, // 1 594 € (Abattement pour les autres liens, ex: concubin, cousin)
+            'don_sarkozy_cumulable' => 3186500, // 31 865 €
+        ];
+
+        // Règle 1: Parent-Enfant (Classique)
+        $rule = new FiscalAbatementRule();
+        $rule->setCode('ABATTEMENT_CLASSIQUE_PE');
+        $rule->setDescription('Abattement en ligne directe Parent vers Enfant');
+        $rule->setTypeOfLink('parent_enfant');
+        $rule->setTypeOfAct(ActService::TYPE_ACT_DONATION); // Utiliser la constante du service
+        $rule->setAmountInCents($ABATEMENT_AMOUNTS['parent_enfant']);
+        $rule->setCycleOfYear(ActService::ABATEMENT_CYCLE_YEARS); 
+        $rule->setMinBeneficiaryAge(0); 
+        $rule->setMaxDonorAge(200); 
+        $manager->persist($rule);
+
+        // Règle 2: Grand-Parent-Petit-Enfant (Classique)
+        $rule = new FiscalAbatementRule();
+        $rule->setCode('ABATTEMENT_CLASSIQUE_GPPE');
+        $rule->setDescription('Abattement en ligne directe Grand-Parent vers Petit-Enfant');
+        $rule->setTypeOfLink('grand_parent_petit_enfant');
+        $rule->setTypeOfAct(ActService::TYPE_ACT_DONATION);
+        $rule->setAmountInCents($ABATEMENT_AMOUNTS['grand_parent_petit_enfant']);
+        $rule->setCycleOfYear(ActService::ABATEMENT_CYCLE_YEARS);
+        $rule->setMinBeneficiaryAge(0); 
+        $rule->setMaxDonorAge(200); 
+        $manager->persist($rule);
+
+        // Règle 3: Époux/PACS (Classique)
+        $rule = new FiscalAbatementRule();
+        $rule->setCode('ABATTEMENT_CLASSIQUE_EPOUX');
+        $rule->setDescription('Abattement entre époux/partenaires PACS');
+        $rule->setTypeOfLink('epoux');
+        $rule->setTypeOfAct(ActService::TYPE_ACT_DONATION);
+        $rule->setAmountInCents($ABATEMENT_AMOUNTS['epoux']);
+        $rule->setCycleOfYear(ActService::ABATEMENT_CYCLE_YEARS);
+        $rule->setMinBeneficiaryAge(0);
+        $rule->setMaxDonorAge(200);
+        $manager->persist($rule);
+
+        // Règle 4: Frère/Sœur (Classique)
+        $rule = new FiscalAbatementRule();
+        $rule->setCode('ABATTEMENT_CLASSIQUE_FS');
+        $rule->setDescription('Abattement entre Frère et Sœur');
+        $rule->setTypeOfLink('frere_soeur');
+        $rule->setTypeOfAct(ActService::TYPE_ACT_DONATION);
+        $rule->setAmountInCents($ABATEMENT_AMOUNTS['frere_soeur']);
+        $rule->setCycleOfYear(ActService::ABATEMENT_CYCLE_YEARS);
+        $rule->setMinBeneficiaryAge(0);
+        $rule->setMaxDonorAge(200);
+        $manager->persist($rule);
+
+        // Règle 5: Tiers / Non parenté (Classique)
+        $rule = new FiscalAbatementRule();
+        $rule->setCode('ABATTEMENT_CLASSIQUE_TIERS');
+        $rule->setDescription('Abattement Tiers / Non parenté');
+        $rule->setTypeOfLink('tiers');
+        $rule->setTypeOfAct(ActService::TYPE_ACT_DONATION);
+        $rule->setAmountInCents($ABATEMENT_AMOUNTS['tiers']);
+        $rule->setCycleOfYear(ActService::ABATEMENT_CYCLE_YEARS);
+        $rule->setMinBeneficiaryAge(0);
+        $rule->setMaxDonorAge(200);
+        $manager->persist($rule);
+        
+        // Règle 6: Don Sarkozy (Art 790 G) - La règle spécifique
+        $rule = new FiscalAbatementRule();
+        $rule->setCode(ActService::CODE_SARKOZY_RULE); // <-- UTILISATION DE LA CONSTANTE DU SERVICE (ex: DON_SARKOZY_CUMULABLE)
+        $rule->setDescription('Don familial de sommes d\'argent (Art. 790 G) - Cumulable');
+        $rule->setTypeOfLink('descendants'); // Généraliser le lien pour cette règle spécifique
+        $rule->setTypeOfAct(ActService::TYPE_ACT_DON_ARGENT_SEUL);
+        $rule->setAmountInCents($ABATEMENT_AMOUNTS['don_sarkozy_cumulable']);
+        $rule->setCycleOfYear(0); // Non cyclique / à vie
+        $rule->setMinBeneficiaryAge(18); 
+        $rule->setMaxDonorAge(80); 
+        $manager->persist($rule);
+    }
+    
     private function createRelationKeyMap(): array
     {
         return [
@@ -187,68 +218,5 @@ class AppFixtures extends Fixture
             $this->relationshipCodes['ONCLE_NEVEU'] => 'oncle_neveu',
             $this->relationshipCodes['TIERS'] => 'tiers',
         ];
-    }
-    
-    private function createPerson(string $firstName, string $lastName, string $dob, User $owner, ObjectManager $manager, ?string $dod = null): Person
-    {
-        $person = new Person();
-        $person->setFirstName($firstName);
-        $person->setLastName($lastName);
-        $person->setDateOfBirth(new DateTimeImmutable($dob));
-        if ($dod) {
-             $person->setDateOfDeath(new DateTimeImmutable($dod));
-        }
-        $person->setOwner($owner);
-        $manager->persist($person);
-        return $person;
-    }
-    
-    private function createHypothesis(Person $donor, Person $beneficiary, int $value, TypeAct $typeAct, ObjectManager $manager): Hypothesis
-    {
-        $hypothesis = new Hypothesis();
-        $hypothesis->setDonor($donor);
-        $hypothesis->setBeneficiary($beneficiary);
-        $hypothesis->setSimulatedValue($value * 100); // En centimes
-        $hypothesis->setTypeOfActSimulated($typeAct);
-        $hypothesis->setDateOfSimulation(new DateTimeImmutable());
-        $manager->persist($hypothesis);
-        
-        return $hypothesis;
-    }
-    
-    /**
-     * Crée un acte de donation passé (Act) pour l'historique de l'utilisateur.
-     */
-    private function createAct(
-        Person $donor, 
-        Person $beneficiary, 
-        int $value, // Valeur en euros
-        TypeAct $typeAct, 
-        DateTimeImmutable $dateOfAct, 
-        User $owner, 
-        ObjectManager $manager
-    ): Act
-    {
-        $act = new Act();
-        $act->setDonor($donor);
-        $act->setBeneficiary($beneficiary);
-        $act->setTypeOfAct($typeAct);
-        $act->setDateOfAct($dateOfAct);
-        $act->setValue($value * 100); // Stockage en centimes
-        $act->setOwner($owner);
-
-        // LOGIQUE D'ABATTEMENT CONSOMMÉ
-        // Utilise le code stocké dans l'entité TypeAct
-        if ($typeAct->getCode() === ActService::CODE_SARKOZY) {
-            $consumed = 0;
-        } else {
-            // Tous les autres codes (CLASSIQUE, USUFRUIT, etc.) consomment l'abattement
-            $consumed = $value * 100; 
-        }
-
-        $act->setConsumedAbatement($consumed);
-        $manager->persist($act);
-        
-        return $act;
     }
 }

@@ -9,12 +9,19 @@
             <i class="fas fa-file-invoice-dollar me-2"></i> Historique des donations déclarées
         </h1>
         
-        {# MESSAGE D'INFORMATION ADAPTÉ SANS AUCUN GRAS MARKDOWN #}
+        {# AFFICHAGE DES MESSAGES FLASH (très important ici pour voir le succès!) #}
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+
+        {# MESSAGE D'INFORMATION ADAPTÉ #}
         <div class="alert alert-info shadow-sm">
             <i class="fas fa-info-circle me-2"></i> 
             Veuillez déclarer toutes les donations passées pour une simulation précise :
             <ul>
-                {# CORRECTION : Remplacement de **15 ans** par 15 ans #}
                 <li>Pour les abattements classiques (Parent ➡️ Enfant, etc.) : Tous les actes effectués il y a moins de 15 ans sont pris en compte pour le calcul du solde restant.</li>
                 <li>Pour le don Sarkozy (don familial de sommes d'argent) : L'enveloppe est unique et définitive. Tous les actes passés, quelle que soit leur date, doivent être déclarés pour connaître le solde.</li>
             </ul>
@@ -140,7 +147,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                {{ form_start(actForm) }}
+                {# MODIFICATION : AJOUT DE L'ID pour le ciblage JS/Turbo #}
+                {{ form_start(actForm, {'attr': {'id': 'act-declaration-form'}}) }}
                 <div class="modal-body">
                     <div class="alert alert-warning small">
                         Attention : Le montant doit être saisi en euros entiers (sans centimes).
@@ -170,4 +178,36 @@
             </div>
         </div>
     </div>
+
+    {# ========================================== #}
+    {#          SCRIPT DE FERMETURE MODALE TURBO    #}
+    {# ========================================== #}
+    <script>
+        // Écoute l'événement de fin de soumission Turbo
+        document.addEventListener('turbo:submit-end', function(event) {
+            const form = event.target;
+            
+            // On vérifie que c'est bien notre formulaire de déclaration qui a été soumis
+            if (form.id === 'act-declaration-form') {
+                
+                // Si la soumission a réussi (statut 200/302), le détail contiendra le succès
+                if (event.detail.success) {
+                    
+                    // On récupère l'objet Modale Bootstrap
+                    const modalElement = document.getElementById('addActModal');
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    
+                    if (modal) {
+                        // Ferme la modale
+                        modal.hide(); 
+                        
+                        // L'enregistrement est fait et Turbo va recharger la page 
+                        // pour afficher le nouvel acte et le message flash.
+                    }
+                } 
+                // Si échec (erreur de validation), Turbo met à jour le formulaire DANS la modale,
+                // mais on ne la ferme pas pour permettre la correction des erreurs.
+            }
+        });
+    </script>
 {% endblock %}

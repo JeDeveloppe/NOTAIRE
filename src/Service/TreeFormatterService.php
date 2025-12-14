@@ -8,15 +8,15 @@ use Doctrine\Common\Collections\Collection;
 class TreeFormatterService
 {
     // =========================================================================
-    // I. MÉTHODE POUR LA VUE MATRICE (Calcul des Relations Directes)
+    // I. MÉTHODE POUR LA VUE MATRICE (Calcul des Relations Fiscales)
     // =========================================================================
 
     /**
-     * Détermine la relation principale entre deux personnes A et B.
-     * Utilisé pour la Matrice de Parenté.
-     * * @param Person $personA
-     * @param Person $personB
-     * @return string La nature de la relation (Self, Parent, Enfant, Frère/Sœur, Inconnu).
+     * Détermine la relation principale entre deux personnes A et B pour le calcul fiscal.
+     * Inclut maintenant les relations de 2e degré (Grand-Parent / Petit-Enfant).
+     * * @param Person $personA Le Donateur potentiel
+     * @param Person $personB Le Bénéficiaire potentiel
+     * @return string La nature de la relation (Parent, Enfant, Grand-Parent, Petit-Enfant, Frère/Sœur, Inconnu).
      */
     public function getRelationship(Person $personA, Person $personB): string
     {
@@ -24,19 +24,20 @@ class TreeFormatterService
             return 'Self';
         }
 
-        // Vérification des relations A <-> B
-        $aIsParentOfB = $personB->getParents()->contains($personA);
-        $aIsChildOfB = $personA->getParents()->contains($personB);
-
-        if ($aIsParentOfB) {
+        // --- 1. Relations de 1er degré ---
+        
+        // A est-il Parent de B ?
+        if ($personB->getParents()->contains($personA)) {
             return 'Parent';
         }
         
-        if ($aIsChildOfB) {
+        // A est-il Enfant de B ?
+        if ($personA->getParents()->contains($personB)) {
             return 'Enfant';
         }
 
-        // Vérification des relations de Fratrie (partage d'un parent commun)
+        // --- 2. Relations de Fratrie ---
+        
         /** @var Collection<int, Person> $aParents */
         $aParents = $personA->getParents();
         /** @var Collection<int, Person> $bParents */
@@ -49,7 +50,24 @@ class TreeFormatterService
             return 'Frère/Sœur';
         }
         
-        // Note: Pour une matrice complète (oncle/tante, cousin), il faudrait une logique récursive plus lourde.
+        // --- 3. Relations de 2e degré (Grand-Parent / Petit-Enfant) ---
+        
+        // Vérifier si A est le Grand-parent de B (Parcours de deux niveaux vers le haut à partir de B)
+        foreach ($personB->getParents() as $parentOfB) {
+            if ($parentOfB->getParents()->contains($personA)) {
+                return 'Grand-Parent';
+            }
+        }
+        
+        // Vérifier si A est le Petit-enfant de B (Parcours de deux niveaux vers le haut à partir de A)
+        // C'est l'inverse de la vérification précédente.
+        foreach ($personA->getParents() as $parentOfA) {
+            if ($parentOfA->getParents()->contains($personB)) {
+                return 'Petit-Enfant';
+            }
+        }
+        
+        // --- 4. Autres ---
         
         return 'Inconnu';
     }

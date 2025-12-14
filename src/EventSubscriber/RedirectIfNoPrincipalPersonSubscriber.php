@@ -20,6 +20,7 @@ class RedirectIfNoPrincipalPersonSubscriber implements EventSubscriberInterface
     // Routes à ignorer pour éviter une boucle de redirection infinie
     private const IGNORED_ROUTES = [
         self::TARGET_ROUTE,
+        'admin',
         'app_logout',
         'app_register', // Si l'on veut éviter de rediriger l'utilisateur juste après l'inscription
         'app_login',    // Si l'on veut éviter de rediriger l'utilisateur juste après la déconnexion

@@ -1,0 +1,66 @@
+{# templates/notaire/code_input.html.twig #}
+
+{% extends 'base_notaire.html.twig' %}
+
+{% block title %}Accès Notaire - Recherche Client{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg p-5">
+                    <h1 class="text-center text-primary mb-4">
+                        <i class="fas fa-gavel me-2"></i> Accès Professionnel
+                    </h1>
+                    
+                    {# 🚨 CORRECTION 1 : AFFICHAGE DE TOUS LES MESSAGES FLASH UTILISÉS PAR LE CONTRÔLEUR #}
+                    {% for flash_type in ['success', 'danger', 'warning'] %}
+                        {% for message in app.flashes(flash_type) %}
+                            <div class="alert alert-{{ flash_type }} text-center">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {# ⭐️ AFFICHAGE DU FORMULAIRE (Ce template ne fait plus qu'afficher le formulaire) ⭐️ #}
+                    <p class="text-center text-muted mb-4">
+                        Veuillez saisir le code unique que votre client vous a transmis pour accéder à la consultation.
+                    </p>
+                    
+                    {# Démarrage du formulaire Symfony #}
+                    {# Le formulaire pointera vers la route 'notaire_consultation_input' #}
+                    {{ form_start(consultationForm) }}
+                        <div class="mb-3">
+                            {# 🚨 CORRECTION 2 : Utilisation des helpers Twig pour le label #}
+                            {{ form_label(consultationForm.uniqueCode, 'Code de Consultation') }}
+                            
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                
+                                {# Rendu du champ uniqueCode #}
+                                {{ form_widget(consultationForm.uniqueCode) }}
+                            </div>
+                            
+                            {# Affichage des erreurs de validation (longueur, non-vide, etc.) #}
+                            {{ form_errors(consultationForm.uniqueCode) }}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            {# Rendu du bouton Submit #}
+                            {{ form_widget(consultationForm.submit) }}
+                        </div>
+                    {{ form_end(consultationForm) }}
+                    
+                    {# 🚨 CORRECTION 3 : Suppression du bloc {% else %} #}
+                    {# Ce bloc n'est plus utile car la page de résultats est désormais : consultation_show #}
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# Aucun JavaScript nécessaire pour la soumission du formulaire #}
+{% endblock %}

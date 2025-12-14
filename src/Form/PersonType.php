@@ -79,19 +79,19 @@ class PersonType extends AbstractType
                 'widget' => 'single_text',
                 'html5' => true,
                 'required' => false,
-            ])
-            ->add('dateOfDeath', DateType::class, [
-                'label' => 'Date de décès',
-                'widget' => 'single_text',
-                'html5' => true,
-                'required' => false,
             ]);
             
         // ⭐ CONDITION : Ajouter les relations UNIQUEMENT si ce n'est PAS la création initiale
         if (!$isInitialCreation) {
             
             // Option 1 : Est enfant de (relations 'parents')
-            $builder->add('parents', EntityType::class, [
+            $builder->add('dateOfDeath', DateType::class, [
+                'label' => 'Date de décès',
+                'widget' => 'single_text',
+                'html5' => true,
+                'required' => false,
+            ])
+            ->add('parents', EntityType::class, [
                 'class' => Person::class,
                 'choice_label' => $choiceLabelCallback,
                 'label' => 'Parents',

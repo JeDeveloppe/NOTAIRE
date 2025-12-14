@@ -21,12 +21,15 @@
     {% endblock %}
 </head>
 <body>
-
-
-
-        {# {% include "./site/components/_flash_message.html.twig" %} #}
-    <div class="container-fluid">
+    
+    {# ⭐️ Début du bloc de navigation : Par défaut, inclut la nav principale #}
+    {% block navbar %}
         {% include "_nav.html.twig" %}
+    {% endblock %}
+    {# ⭐️ Fin du bloc de navigation #}
+    {% include "_flash_message.html.twig" %}
+    
+    <div class="container-fluid">
         {% block body %}{% endblock %}
     </div>
     

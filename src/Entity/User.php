@@ -48,6 +48,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Act::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $acts;
 
+    #[ORM\Column(length: 15, nullable: true, unique: true)]
+    private ?string $uniqueCode = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $codeExpiresAt = null;
+
+    #[ORM\Column(length: 10)]
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $city = null;
+
     public function __construct()
     {
         $this->peopleOwned = new ArrayCollection();
@@ -190,6 +202,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $act->setOwner(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUniqueCode(): ?string
+    {
+        return $this->uniqueCode;
+    }
+
+    public function setUniqueCode(?string $uniqueCode): static
+    {
+        $this->uniqueCode = $uniqueCode;
+
+        return $this;
+    }
+
+    public function getCodeExpiresAt(): ?\DateTimeImmutable
+    {
+        return $this->codeExpiresAt;
+    }
+
+    public function setCodeExpiresAt(?\DateTimeImmutable $codeExpiresAt): static
+    {
+        $this->codeExpiresAt = $codeExpiresAt;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city = $city;
 
         return $this;
     }

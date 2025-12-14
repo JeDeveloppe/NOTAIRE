@@ -33,6 +33,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->flush();
     }
 
+    public function countActiveUsersByLocation(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.postalCode, u.city, COUNT(u.id) as count') // Ajout de u.city
+            ->where('u.uniqueCode IS NOT NULL') 
+            ->andWhere('u.postalCode IS NOT NULL')
+            ->andWhere('u.city IS NOT NULL') // S'assurer que les deux champs sont remplis
+            ->groupBy('u.postalCode, u.city') // Regroupement par CP et Ville
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

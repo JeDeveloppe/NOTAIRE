@@ -14,9 +14,6 @@ class TaxCatalog
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?int $abatementAmount = null;
-
-    #[ORM\Column]
     private ?int $taxRateLower = null;
 
     #[ORM\Column]
@@ -28,18 +25,6 @@ class TaxCatalog
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getAbatementAmount(): ?int
-    {
-        return $this->abatementAmount;
-    }
-
-    public function setAbatementAmount(int $abatementAmount): static
-    {
-        $this->abatementAmount = $abatementAmount;
-
-        return $this;
     }
 
     public function getTaxRateLower(): ?int

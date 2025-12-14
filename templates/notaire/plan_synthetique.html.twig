@@ -1,0 +1,172 @@
+{# templates/notaire/plan_synthetique.html.twig #}
+
+{# 🚨 CORRECTION 1 : Ajout de l'héritage du template de base #}
+{% extends 'base_notaire.html.twig' %}
+
+{% block title %}Synthèse de la Planification Fiscale - Vue Exécutive{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+
+        <h1 class="mb-5 text-center text-success">
+            <i class="fas fa-chart-line me-2"></i> Tableau de Bord de Planification Fiscale
+        </h1>
+        
+        {# Affichage du mail client, transmis par le contrôleur #}
+        {% if clientEmail is defined %}
+            <p class="text-center text-muted lead">
+                Analyse pour: <strong>{{ initialCode }}</strong>
+            </p>
+        {% endif %}
+
+        <div class="alert alert-success text-center shadow-sm border-0">
+            <i class="fas fa-bullseye me-2"></i> Vue synthétique des leviers fiscaux et du calendrier d'actions.
+        </div>
+        
+        {# --- 1. ALERTES GLOBALES ET IMPÉRATIVES (Même logique que l'original) --- #}
+        {% if plan.future_actions.ALERTS is defined and plan.future_actions.ALERTS is not empty %}
+            <h2 class="mt-5 mb-3 text-danger"><i class="fas fa-exclamation-triangle me-2"></i> ALERTES IMPÉRATIVES</h2>
+            <div class="row row-cols-1 row-cols-md-2 g-4 mb-5">
+                {% for alert in plan.future_actions.ALERTS %}
+                <div class="col">
+                    <div class="alert alert-danger-subtle border-danger border-2 shadow-sm p-3 h-100 d-flex align-items-center">
+                        <i class="fas fa-exclamation-circle fa-2x me-3 text-danger"></i>
+                        <div>
+                            <h6 class="text-danger mb-1">ÉCHÉANCE CRITIQUE : {{ alert.type|replace({'_':' '}) }} en {{ alert.year }}</h6>
+                            <p class="mb-0 small text-dark">{{ alert.detail ?? 'Action nécessaire avant l’échéance fiscale.' }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {# --- 2. TABLEAU DE BORD EXÉCUTIF (Opportunités T0 Résumées) --- #}
+        <h2 class="mt-5 mb-3 text-primary"><i class="fas fa-tachometer-alt me-2"></i> Opportunités Fiscales Immédiates (T0)</h2>
+        <p class="small text-muted">Synthèse des abattements disponibles immédiatement pour toutes les relations du foyer.</p>
+        
+        <div class="row g-4 mb-5">
+            {% set total_success = 0 %}
+            {% set total_info = 0 %}
+            
+            {# Calcul des totaux pour le résumé global #}
+            {% for pairKey, pairData in plan.opportunities %}
+                {% for actType, actData in pairData.fiscal_acts %}
+                    {% if actType == 'Don_Sarkozy_Cumulable' %}
+                        {% set total_info = total_info + actData.current_status.available_now %}
+                    {% else %}
+                        {% set total_success = total_success + actData.current_status.available_now %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            
+            {# Carte 1: Total Abattements Classiques Disponibles (T0) #}
+            <div class="col-md-6">
+                <div class="card bg-success-subtle border-success shadow-lg h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title text-success fw-bold">
+                                    <i class="fas fa-euro-sign me-2"></i> Total Dons Classiques Disponibles
+                                </h5>
+                                <p class="h2 mb-0 fw-bolder text-success">
+                                    {{ (total_success / 100)|number_format(0, ',', ' ') }} €
+                                </p>
+                            </div>
+                            <i class="fas fa-piggy-bank fa-3x text-success opacity-50"></i>
+                        </div>
+                        <p class="small text-muted mt-2">Abattements renouvelables (tous 15 ans).</p>
+                    </div>
+                </div>
+            </div>
+            
+            {# Carte 2: Total Dons Sarkozy Disponibles (T0) #}
+            <div class="col-md-6">
+                <div class="card bg-info-subtle border-info shadow-lg h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title text-info fw-bold">
+                                    <i class="fas fa-gift me-2"></i> Total Dons de Sommes d'Argent (Sarkozy)
+                                </h5>
+                                <p class="h2 mb-0 fw-bolder text-info">
+                                    {{ (total_info / 100)|number_format(0, ',', ' ') }} €
+                                </p>
+                            </div>
+                            <i class="fas fa-hand-holding-usd fa-3x text-info opacity-50"></i>
+                        </div>
+                        <p class="small text-muted mt-2">Enveloppe à vie (sous conditions d'âge du donateur).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <hr>
+
+        {# --- 3. CHRONOLOGIE DES ACTIONS FUTURES (Plus pertinent pour le client) --- #}
+        <h2 class="mt-5 mb-3 text-secondary"><i class="fas fa-calendar-alt me-2"></i> Chronologie et Plan de Reconstitution</h2>
+        <p class="small text-muted">Liste de toutes les opportunités T0 et des reconstitutions futures, triées par ordre chronologique d'année fiscale.</p>
+
+        {% if plan.future_actions is not empty %}
+            <div class="table-responsive"> 
+                <table class="table table-hover table-sm small">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="text-nowrap">Année</th>
+                            <th>Action</th>
+                            <th class="text-nowrap">Montant (€)</th>
+                            <th>Détail</th>
+                            <th class="d-none d-sm-table-cell">Relation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action in plan.future_actions %}
+                            {% set donor_name = plan.people[action.donor_id].name ?? 'N/A' %}
+                            {% set beneficiary_name = plan.people[action.beneficiary_id].name ?? 'N/A' %}
+                            
+                            {# Style des lignes pour les rendre plus lisibles #}
+                            <tr class="{% if action.type|slice(-3) == '_T0' %}table-success fw-bold{% else %}table-light{% endif %}">
+                                <td class="fw-bolder text-nowrap">{{ action.year }}</td>
+                                <td class="text-nowrap">
+                                    {% if action.type|slice(-3) == '_T0' %}
+                                        <span class="text-success"><i class="fas fa-check-circle me-1"></i> Opportunité Actuelle</span>
+                                    {% else %}
+                                        <span class="text-secondary"><i class="fas fa-redo me-1"></i> Reconstitution</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-end text-nowrap">
+                                    {{ (action.amount / 100)|number_format(0, ',', ' ') }}
+                                </td>
+                                <td class="small">{{ action.detail }}</td>
+                                <td class="d-none d-sm-table-cell text-nowrap">{{ donor_name }} ➡️ {{ beneficiary_name }}</td> 
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-secondary text-center">Aucune action fiscale significative n'est planifiée pour le foyer dans les années à venir.</div>
+        {% endif %}
+
+        {# --- 4. ACCÈS AU DÉTAIL PAR PAIRE (Si nécessaire) --- #}
+        <div class="mt-5 text-center">
+            <button class="btn btn-outline-primary btn-lg" type="button" data-bs-toggle="collapse" data-bs-target="#detailedView" aria-expanded="false" aria-controls="detailedView">
+                <i class="fas fa-search-plus me-2"></i> Afficher l'Analyse Détaillée par Paire (Historique Complet)
+            </button>
+        </div>
+
+        {# 🚨 NOTE : Inclure ici le template des détails complets (accordionPairs) #}
+        {# <div class="collapse mt-4" id="detailedView">
+            {% include 'notaire/_plan_detail_accordion.html.twig' with {'plan': plan} %}
+        </div> #}
+
+        {# 🚨 Ajout du bouton de retour/nouvelle consultation #}
+        <div class="mt-5 text-center">
+            <a href="{{ path('notaire_consultation_input') }}" class="btn btn-secondary">
+                <i class="fas fa-undo me-2"></i> Nouvelle Recherche
+            </a>
+        </div>
+
+    </div>
+{# 🚨 CORRECTION 2 : Ajout de la balise de fin de bloc #}
+{% endblock %}

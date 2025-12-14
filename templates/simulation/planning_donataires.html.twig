@@ -31,7 +31,21 @@
         </div>
     {% endif %}
 
-    {# --- 2. AFFICHAGE PRINCIPAL : OPPORTUNITÉS PAR PAIRE --- #}
+    {# --- 2. FILTRE ET AFFICHAGE PRINCIPAL : OPPORTUNITÉS PAR PAIRE --- #}
+    
+    {# Sélecteur de Filtre #}
+    <div class="mb-4 d-flex align-items-center">
+        <label for="filter-relationship" class="form-label me-3 fw-bold">Filtrer par Relation :</label>
+        <select id="filter-relationship" class="form-select w-auto">
+            <option value="all">Toutes les Relations</option>
+            <option value="descendant">Ligne Descendante (Parent/Grand-Parent)</option>
+            <option value="lateral">Ligne Latérale (Frère/Sœur)</option>
+            <option value="epoux">Époux</option>
+            <option value="tiers">Autres (Inconnu)</option>
+        </select>
+    </div>
+    <hr>
+    
     <h2 class="mt-5 mb-3 text-success"><i class="fas fa-link me-2"></i> Opportunités par Relations</h2>
     
     {% if plan.opportunities is empty %}
@@ -44,7 +58,9 @@
         {% for pairKey, pairData in plan.opportunities %}
             {% set pairId = 'pair-' ~ pairData.donor_id ~ '-' ~ pairData.beneficiary_id %}
 
-            <div class="card mb-4 shadow-sm border-top border-primary border-3">
+            {# LIGNE CLÉ : AJOUT DE L'ATTRIBUT data-relationship-type SUR LA CARTE #}
+            <div class="card mb-4 shadow-sm border-top border-primary border-3"
+                 data-relationship-type="{{ pairData.relationship_type }}">
                 
                 {# En-tête de la Paire #}
                 <div class="card-header bg-light p-3">
@@ -175,7 +191,6 @@
                         {% set donor_name = plan.people[action.donor_id].name ?? 'N/A' %}
                         {% set beneficiary_name = plan.people[action.beneficiary_id].name ?? 'N/A' %}
                         
-                        {# ⬇️ CORRECTION ICI : Remplacement de |ends_with par |slice(-3) #}
                         <tr class="{% if action.type|slice(-3) == '_T0' %}table-success{% endif %}">
                             <td class="fw-bold text-nowrap">{{ action.year }}</td>
                             <td class="text-nowrap">{{ donor_name }} ➡️ {{ beneficiary_name }}</td>
@@ -190,4 +205,80 @@
         </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Utiliser une fonction auto-exécutable pour s'assurer que les variables sont locales
+        (function() {
+            // Tentative de sélection simple du filtre
+            const selectFilter = document.getElementById('filter-relationship');
+            
+            // Si le sélecteur principal n'est pas trouvé, on arrête.
+            if (!selectFilter) {
+                console.error("Le sélecteur de filtre (#filter-relationship) n'a pas été trouvé.");
+                return;
+            }
+            
+            // Sélection des cartes (on suppose que le DOM est chargé ici)
+            const opportunityCards = document.querySelectorAll('.card[data-relationship-type]');
+
+            function applyFilter() {
+                const selectedValue = selectFilter.value;
+                console.log("Filtre appliqué : " + selectedValue); // DEBUG : Confirmer que la fonction est lancée
+
+                opportunityCards.forEach(card => {
+                    const relationshipType = card.getAttribute('data-relationship-type');
+                    
+                    let shouldShow = false;
+
+                    switch (selectedValue) {
+                        case 'all':
+                            shouldShow = true;
+                            break;
+                        
+                        case 'descendant':
+                            if (relationshipType === 'parent_enfant' || relationshipType === 'grand_parent_petit_enfant') {
+                                shouldShow = true;
+                            }
+                            break;
+
+                        case 'lateral':
+                            if (relationshipType === 'frere_soeur') {
+                                shouldShow = true;
+                            }
+                            break;
+                            
+                        case 'epoux':
+                            if (relationshipType === 'epoux') {
+                                shouldShow = true;
+                            }
+                            break;
+
+                        case 'tiers':
+                            if (relationshipType === 'tiers' || relationshipType === 'inconnu') {
+                                shouldShow = true;
+                            }
+                            break;
+                            
+                        default:
+                            shouldShow = true;
+                            break;
+                    }
+
+                    // Basculer la visibilité. Utiliser 'block' pour les éléments normaux.
+                    card.style.display = shouldShow ? 'block' : 'none';
+                });
+            }
+
+            // Écouteur sur le changement de la sélection
+            selectFilter.addEventListener('change', applyFilter);
+            
+            // Déclencher le filtre initialement pour s'assurer que l'état 'all' est appliqué
+            // On le lance après un court délai pour être sûr que Bootstrap a fini son travail si nécessaire.
+            setTimeout(applyFilter, 50);
+
+        })(); // Fin de la fonction auto-exécutable
+    </script>
 {% endblock %}

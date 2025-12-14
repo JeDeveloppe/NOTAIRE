@@ -1,0 +1,31 @@
+{# templates/base_notaire.html.twig #}
+{% extends 'base.html.twig' %}
+
+{# ⭐️ Écrase le bloc 'navbar' pour y injecter le menu minimaliste #}
+{% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            {# Utilisation de la route notaire_code_input que nous avons créée #}
+            <a class="navbar-brand d-flex align-items-center" href="{{ path('notaire_consultation_input') }}">
+                <i class="fas fa-gavel me-2"></i>
+                Portail Notaire
+            </a>
+            
+            <span class="navbar-text ms-auto text-white-50 d-none d-sm-block">
+                Accès Sécurisé par Code Client
+            </span>
+            
+            <a class="btn btn-outline-light ms-3" href="{{ path('app_home') }}">
+                <i class="fas fa-home me-1"></i> Retour au site principal
+            </a>
+        </div>
+    </nav>
+{% endblock %}
+
+{# Vous pouvez aussi écraser d'autres blocs si nécessaire (par exemple, vider le footer, les flash messages, etc.) #}
+
+{# Exemple pour retirer les flash messages si vous voulez une UI très propre pour le notaire : #}
+{% block flash_messages %}{% endblock %}
+
+{# Exemple si vous voulez retirer le footer du site public : #}
+{% block footer %}{% endblock %}

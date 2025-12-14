@@ -6,7 +6,6 @@
 
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-# config/services.yaml (ou un fichier custom/relationships.yaml)
 parameters:
     # nombre de personnes minimun dans l'affichage d'un arbre généalogique
     app.tree.min_people_count: 4
@@ -17,12 +16,8 @@ parameters:
         FRERE_SOEUR: 'R_FS'
         ONCLE_NEVEU: 'R_ON'
         TIERS: 'R_T'
-
-    app.fiscal_abatement_amounts_in_cents:
-        parent_enfant: 10000000
-        grand_parent_petit_enfant: 3186500
-        epoux: 8072400
-        don_sarkozy_cumulable: 3186500
+        
+    # Le paramètre app.fiscal_abatement_amounts_in_cents est SUPPRIMÉ.
 
 services:
     # default configuration for services in *this* file
@@ -41,31 +36,15 @@ services:
     # Configuration du service pour l'injection des codes relationnels
     App\Service\GenealogyService:
         arguments:
-            $relationshipCodes: '%app.relationship_codes%' # <-- INJECTION ICI
+            $relationshipCodes: '%app.relationship_codes%' # <-- INJECTION CONSERVÉE
 
-    # -------------------------------------------------------------------------
-    # CONFIGURATION DES FIXTURES DE TEST (AppFixtures)
-    # -------------------------------------------------------------------------
     App\DataFixtures\AppFixtures:
         arguments:
-            # Les services (hasher, parameterBag) sont autowirés si autowire: true est activé
-            # Injection des variables d'environnement (string)
             $adminEmail: '%env(ADMIN_EMAIL)%'
             $adminPassword: '%env(ADMIN_PASSWORD)%'
-            # Injection du paramètre (array)
-            $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
+            # $abatementAmountsInCents est SUPPRIMÉ
 
-    # -------------------------------------------------------------------------
-    # CONFIGURATION DES FIXTURES D'INITIALISATION (InitFixtures) - NOUVEAU BLOC
-    # -------------------------------------------------------------------------
-    App\DataFixtures\InitFixtures:
-        arguments:
-            # Utilise les mêmes injections explicites que AppFixtures
-            $adminEmail: '%env(ADMIN_EMAIL)%'
-            $adminPassword: '%env(ADMIN_PASSWORD)%'
-            $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
-
-    # Configuration du service de Simulation
-    App\Service\SimulationPlanningService:
-            arguments:
-                $abatementAmountsInCents: '%app.fiscal_abatement_amounts_in_cents%'
+    App\EventListener\UserExpirationCheckListener:
+        tags:
+            - { name: kernel.event_listener, event: security.interactive_login, method: onSecurityInteractiveLogin }
+            

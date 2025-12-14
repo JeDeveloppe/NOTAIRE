@@ -29,28 +29,47 @@
                             {{ form_errors(registrationForm.email) }}
                         </div>
 
-                        {# 3. Champ Mot de Passe #}
+                        {# ⭐️ 3. Champ Localisation avec Autocomplétion : NOUVELLE STRUCTURE POUR L'ALIGNEMENT #}
+                        <div class="mb-3">
+                            {{ form_label(registrationForm.locationInput, 'Ville ou Code Postal', {'label_attr': {'class': 'form-label'}}) }}
+                            
+                            {# Conteneur parent relatif pour positionner la liste de suggestions #}
+                            <div class="position-relative suggestions-container"> 
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    {{ form_widget(registrationForm.locationInput, {
+                                        'attr': {'class': 'form-control', 'placeholder': 'Ex: 14540 Bourguébus'}
+                                    }) }}
+                                </div>
+                                {{ form_errors(registrationForm.locationInput) }}
+                                
+                                {# La liste des suggestions (position: absolute) sera injectée ici #}
+                            </div>
+                            
+                            <small class="form-text text-muted">Afin de vous localiser et de calculer votre taxe foncière. (Partagée uniquement avec votre notaire via code)</small>
+                        </div>
+                        
+                        {# 4. Champ Mot de Passe #}
                         <div class="mb-3">
                             {{ form_label(registrationForm.plainPassword, 'Mot de Passe', {'label_attr': {'class': 'form-label'}}) }}
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                 {{ form_widget(registrationForm.plainPassword, {
-                                    label: 'Mot de Passe',
                                     'attr': {'class': 'form-control', 'placeholder': 'Saisissez votre mot de passe'}
                                 }) }}
                             </div>
                             {{ form_errors(registrationForm.plainPassword) }}
-                            <small class="form-text text-muted">Minimum 8 caractères, incluant des chiffres et des lettres.</small>
+                            <small class="form-text text-muted">Minimum 6 caractères.</small>
                         </div>
 
-                        {# 4. Case à Cocher des Conditions #}
+                        {# 5. Case à Cocher des Conditions #}
                         <div class="mb-3 form-check">
                             {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
                             {{ form_label(registrationForm.agreeTerms, 'J\'accepte les conditions d\'utilisation', {'label_attr': {'class': 'form-check-label'}}) }}
                             {{ form_errors(registrationForm.agreeTerms) }}
                         </div>
 
-                        {# 5. Bouton d'Inscription #}
+                        {# 6. Bouton d'Inscription #}
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-check-circle me-2"></i> S'inscrire
@@ -59,7 +78,7 @@
                         
                     {{ form_end(registrationForm) }}
 
-                    {# 6. Lien de Connexion #}
+                    {# 7. Lien de Connexion #}
                     <p class="text-center mt-3">
                         Déjà un compte ? <a href="{{ path('app_login') }}">Connectez-vous ici</a>.
                     </p>
@@ -67,4 +86,77 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inputField = document.getElementById('{{ registrationForm.locationInput.vars.id }}');
+    // Cible le nouveau conteneur dédié à la position relative
+    const suggestionsContainer = inputField.closest('.suggestions-container'); 
+    
+    // Création de la liste déroulante
+    let suggestionsList = document.createElement('ul');
+    suggestionsList.className = 'list-group position-absolute w-100 shadow-sm';
+    suggestionsList.style.zIndex = '1050'; 
+    // ⭐️ AJOUT DE LA LISTE AU CONTENEUR DÉDIÉ
+    suggestionsContainer.appendChild(suggestionsList); 
+
+    let debounceTimer;
+
+    inputField.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+        suggestionsList.innerHTML = ''; 
+
+        if (query.length < 3) {
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsList.innerHTML = ''; 
+
+                    if (data.features && data.features.length > 0) {
+                        // ⭐️ CORRECTION ALIGNEMENT : Positionne la liste juste en dessous de l'input field
+                        // On utilise offsetHeight de l'input car il est à l'intérieur du container relatif
+                        suggestionsList.style.top = `${inputField.offsetHeight}px`; 
+                        suggestionsList.style.left = '0';
+                        
+                        data.features.forEach(feature => {
+                            const properties = feature.properties;
+                            
+                            if (properties.postcode && properties.city) {
+                                const fullLabel = `${properties.postcode} ${properties.city}`;
+                                
+                                let listItem = document.createElement('li');
+                                listItem.className = 'list-group-item list-group-item-action py-2';
+                                listItem.textContent = fullLabel;
+
+                                listItem.addEventListener('click', () => {
+                                    inputField.value = fullLabel; 
+                                    suggestionsList.innerHTML = ''; 
+                                });
+                                suggestionsList.appendChild(listItem);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur API Géocodage:', error);
+                });
+        }, 300);
+    });
+
+    // Cacher la liste de suggestions
+    document.addEventListener('click', (e) => {
+        if (!suggestionsContainer.contains(e.target)) {
+            suggestionsList.innerHTML = '';
+        }
+    });
+});
+</script>
 {% endblock %}

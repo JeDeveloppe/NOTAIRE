@@ -66,10 +66,7 @@ class ActType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new NotBlank(),
-                    new GreaterThan([
-                        'value' => 0,
-                        'message' => 'Le montant doit être supérieur à zéro.',
-                    ]),
+                    new GreaterThan(0, message: 'Le montant doit être supérieur à zéro.'),
                 ],
             ])
             
