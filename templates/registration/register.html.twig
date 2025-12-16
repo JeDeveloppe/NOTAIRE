@@ -14,7 +14,6 @@
                         <i class="fas fa-user-plus me-2"></i> Créer votre Compte
                     </h1>
 
-                    {# Afficher les erreurs globales de manière visible #}
                     {{ form_errors(registrationForm) }}
 
                     {{ form_start(registrationForm) }}
@@ -42,27 +41,28 @@
                             <small class="form-text text-muted">Minimum 6 caractères.</small>
                         </div>
 
-                        {# ⭐️ 3. Champ Localisation avec Autocomplétion ⭐️ #}
+                        {# ⭐️ 3. ZONE DE GÉOLOCALISATION UX AUTOCOMPLETE ⭐️ #}
                         <div class="mb-3">
-                            {{ form_label(registrationForm.locationInput, 'Ville ou Code Postal', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_label(registrationForm.city, null, {'label_attr': {'class': 'form-label'}}) }}
                             
-                            <div class="position-relative suggestions-container"> 
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
-                                    {{ form_widget(registrationForm.locationInput, {
-                                        'attr': {'class': 'form-control', 'placeholder': 'Ex: 14540 Bourguébus'}
-                                    }) }}
-                                </div>
-                                {{ form_errors(registrationForm.locationInput) }}
+                            {# 💡 AJOUTER UNE CLASSE POUR LE CIBLAGE CSS 💡 #}
+                            <div class="input-group city-autocomplete-fix"> 
+                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
                                 
-                                {# La liste des suggestions sera injectée ici par JS #}
+                                {{ form_widget(registrationForm.city, {
+                                    'attr': {
+                                        'class': 'form-control', 
+                                        'autocomplete': 'off'
+                                    }
+                                }) }}
                             </div>
                             
-                            <small class="form-text text-muted">Afin de vous localiser et de calculer votre taxe foncière.</small>
+                            {{ form_errors(registrationForm.city) }} 
+                            <small class="form-text text-muted">Veuillez sélectionner votre ville dans la liste après la saisie.</small>
                         </div>
                         
                         
-                        {# ⭐️ 4. SÉLECTION DU RÔLE (ChoiceType) et Avertissement ⭐️ #}
+                        {# 4. SÉLECTION DU RÔLE (ChoiceType) #}
                         <div class="mb-4" id="roleSelectionBlock">
                             {{ form_label(registrationForm.userRole, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
                             
@@ -77,13 +77,11 @@
                             </small>
                         </div>
 
-                        {# 6. Case à Cocher des Conditions avec Lien HTML et Alignement Corrigé #}
+                        {# 6. Case à Cocher des Conditions avec Lien HTML #}
                         <div class="mb-3 form-check d-flex align-items-start"> 
                             
-                            {# 1. AFFICHEZ SEULEMENT LE WIDGET (la case à cocher) #}
                             {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input mt-1 me-2'}}) }} 
                             
-                            {# 2. CONSTRUISEZ LE LIBELLÉ MANUELLEMENT AVEC LE LIEN #}
                             <label class="form-check-label" for="{{ registrationForm.agreeTerms.vars.id }}">
                                 J'accepte les <a href="{{ path('app_terms_of_service') }}" target="_blank">conditions d'utilisation</a> et la <a href="{{ path('app_privacy_policy') }}" target="_blank">politique de confidentialité</a>.
                             </label>
@@ -116,7 +114,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // ====================================================
-    // 1. LOGIQUE DYNAMIQUE DE SÉLECTION DE RÔLE (Notaire/Client)
+    // 1. LOGIQUE DYNAMIQUE DE SÉLECTION DE RÔLE
     // ====================================================
     
     const roleContainer = document.getElementById('userRoleContainer');
@@ -130,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const label = roleContainer.querySelector(`label[for="${input.id}"]`);
             
             if (label) {
-                // Mise en gras et couleur pour l'élément sélectionné
+                // Style l'élément sélectionné
                 if (isChecked) {
                     label.classList.add('fw-bold', 'text-primary');
                 } else {
@@ -138,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // LOGIQUE D'AFFICHAGE DU MESSAGE NOTAIRE
+            // Gestion du message d'avertissement Notaire
             if (input.value === 'notaire') {
                 if (isChecked) {
                     notaireWarning.innerHTML = '<strong class="text-danger">ATTENTION :</strong> En sélectionnant "Notaire", vous acceptez d\'être contacté par l\'administrateur pour la vérification obligatoire de votre statut professionnel avant l\'activation complète de votre compte.';
@@ -154,86 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Écouter les changements et initialiser l'affichage
     if (roleContainer) {
         roleContainer.addEventListener('change', updateRoleDisplay);
         updateRoleDisplay();
     }
-
-
-    // ====================================================
-    // 2. LOGIQUE D'AUTOCOMPLÉTION DE GÉOLOCALISATION
-    // ====================================================
     
-    const inputField = document.getElementById('{{ registrationForm.locationInput.vars.id }}');
-    const suggestionsContainer = inputField.closest('.suggestions-container'); 
-    
-    let suggestionsList = document.createElement('ul');
-    suggestionsList.className = 'list-group position-absolute w-100 shadow-sm';
-    suggestionsList.style.zIndex = '1050'; 
-    suggestionsContainer.appendChild(suggestionsList); 
-
-    let debounceTimer;
-
-    inputField.addEventListener('input', function() {
-        clearTimeout(debounceTimer);
-        const query = this.value.trim();
-        suggestionsList.innerHTML = ''; 
-
-        if (query.length < 3) {
-            return;
-        }
-
-        debounceTimer = setTimeout(() => {
-            
-            // Utilisation du filtre type=municipality pour éviter les doublons de ville
-            const apiUrl = `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&type=municipality&limit=5`;
-            
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    suggestionsList.innerHTML = ''; 
-                    const uniqueSuggestions = new Set(); // Pour garantir l'unicité
-                    
-                    if (data.features && data.features.length > 0) {
-                        suggestionsList.style.top = `${inputField.offsetHeight}px`; 
-                        suggestionsList.style.left = '0';
-                        
-                        data.features.forEach(feature => {
-                            const properties = feature.properties;
-                            
-                            if (properties.type === 'municipality' && properties.postcode && properties.city) {
-                                const fullLabel = `${properties.postcode} ${properties.city}`;
-                                
-                                if (!uniqueSuggestions.has(fullLabel)) {
-                                    uniqueSuggestions.add(fullLabel);
-                                    
-                                    let listItem = document.createElement('li');
-                                    listItem.className = 'list-group-item list-group-item-action py-2';
-                                    listItem.textContent = fullLabel;
-
-                                    listItem.addEventListener('click', () => {
-                                        inputField.value = fullLabel; 
-                                        suggestionsList.innerHTML = ''; 
-                                    });
-                                    suggestionsList.appendChild(listItem);
-                                }
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur API Géocodage:', error);
-                });
-        }, 300);
-    });
-
-    // Cacher la liste de suggestions
-    document.addEventListener('click', (e) => {
-        if (!suggestionsContainer.contains(e.target)) {
-            suggestionsList.innerHTML = '';
-        }
-    });
+    // Le code JavaScript pour l'autocomplétion (Tom Select) est géré
+    // automatiquement par Symfony UX Autocomplete et n'est pas nécessaire ici.
 });
 </script>
 {% endblock %}

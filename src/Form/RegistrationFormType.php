@@ -3,9 +3,12 @@
 namespace App\Form;
 
 use App\Entity\User;
+use App\Entity\City;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType; // Reste l'EntityType standard
+
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType; // NOUVEL IMPORT
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -19,44 +22,38 @@ class RegistrationFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email')
-            
-            ->add('locationInput', TextType::class, [
-                'mapped' => false,
-                'label' => 'Ville ou Code Postal',
+            ->add('email', TextType::class, [
+                'label' => 'Adresse e-mail',
                 'attr' => [
-                    'placeholder' => 'Ex: 14123 ou Bourguébus',
                     'class' => 'form-control',
-                ],
-                'constraints' => [
-                    new NotBlank(message: 'Veuillez renseigner votre ville ou code postal.'), 
-                    new Length(
-                        min: 4, 
-                        minMessage: 'La saisie doit contenir au moins {{ limit }} caractères.',
-                    ),
+                    'placeholder' => 'exemple@domaine.fr',
                 ],
             ])
             
-            // ⭐️ Remplacement par un ChoiceType pour la sélection du rôle ⭐️
+            // 2. Champ d'auto-complétion pour la ville
+            ->add('city', CityAutocompleteField::class)
+            
+            // 3. Sélection du Rôle (Non mappé)
             ->add('userRole', ChoiceType::class, [
-                'mapped' => false, // NON mappé à l'entité User
+                'mapped' => false,
                 'label' => 'Vous êtes ?',
                 'choices' => [
                     'Un particulier' => 'client',
                     'Notaire (Accès Professionnel)' => 'notaire',
                 ],
-                // Affichage en boutons radio (plus engageant qu'un simple select)
                 'expanded' => true, 
                 'multiple' => false,
-                'data' => 'client', // Valeur par défaut pour minimiser les erreurs
+                'data' => 'client', 
                 'row_attr' => ['class' => 'mt-3'],
                 'constraints' => [
                     new NotBlank(message: 'Veuillez sélectionner votre statut.'),
                 ],
             ])
             
+            // 4. Mot de passe (Non mappé)
             ->add('plainPassword', PasswordType::class, [
                 'mapped' => false,
+                'label' => 'Mot de passe',
                 'attr' => ['autocomplete' => 'new-password'],
                 'constraints' => [
                     new NotBlank(message: 'Veuillez saisir un mot de passe'),
@@ -67,9 +64,11 @@ class RegistrationFormType extends AbstractType
                     ),
                 ],
             ])
+            
+            // 5. Conditions d'utilisation (Non mappé)
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
-                'label' => false,
+                'label' => 'J\'accepte les conditions générales d\'utilisation',
                 'constraints' => [
                     new IsTrue(message: 'Vous devez accepter nos conditions.'),
                 ],

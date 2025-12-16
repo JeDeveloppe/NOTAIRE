@@ -54,14 +54,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $codeExpiresAt = null;
 
-    #[ORM\Column(length: 10)]
-    private ?string $postalCode = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $city = null;
-
     #[ORM\Column]
     private ?bool $isActived = null;
+
+    #[ORM\ManyToOne(inversedBy: 'users')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?City $city = null;
 
     public function __construct()
     {
@@ -233,30 +231,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPostalCode(): ?string
-    {
-        return $this->postalCode;
-    }
-
-    public function setPostalCode(string $postalCode): static
-    {
-        $this->postalCode = $postalCode;
-
-        return $this;
-    }
-
-    public function getCity(): ?string
-    {
-        return $this->city;
-    }
-
-    public function setCity(string $city): static
-    {
-        $this->city = $city;
-
-        return $this;
-    }
-
     public function isActived(): ?bool
     {
         return $this->isActived;
@@ -265,6 +239,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActived(bool $isActived): static
     {
         $this->isActived = $isActived;
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): static
+    {
+        $this->city = $city;
 
         return $this;
     }

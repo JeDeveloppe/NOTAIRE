@@ -1,0 +1,141 @@
+{% extends 'base_notaire.html.twig' %}
+
+{# Assurez-vous d'avoir une route nommée 'notaire_dashboard' qui pointe vers ce template #}
+{% block title %}Tableau de Bord Notaire{% endblock %}
+
+{% block body %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-primary mb-4">
+                    <i class="fas fa-gavel me-2"></i> Espace Professionnel Notaire
+                </h1>
+                
+                <p class="lead">
+                    Bienvenue, **{{ app.user.email }}**. Cet espace vous donne accès aux outils spécifiques de votre activité.
+                </p>
+                <hr>
+            </div>
+        </div>
+
+        {# ⭐️ Section Statistiques Rapides (Inchangée) ⭐️ #}
+        <div class="row mb-5">
+            <div class="col-md-4">
+                <div class="card text-white bg-info shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-file-invoice me-2"></i> Actes en Cours</h5>
+                        <p class="card-text fs-3">5</p>
+                        <small>Actes nécessitant votre validation ou action.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-users-cog me-2"></i> Clients Actifs</h5>
+                        <p class="card-text fs-3">125</p>
+                        <small>Total des clients associés à votre étude.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-warning shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="fas fa-hourglass-half me-2"></i> Derniers Événements</h5>
+                        <p class="card-text fs-3">{{ "now"|date("H:i") }}</p>
+                        <small>Dernière consultation d'un dossier client.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ⭐️ Section Liens Rapides (Mise à jour) ⭐️ #}
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-secondary mb-3">Accès Rapide aux Fonctionnalités</h2>
+            </div>
+            
+            {# 💡 NOUVEAU BLOC 1 : CONSULTATION CLIENT (Utilisation des routes réelles) 💡 #}
+            <div class="col-md-6 mb-4">
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item list-group-item-dark fw-bold"><i class="fas fa-search me-2"></i> Consultation de Simulation Client</div>
+                    
+                    {# Lien vers la saisie du code unique du client #}
+                    <a href="{{ path('notaire_consultation_input') }}" class="list-group-item list-group-item-action list-group-item-primary">
+                        <i class="fas fa-qrcode me-2"></i> Saisir un Code de Consultation Client
+                    </a>
+                    {# Lien vers la gestion des simulations (à créer) #}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-history me-2 text-info"></i> Historique de mes Consultations
+                    </a>
+                </div>
+            </div>
+
+            {# Bloc 2 : Gestion des Actes #}
+            <div class="col-md-6 mb-4">
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item list-group-item-dark fw-bold"><i class="fas fa-folder-open me-2"></i> Gestion des Actes et Dossiers</div>
+                    
+                    {# Liens temporaires #}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-plus-circle me-2 text-success"></i> Créer un Nouvel Acte
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-list-ul me-2 text-info"></i> Voir la Liste Complète des Actes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-search me-2 text-muted"></i> Recherche Avancée de Dossiers
+                    </a>
+                </div>
+            </div>
+
+            {# Bloc 3 : Gestion des Clients et Utilisateurs #}
+            <div class="col-md-6 mb-4">
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item list-group-item-dark fw-bold"><i class="fas fa-user-tie me-2"></i> Gestion de la Clientèle</div>
+                    
+                    {# Liens temporaires #}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2 text-success"></i> Gérer les Clients (Recherche, Modification)
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-line me-2 text-info"></i> Statistiques Clientèle
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-envelope-open-text me-2 text-muted"></i> Modèles de Communication
+                    </a>
+                </div>
+            </div>
+            
+            {# Bloc 4 : Outils Avancés #}
+            <div class="col-md-6 mb-4">
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item list-group-item-dark fw-bold"><i class="fas fa-tools me-2"></i> Outils de Calcul et Configuration</div>
+                    
+                    {# Liens temporaires #}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-calculator me-2 text-warning"></i> Calcul des Droits et Taxes
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog me-2 text-secondary"></i> Paramètres de l'Étude
+                    </a>
+                </div>
+            </div>
+            
+            {# Bloc 5 : Aide et Support #}
+            <div class="col-md-6 mb-4">
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item list-group-item-dark fw-bold"><i class="fas fa-question-circle me-2"></i> Aide et Support</div>
+                    
+                    {# Liens temporaires #}
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-book me-2 text-primary"></i> Documentation Technique
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <i class="fas fa-headset me-2 text-danger"></i> Contacter le Support Technique
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

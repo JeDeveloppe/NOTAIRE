@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Act;
+use App\Entity\City;
 use App\Entity\FiscalAbatementRule;
 use App\Entity\User;
 use App\Entity\Person;
@@ -41,6 +42,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Les personnes', 'fas fa-user', Person::class);
         yield MenuItem::linkToCrud('Résultats des simulations', 'fas fa-chart-line', SimulationResult::class);
         yield MenuItem::linkToCrud('Règles d\'abattement fiscal', 'fas fa-rule', FiscalAbatementRule::class);
+        yield MenuItem::linkToCrud('Les villes', 'fas fa-city', City::class);
 
     }
 }

@@ -14,6 +14,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField; // 💡 NOUVEAU : Pour afficher les relations
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField; // Optionnel : pour un affichage plus propre des rôles
 
 class UserCrudController extends AbstractCrudController
 {
@@ -28,7 +30,7 @@ class UserCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('Utilisateur')
             ->setEntityLabelInPlural('Utilisateurs')
             ->setPageTitle('index', 'Liste des Utilisateurs')
-            ->setSearchFields(['email', 'city', 'postalCode', 'roles'])
+            ->setSearchFields(['email', 'city.name', 'roles']) // 💡 CORRECTION : Recherche sur le nom de la ville
             // Afficher le statut Notaire en attente en haut de la liste
             ->setDefaultSort(['isActived' => 'ASC', 'email' => 'ASC']); 
     }
@@ -40,24 +42,30 @@ class UserCrudController extends AbstractCrudController
 
         yield EmailField::new('email');
         
-        // Champs d'information de localisation
-        yield TextField::new('city', 'Ville')
-            ->hideOnIndex(false);
-
-        yield TextField::new('postalCode', 'Code Postal')
-            ->hideOnIndex(true);
+        // ⭐️ CORRECTION 1 : Utilisation de AssociationField pour la relation City ⭐️
+        yield AssociationField::new('city', 'Ville')
+            // Par défaut, EasyAdmin utilisera la méthode __toString() de l'entité City
+            ->autocomplete();
         
         // ⭐️ CHAMP CRUCIAL 1 : Gérer le rôle ⭐️
+        // ArrayField est acceptable pour la modification, mais ChoiceField est mieux pour l'affichage en index.
         yield ArrayField::new('roles', 'Rôles')
             ->setHelp('Pour valider un notaire, changez ROLE_NOTAIRE_PENDING par ROLE_NOTAIRE.'); 
             
         // ⭐️ CHAMP CRUCIAL 2 : Activation du compte ⭐️
         yield BooleanField::new('isActived', 'Compte Actif')
             ->setHelp('Le compte doit être Actif (OUI) pour permettre la connexion à l\'utilisateur.')
-            // Utilisation d'un Badget pour afficher clairement le statut en index
+            // Gardons renderAsSwitch pour la modification rapide, c'est efficace.
             ->renderAsSwitch(true);
             
-        // Pour les Notaires, cela permet de s'assurer qu'ils ont été vérifiés.
+        // Optionnel: Afficher les relations Actes et Personnes si nécessaire
+        /*
+        yield AssociationField::new('peopleOwned', 'Personnes rattachées')
+            ->onlyOnIndex();
+        
+        yield AssociationField::new('acts', 'Actes en cours')
+            ->onlyOnIndex();
+        */
     }
     
     public function configureActions(Actions $actions): Actions
@@ -76,7 +84,10 @@ class UserCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $approveAction) // Ajout de l'action dans la liste
             ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
                 return $action->setLabel('Supprimer');
-            });
+            })
+            // Ajout du bouton d'approbation sur la page de détail/édition
+            ->add(Crud::PAGE_DETAIL, $approveAction)
+            ->add(Crud::PAGE_EDIT, $approveAction);
     }
 
     /**
@@ -84,23 +95,16 @@ class UserCrudController extends AbstractCrudController
      */
     public function handleApproveNotaire(AdminContext $context, EntityManagerInterface $entityManager)
     {
-        // 1. Récupérer l'ID de l'entité depuis le contexte
-        $entityId = $context->getRequest()->query->get('entityId');
+        // 1. Récupérer l'objet User via le contexte EasyAdmin (méthode plus propre)
+        /** @var User $user */
+        $user = $context->getEntity()->getInstance();
         
-        if (!$entityId) {
-            $this->addFlash('danger', 'Erreur: ID de l\'utilisateur manquant.');
-            return $this->redirect($context->getReferrer() ?? $this->generateUrl('admin'));
-        }
-
-        // 2. Récupérer l'objet User complet
-        $user = $entityManager->getRepository(User::class)->find($entityId);
-
         if (!$user) {
-            $this->addFlash('danger', sprintf('Erreur: Utilisateur avec l\'ID "%s" introuvable.', $entityId));
+            $this->addFlash('danger', 'Erreur: Utilisateur introuvable.');
             return $this->redirect($context->getReferrer() ?? $this->generateUrl('admin'));
         }
 
-        // 3. Traitement de l'approbation (Logique Métier)
+        // 2. Traitement de l'approbation (Logique Métier)
         
         // Vérification de sécurité supplémentaire
         if (!in_array('ROLE_NOTAIRE_PENDING', $user->getRoles())) {
@@ -112,7 +116,7 @@ class UserCrudController extends AbstractCrudController
         $user->setRoles(['ROLE_NOTAIRE']);
         $user->setIsActived(true);
         
-        // 4. Persister les changements
+        // 3. Persister les changements
         $entityManager->flush();
 
         $this->addFlash('success', sprintf('Le compte Notaire %s a été approuvé et est maintenant actif.', $user->getEmail()));
