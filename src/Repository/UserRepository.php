@@ -45,6 +45,36 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getResult();
     }
 
+    /**
+     * Compte les utilisateurs dans un rayon donné autour d'un point GPS
+     */
+    public function countUsersInRadius(float $latitude, float $longitude, int $radius, int $currentUserId): int
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+            SELECT COUNT(u.id) 
+            FROM user u
+            INNER JOIN city c ON u.city_id = c.id
+            WHERE (6371 * acos(
+                cos(radians(:lat)) * cos(radians(c.town_hall_latitude)) * cos(radians(c.town_hall_longitude) - radians(:lng)) + 
+                sin(radians(:lat)) * sin(radians(c.town_hall_latitude))
+            )) <= :radius
+            AND u.id != :currentUserId
+            AND u.is_actived = 1
+            AND u.roles NOT LIKE :roleNotaire
+        ';
+
+        $result = $conn->executeQuery($sql, [
+            'lat'           => $latitude,
+            'lng'           => $longitude,
+            'radius'        => (float) $radius,
+            'currentUserId' => $currentUserId,
+            'roleNotaire'   => '%ROLE_NOTAIRE%' // On exclut tous les notaires du comptage
+        ]);
+
+        return (int) $result->fetchOne();
+    }
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

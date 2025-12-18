@@ -1,0 +1,169 @@
+{% extends 'base_notaire.html.twig' %}
+
+{% block title %}Paramètres de l'étude{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    {# --- FIL D'ARIANE --- #}
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item"><a href="{{ path('notaire_dashboard') }}" class="text-decoration-none text-muted"><i class="fas fa-home me-1"></i>Espace Notaire</a></li>
+            <li class="breadcrumb-item active fw-bold text-primary">Configuration de l'Étude</li>
+        </ol>
+    </nav>
+
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="display-5 fw-bold text-dark mb-1">Mon Étude</h1>
+            <p class="text-muted">Gérez vos informations professionnelles et votre périmètre de visibilité locale.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+             <span class="badge {% if notaryOffice.isPremium %}bg-warning text-dark{% else %}bg-light text-muted border{% endif %} p-2 px-3 rounded-pill shadow-sm">
+                <i class="fas {% if notaryOffice.isPremium %}fa-crown{% else %}fa-gavel{% endif %} me-2"></i>Accès {{ notaryOffice.isPremium ? 'Premium' : 'Standard' }}
+            </span>
+        </div>
+    </div>
+
+    {{ form_start(form, {'attr': {'id': 'office-form'}}) }}
+    
+    <div class="row g-4">
+        {# --- COLONNE GAUCHE : INFOS --- #}
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4 fw-bold text-uppercase small text-primary tracking-wider"><i class="fas fa-id-card me-2"></i>Identité de l'Étude</h5>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            {{ form_label(form.name) }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-signature text-muted"></i></span>
+                                {{ form_widget(form.name, {'attr': {'class': 'form-control border-start-0 ps-0', 'placeholder': 'Ex: Étude de Maître Dupont'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_label(form.phone) }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-phone text-muted"></i></span>
+                                {{ form_widget(form.phone, {'attr': {'class': 'form-control border-start-0 ps-0', 'placeholder': '02 .. .. .. ..'}}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="card-title mt-5 mb-4 fw-bold text-uppercase small text-primary tracking-wider"><i class="fas fa-map-marker-alt me-2"></i>Localisation de l'Étude</h5>
+                    <div class="row g-3">
+                        <div class="col-md-2">{{ form_row(form.streetNumber, {'label': 'N°'}) }}</div>
+                        <div class="col-md-2">{{ form_row(form.subdivisionIndicator, {'label': 'Indice'}) }}</div>
+                        <div class="col-md-8">{{ form_row(form.street, {'label': 'Voie / Rue'}) }}</div>
+                        <div class="col-12">
+                            {{ form_label(form.city, "Ville de l'Étude") }}
+                            {{ form_widget(form.city) }}
+                            <div class="form-text mt-2"><i class="fas fa-info-circle me-1"></i> Cette adresse définit le centre géographique de votre périmètre d'intervention.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- COLONNE DROITE : VISIBILITÉ --- #}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 {% if notaryOffice.isPremium %}border-top border-warning border-4{% endif %}">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4 fw-bold text-uppercase small text-primary tracking-wider"><i class="fas fa-broadcast-tower me-2"></i>Visibilité</h5>
+                    
+                    {% if notaryOffice.isPremium %}
+                        <div class="text-center bg-light rounded-4 p-4 border">
+                            <label class="form-label d-block text-muted small text-uppercase fw-bold mb-3">Rayon d'action personnalisé</label>
+                            <div class="display-4 fw-bold text-primary mb-1"><span id="radius-val">{{ form.radius.vars.value|default(defaultRadius) }}</span><small class="fs-4 ms-1">kms</small></div>
+                            
+                            <div class="mt-4">
+                                {{ form_widget(form.radius, {
+                                    'attr': {
+                                        'class': 'form-range',
+                                        'min': defaultRadius,
+                                        'max': '100',
+                                        'step': '5',
+                                        'oninput': 'updateRadius(this.value)'
+                                    }
+                                }) }}
+                            </div>
+                            <div class="d-flex justify-content-between text-muted x-small mt-2">
+                                <span>5km</span>
+                                <span>200km</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center p-4">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                                <i class="fas fa-map-marked-alt text-primary fa-lg"></i>
+                            </div>
+                            <h3 class="fw-bold mb-1">{{ defaultRadius }} kms</h3>
+                            <p class="text-muted small">Rayon standard inclus</p>
+                            
+                            <div class="card bg-dark text-white border-0 rounded-4 mt-4 overflow-hidden">
+                                <div class="card-body p-3">
+                                    <div class="text-warning small mb-2"><i class="fas fa-crown me-1"></i> OPTION PREMIUM</div>
+                                    <p class="small mb-3">Étendez votre visibilité jusqu'à <strong>100 km</strong> autour de l'Étude.</p>
+                                    
+                                    {# MISE À JOUR DU LIEN ICI #}
+                                    <a href="{{ path('notaire_subscription_activate') }}" class="btn btn-warning btn-sm w-100 fw-bold rounded-pill shadow-sm">
+                                        Activer l'extension
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="d-none">{{ form_widget(form.radius) }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# --- BARRE D'ACTION --- #}
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center justify-content-between bg-white p-3 rounded-4 shadow-sm">
+                <a href="{{ path('notaire_dashboard') }}" class="btn btn-link text-muted text-decoration-none"><i class="fas fa-times me-2"></i>Annuler</a>
+                <button type="submit" class="btn btn-success btn-lg px-5 rounded-pill shadow-sm" id="submit-btn">
+                    <span class="btn-text fw-bold">Enregistrer l'Étude</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+
+<style>
+    body { background-color: #f6f8fa; font-family: 'Inter', sans-serif; }
+    .card-title { letter-spacing: 0.05em; font-size: 0.85rem; }
+    .form-label { font-weight: 600; color: #344767; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .form-control { border-color: #d2d6da; padding: 0.6rem 0.75rem; border-radius: 0.5rem; transition: all 0.2s; }
+    .form-control:focus { border-color: #5e72e4; box-shadow: 0 0 0 2px rgba(94, 114, 228, 0.2); }
+    .input-group-text { border-color: #d2d6da; background-color: #fff; border-radius: 0.5rem; }
+    
+    .form-range::-webkit-slider-thumb { background: #5e72e4; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 1.4rem; height: 1.4rem; margin-top: -0.4rem; -webkit-appearance: none; border-radius: 50%; }
+    .form-range::-webkit-slider-runnable-track { background: #e9ecef; height: 0.6rem; border-radius: 1rem; }
+    
+    .x-small { font-size: 0.7rem; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .tracking-wider { letter-spacing: 0.08em; }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    function updateRadius(val) {
+        document.getElementById('radius-val').innerText = val;
+    }
+
+    document.getElementById('office-form').addEventListener('submit', function() {
+        const btn = document.getElementById('submit-btn');
+        btn.querySelector('.btn-text').innerText = 'Enregistrement...';
+        btn.querySelector('.spinner-border').classList.remove('d-none');
+        btn.classList.add('disabled');
+    });
+</script>
+{% endblock %}

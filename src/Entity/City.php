@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CityRepository::class)]
@@ -37,9 +38,22 @@ class City
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'city')]
     private Collection $users;
 
+    /**
+     * @var Collection<int, NotaryOffice>
+     */
+    #[ORM\OneToMany(targetEntity: NotaryOffice::class, mappedBy: 'city', orphanRemoval: true)]
+    private Collection $notaryOffices;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 8, nullable: true)]
+    private ?string $townHallLatitude = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 8, nullable: true)]
+    private ?string $townHallLongitude = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->notaryOffices = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -140,5 +154,59 @@ class City
     public function __toString(): string
     {
         return $this->name . ' (' . $this->postalCode . ')';
+    }
+
+    /**
+     * @return Collection<int, NotaryOffice>
+     */
+    public function getNotaryOffices(): Collection
+    {
+        return $this->notaryOffices;
+    }
+
+    public function addNotaryOffice(NotaryOffice $notaryOffice): static
+    {
+        if (!$this->notaryOffices->contains($notaryOffice)) {
+            $this->notaryOffices->add($notaryOffice);
+            $notaryOffice->setCity($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotaryOffice(NotaryOffice $notaryOffice): static
+    {
+        if ($this->notaryOffices->removeElement($notaryOffice)) {
+            // set the owning side to null (unless already changed)
+            if ($notaryOffice->getCity() === $this) {
+                $notaryOffice->setCity(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getTownHallLatitude(): ?string
+    {
+        return $this->townHallLatitude;
+    }
+
+    public function setTownHallLatitude(?string $townHallLatitude): static
+    {
+        $this->townHallLatitude = $townHallLatitude;
+
+        return $this;
+    }
+
+    public function getTownHallLongitude(): ?string
+    {
+        return $this->townHallLongitude;
+    }
+
+    public function setTownHallLongitude(?string $townHallLongitude): static
+    {
+        $this->townHallLongitude = $townHallLongitude;
+
+        return $this;
     }
 }

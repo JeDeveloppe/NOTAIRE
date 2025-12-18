@@ -9,8 +9,11 @@ use App\Entity\User;
 use App\Entity\Person;
 use App\Entity\TypeAct;
 use App\Entity\Hypothesis;
+use App\Entity\NotaryCoverage;
+use App\Entity\NotaryOffice;
 use App\Entity\TaxCatalog;
 use App\Entity\SimulationResult;
+use App\Entity\SubdivisionIndicator;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -42,7 +45,14 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Les personnes', 'fas fa-user', Person::class);
         yield MenuItem::linkToCrud('Résultats des simulations', 'fas fa-chart-line', SimulationResult::class);
         yield MenuItem::linkToCrud('Règles d\'abattement fiscal', 'fas fa-rule', FiscalAbatementRule::class);
+
+        yield MenuItem::section('Paramètres géographiques');
         yield MenuItem::linkToCrud('Les villes', 'fas fa-city', City::class);
+        yield MenuItem::linkToCrud('Les indicateurs de subdivision', 'fas fa-map', SubdivisionIndicator::class);
+
+        yield MenuItem::section('Notaires');
+        yield MenuItem::linkToCrud('Les études notariales', 'fas fa-building', NotaryOffice::class);
+        yield MenuItem::linkToCrud('Les couvertures notariales', 'fas fa-map-marker-alt', NotaryCoverage::class);
 
     }
 }

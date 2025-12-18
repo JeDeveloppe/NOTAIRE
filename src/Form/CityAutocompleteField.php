@@ -15,19 +15,14 @@ class CityAutocompleteField extends AbstractType
     {
         $resolver->setDefaults([
             'class' => City::class,
-            'placeholder' => 'Commencez à taper votre ville ou code postal...',
+            'placeholder' => 'Rechercher par ville ou code postal (ex: 75001)...',
+            'choice_label' => fn (City $city) => sprintf('%s (%s)', $city->getName(), $city->getPostalCode()),
             
-            // ⭐️ Affichage du résultat ⭐️
-            'choice_label' => fn (City $city) => $city->getName() . ' (' . $city->getPostalCode() . ')',
-
-            // ⭐️ Champs sur lesquels la recherche doit s'effectuer (Optimisation BDD) ⭐️
+            // On force la recherche sur les deux colonnes
             'searchable_fields' => ['name', 'postalCode'],
             
-            // ⭐️ Minimum de caractères avant de lancer la requête (Meilleure performance) ⭐️
-            'min_characters' => 3, 
-            'attribute' => [
-                'class' => 'form-control',
-            ],
+            // On expose l'objet City complet pour le JS plus tard
+            'expose_fields' => ['name', 'postalCode'],
         ]);
     }
 

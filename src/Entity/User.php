@@ -61,6 +61,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\JoinColumn(nullable: false)]
     private ?City $city = null;
 
+    #[ORM\OneToOne(inversedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?NotaryOffice $NotaryOffice = null;
+
     public function __construct()
     {
         $this->peopleOwned = new ArrayCollection();
@@ -251,6 +254,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCity(?City $city): static
     {
         $this->city = $city;
+
+        return $this;
+    }
+
+    public function getNotaryOffice(): ?NotaryOffice
+    {
+        return $this->NotaryOffice;
+    }
+
+    public function setNotaryOffice(?NotaryOffice $NotaryOffice): static
+    {
+        $this->NotaryOffice = $NotaryOffice;
 
         return $this;
     }

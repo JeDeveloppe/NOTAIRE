@@ -54,6 +54,10 @@ class CityImportService
             if (empty($arrayVilleCommune['code_insee'])) { $missingFields[] = 'code_insee'; }
             if (empty($arrayVilleCommune['nom_standard'])) { $missingFields[] = 'nom_standard'; }
             if (empty($arrayVilleCommune['codes_postaux'])) { $missingFields[] = 'codes_postaux'; }
+            if (empty($arrayVilleCommune['population'])) { $missingFields[] = 'population'; }
+            if (empty($arrayVilleCommune['latitude_mairie'])) { $missingFields[] = 'latitude_mairie'; }
+            if (empty($arrayVilleCommune['longitude_mairie'])) { $missingFields[] = 'longitude_mairie'; }
+
 
             if (!empty($missingFields)) {
                 $io?->warning(sprintf(
@@ -156,7 +160,9 @@ class CityImportService
         $city->setName($arrayCommune['nom_standard']) 
              ->setPostalcode($postalCode) 
              ->setInseeCode((int) $arrayCommune['code_insee']) 
-             ->setPopulation((int) $arrayCommune['population'] ?? 0); 
+             ->setPopulation((int) $arrayCommune['population'] ?? 0);
+        $city->setTownHallLatitude($arrayCommune['latitude_mairie'] ?? null);
+        $city->setTownHallLongitude($arrayCommune['longitude_mairie'] ?? null);
 
         return $city;
     }

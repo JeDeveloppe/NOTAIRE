@@ -10,6 +10,9 @@ parameters:
     # nombre de personnes minimun dans l'affichage d'un arbre généalogique
     app.tree.min_people_count: 4
 
+    # Rayon par défaut pour les nouveaux notaires ou calculs sans valeur
+    app.default_notary_radius: 15
+
     app.relationship_codes:
         GRAND_PARENT_PETIT_ENFANT: 'R_GPPE'
         PARENT_ENFANT: 'R_PE'
@@ -64,3 +67,7 @@ services:
             # Assigner explicitement le paramètre système %kernel.project_dir% 
             # à l'argument $kernelProjectDir de la méthode __construct
             $kernelProjectDir: '%kernel.project_dir%'
+
+    App\Service\NotaryService:
+        arguments:
+            $defaultRadius: '%app.default_notary_radius%'

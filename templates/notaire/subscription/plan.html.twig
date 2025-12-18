@@ -1,0 +1,82 @@
+{% extends 'base_notaire.html.twig' %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-primary p-5 text-white text-center">
+                    <i class="fas fa-crown fa-3x mb-3 text-warning"></i>
+                    <h1 class="fw-bold">Passez au Premium</h1>
+                    <p class="lead opacity-75">Boostez la visibilité de votre étude sur la plateforme</p>
+                </div>
+                
+                <div class="card-body p-5">
+                    <h5 class="fw-bold mb-4">Récapitulatif de vos nouveaux avantages :</h5>
+                    
+                    <ul class="list-unstyled mb-5">
+                        <li class="d-flex align-items-center mb-3">
+                            <div class="bg-success-soft rounded-circle p-2 me-3">
+                                <i class="fas fa-check text-success"></i>
+                            </div>
+                            <div>
+                                <strong>Rayon étendu :</strong> Passez de {{ defaultRadius }} km à <strong>{{ premiumRadius }} km</strong> de portée.
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <div class="bg-success-soft rounded-circle p-2 me-3">
+                                <i class="fas fa-check text-success"></i>
+                            </div>
+                            <div>
+                                <strong>Priorité d'affichage :</strong> Votre étude apparaît en tête des résultats de recherche.
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-center mb-3">
+                            <div class="bg-success-soft rounded-circle p-2 me-3">
+                                <i class="fas fa-check text-success"></i>
+                            </div>
+                            <div>
+                                <strong>Badge de confiance :</strong> Un macaron "Premium" sur votre profil pour rassurer les clients.
+                            </div>
+                        </li>
+                    </ul>
+
+                    <div class="bg-light p-4 rounded-4 mb-5">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted d-block small">Abonnement Annuel</span>
+                                <span class="h4 fw-bold mb-0">Offre {{ plan.name }}</span>
+                            </div>
+                            <div class="text-end">
+                                <span class="display-6 fw-bold text-primary">{{ price }}€</span>
+                                <span class="text-muted d-block small">HT / an</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        {# Le bouton envoie vers la route de Checkout Stripe créée précédemment #}
+                        <a href="{{ path('stripe_checkout') }}" class="btn btn-primary btn-lg rounded-pill shadow">
+                            Procéder au paiement sécurisé <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                        <a href="{{ path('notaire_edit_office') }}" class="btn btn-link text-muted">
+                            Retour aux paramètres
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" height="25" class="opacity-50">
+                    <p class="x-small text-muted mt-2 mb-0 px-5">Paiement sécurisé par SSL. Vos données bancaires ne sont jamais stockées sur nos serveurs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .x-small { font-size: 0.75rem; }
+    .card { transform: none; transition: transform 0.3s ease; }
+</style>
+{% endblock %}

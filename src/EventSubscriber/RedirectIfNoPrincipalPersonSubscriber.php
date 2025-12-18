@@ -2,20 +2,20 @@
 
 namespace App\EventSubscriber;
 
+use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use App\Entity\User; 
 
 class RedirectIfNoPrincipalPersonSubscriber implements EventSubscriberInterface
 {
     private Security $security;
     private UrlGeneratorInterface $urlGenerator;
     
-    // ⚠️ Remplacez par la route exacte de création de la première personne !
+    // Route exacte de création de la première personne
     private const TARGET_ROUTE = 'app_tree_initial_person_creation'; 
     
     // Routes exactes à ignorer
@@ -27,11 +27,12 @@ class RedirectIfNoPrincipalPersonSubscriber implements EventSubscriberInterface
         'app_login',
     ];
 
-    // ⭐️ PRÉFIXES DE ROUTES QUE NOUS VOULONS TOUJOURS AUTORISER (même si profil incomplet) ⭐️
+    // Préfixes de routes toujours autorisés
     private const AUTHORIZED_PREFIXES = [
         'app_legal_', 
         'app_error_',
-        'notaire_', // <- Autorise toutes les routes qui commencent par 'notaire_'
+        'notaire_', 
+        'ux_entity_autocomplete', // ⭐️ INDISPENSABLE pour l'autocomplétion Symfony UX
     ];
 
     public function __construct(Security $security, UrlGeneratorInterface $urlGenerator)
@@ -42,35 +43,41 @@ class RedirectIfNoPrincipalPersonSubscriber implements EventSubscriberInterface
 
     public function onKernelController(ControllerEvent $event): void
     {
+        $request = $event->getRequest();
+
+        // 1. NE JAMAIS REDIRIGER LES REQUÊTES AJAX / FETCH
+        // L'autocomplétion est une requête de ce type. Une redirection ici casse le JavaScript.
+        if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
+            return;
+        }
+
         /** @var User|null $user */
         $user = $this->security->getUser();
         
-        // 1. VÉRIFICATIONS PRÉLIMINAIRES (Non connecté ou Admin)
+        // 2. VÉRIFICATIONS PRÉLIMINAIRES (Non connecté ou Admin)
         if (!$user || $this->security->isGranted('ROLE_ADMIN')) {
             return;
         }
 
-        // 2. VÉRIFICATION DU PROFIL INCOMPLET
+        // 3. VÉRIFICATION DU PROFIL INCOMPLET (Aucune personne possédée dans l'arbre)
         if (method_exists($user, 'getPeopleOwned') && $user->getPeopleOwned()->count() == 0) {
             
-            $request = $event->getRequest();
             $currentRoute = $request->attributes->get('_route');
 
-            // 3. VÉRIFICATION DE L'IGNORANCE (Routes exactes)
+            // 4. VÉRIFICATION DE L'IGNORANCE (Routes exactes)
             if ($currentRoute === null || in_array($currentRoute, self::IGNORED_ROUTES)) {
                 return;
             }
 
-            // ⭐️ 4. VÉRIFICATION DE L'IGNORANCE (Préfixes) ⭐️
-            // Si la route est 'notaire_dashboard' ou 'app_legal_cgu', on ignore la redirection
+            // 5. VÉRIFICATION DE L'IGNORANCE (Préfixes autorisés)
             foreach (self::AUTHORIZED_PREFIXES as $prefix) {
                 if (str_starts_with($currentRoute, $prefix)) {
                     return;
                 }
             }
             
-            // 5. REDIRECTION FORCÉE (L'utilisateur tente d'accéder à une route non autorisée)
-            // L'utilisateur est forcé vers la création de personne
+            // 6. REDIRECTION FORCÉE
+            // L'utilisateur tente d'accéder à une page classique sans avoir créé sa fiche initiale
             $url = $this->urlGenerator->generate(self::TARGET_ROUTE);
             $response = new RedirectResponse($url);
             
@@ -83,7 +90,7 @@ class RedirectIfNoPrincipalPersonSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            // Priorité élevée pour être sûr d'intercepter la requête avant le contrôleur
+            // Priorité élevée (10) pour agir avant le chargement du contrôleur
             KernelEvents::CONTROLLER => ['onKernelController', 10], 
         ];
     }

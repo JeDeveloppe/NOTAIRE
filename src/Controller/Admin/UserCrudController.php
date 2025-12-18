@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Dom\Text;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
@@ -16,6 +17,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField; // 💡 NOUVEAU : Pour afficher les relations
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField; // Optionnel : pour un affichage plus propre des rôles
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
+use Symfony\Component\Validator\Constraints\Date;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -37,10 +40,9 @@ class UserCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id')
-            ->hideOnForm();
-
-        yield EmailField::new('email');
+        yield EmailField::new('email', 'Adresse Email');
+        yield TextField::new('uniqueCode', 'Code Unique');
+        yield DateTimeField::new('codeExpiresAt', 'Code expire le')->setTimezone('Europe/Paris')->setDisabled(true)->setFormat('dd/MM/yyyy HH:mm');
         
         // ⭐️ CORRECTION 1 : Utilisation de AssociationField pour la relation City ⭐️
         yield AssociationField::new('city', 'Ville')
