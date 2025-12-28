@@ -324,23 +324,33 @@ class Person
         };
     }
 
-    /**
-     * Calcule l'âge actuel ou l'âge au moment du décès
-     */
-    public function getAge(): int
-    {
-        if (!$this->birthdate) {
-            return 0;
-        }
-
-        // Si la personne est décédée, on calcule la différence entre naissance et décès
-        // Sinon, on calcule jusqu'à aujourd'hui
-        $endDate = $this->deathDate ?? new \DateTimeImmutable();
-        
-        $diff = $this->birthdate->diff($endDate);
-
-        return $diff->y;
+ public function getAge(?\DateTimeInterface $atDate = null): int
+{
+    if (!$this->birthdate) {
+        return 0;
     }
+
+    // 1. Déterminer la date de fin de calcul
+    // Priorité 1 : La date de simulation saisie ($atDate)
+    // Priorité 2 : Si pas de date saisie, on prend la date de décès (si elle existe)
+    // Priorité 3 : Sinon, la date du jour
+    $endDate = $atDate ?? $this->deathDate ?? new \DateTimeImmutable();
+
+    // 2. Sécurité Notariale : 
+    // Si on simule une date FUTURE (ex: 2040) mais que la personne est décédée AVANT (ex: 2030),
+    // l'âge doit rester figé à la date du décès. On ne "vieillit" pas après la mort.
+    if ($this->deathDate && $endDate > $this->deathDate) {
+        $endDate = $this->deathDate;
+    }
+
+    // 3. Sécurité Chronologique :
+    // Si la date demandée est antérieure à la naissance
+    if ($endDate < $this->birthdate) {
+        return 0;
+    }
+
+    return $this->birthdate->diff($endDate)->y;
+}
 
     /**
      * Retourne une icône de statut (Vivant ou Décédé)

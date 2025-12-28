@@ -68,18 +68,23 @@ class DonationService
     /**
      * Calcule la capacité restante pour un binôme précis
      */
-    public function simulateMaxTaxFree(Person $donor, Person $beneficiary): array
+    public function simulateMaxTaxFree(Person $donor, Person $beneficiary, ?\DateTimeInterface $referenceDate = null): array
     {
+        // On définit la date de référence (aujourd'hui par défaut)
+        $referenceDate = $referenceDate ?? new \DateTimeImmutable();
+
         if (!$this->personService->isAlive($donor) || !$this->personService->isAlive($beneficiary)) {
             return $this->formatEmptyResult($donor, $beneficiary);
         }
 
-        $consumedAmounts = $this->getConsumedAmountsByTaxSystem($donor, $beneficiary);
+        // On passe la date pour calculer ce qui était consommé À CETTE DATE PRÉCISE
+        $consumedAmounts = $this->getConsumedAmountsByTaxSystem($donor, $beneficiary, $referenceDate);
         $relCode = $this->determineRelationshipCode($donor, $beneficiary);
-        
-        // On récupère les règles (Abattement classique, Sarkozy, etc.)
+
         $rules = $this->ruleRepository->findByRelationshipCode($relCode);
-        $rulesAnalysis = $this->buildRulesAnalysis($donor, $beneficiary, $rules, $consumedAmounts);
+
+        // On passe la date pour calculer l'âge qu'ils auront À CETTE DATE PRÉCISE
+        $rulesAnalysis = $this->buildRulesAnalysis($donor, $beneficiary, $rules, $consumedAmounts, $referenceDate);
 
         $totalAvailable = 0;
         foreach ($rulesAnalysis as $rule) {
@@ -94,16 +99,20 @@ class DonationService
             'relationship_code' => $relCode,
             'rules' => $rulesAnalysis,
             'total_allowance' => $totalAvailable,
+            'simulation_date' => $referenceDate
         ];
     }
 
-    private function buildRulesAnalysis(Person $donor, Person $beneficiary, array $rules, array $consumedAmounts): array
+    private function buildRulesAnalysis(Person $donor, Person $beneficiary, array $rules, array $consumedAmounts, \DateTimeInterface $referenceDate): array
     {
         $analysis = [];
-        $donorAge = $this->personService->calculateAge($donor);
-        $beneficiaryAge = $this->personService->calculateAge($beneficiary);
+
+        // On utilise la date de simulation pour calculer l'âge futur
+        $donorAge = $this->personService->calculateAge($donor, $referenceDate);
+        $beneficiaryAge = $this->personService->calculateAge($beneficiary, $referenceDate);
 
         foreach ($rules as $rule) {
+            // Validation des conditions d'âge à la date de simulation
             $ageOk = ($donorAge < $rule->getDonorMaxAge()) && ($beneficiaryAge >= $rule->getReceiverMinAge());
             $taxSystem = strtolower($rule->getTaxSystem() ?? 'classic');
 
@@ -111,8 +120,10 @@ class DonationService
             $available = $ageOk ? max(0, $rule->getAllowanceAmount() - $alreadyGiven) : 0;
 
             $reason = "";
-            if ($donorAge >= $rule->getDonorMaxAge()) $reason = "Âge donateur trop élevé (> " . $rule->getDonorMaxAge() . " ans)";
-            if ($beneficiaryAge < $rule->getReceiverMinAge()) $reason = "Bénéficiaire trop jeune (< " . $rule->getReceiverMinAge() . " ans)";
+            if (!$ageOk) {
+                if ($donorAge >= $rule->getDonorMaxAge()) $reason = "Âge limite atteint au " . $referenceDate->format('d/m/Y') . " (> " . $rule->getDonorMaxAge() . " ans)";
+                if ($beneficiaryAge < $rule->getReceiverMinAge()) $reason = "Bénéficiaire trop jeune au " . $referenceDate->format('d/m/Y') . " (< " . $rule->getReceiverMinAge() . " ans)";
+            }
 
             $analysis[] = [
                 'label' => $rule->getLabel(),
@@ -127,13 +138,23 @@ class DonationService
         return $analysis;
     }
 
-    private function getConsumedAmountsByTaxSystem(Person $donor, Person $beneficiary): array
+    private function getConsumedAmountsByTaxSystem(Person $donor, Person $beneficiary, \DateTimeInterface $referenceDate): array
     {
-        $limitDate = new \DateTimeImmutable('-15 years');
+        // Le rappel fiscal est de 15 ans AVANT la date de simulation
+        $limitDate = \DateTimeImmutable::createFromInterface($referenceDate)->modify('-15 years');
         $totals = ['classic' => 0.0, 'sarkozy' => 0.0];
 
         foreach ($beneficiary->getDonationsReceived() as $past) {
-            if ($past->getDonor() === $donor && $past->getCreatedAt() >= $limitDate) {
+            // Un don compte s'il est :
+            // 1. Entre le même donateur et bénéficiaire
+            // 2. Effectué AVANT la date de simulation
+            // 3. Effectué APRÈS la date limite (rappel fiscal des 15 ans)
+            if (
+                $past->getDonor() === $donor
+                && $past->getCreatedAt() <= $referenceDate
+                && $past->getCreatedAt() >= $limitDate
+            ) {
+
                 $type = strtolower($past->getType() ?? 'classic');
                 if (str_contains($type, 'sarkozy')) {
                     $totals['sarkozy'] += (float)$past->getAmount();
@@ -142,6 +163,7 @@ class DonationService
                 }
             }
         }
+        dump( $totals);
         return $totals;
     }
 
@@ -152,7 +174,7 @@ class DonationService
     {
         // 1. Ligne descendante
         if ($beneficiary->getParents()->contains($donor)) return 'ENFANT';
-        
+
         foreach ($beneficiary->getParents() as $p) {
             if ($p->getParents()->contains($donor)) return 'PETIT_ENFANT';
             foreach ($p->getParents() as $gp) {
@@ -168,7 +190,7 @@ class DonationService
         foreach ($donor->getParents() as $dp) {
             if ($beneficiary->getParents()->contains($dp)) return 'FRERE_SOEUR';
         }
-        
+
         // Oncles & Tantes (Si le donateur est le frère d'un parent du bénéficiaire)
         foreach ($beneficiary->getParents() as $parent) {
             if (in_array($donor, $parent->getSiblings(), true)) return 'ONCLE_TANTE';
@@ -184,53 +206,66 @@ class DonationService
 
     // --- HELPERS DE NAVIGATION GÉNÉALOGIQUE ---
 
-    private function getGrandParents(Person $person): array {
+    private function getGrandParents(Person $person): array
+    {
         $gps = [];
         foreach ($person->getParents() as $parent) {
-            foreach ($parent->getParents() as $gp) { $gps[] = $gp; }
+            foreach ($parent->getParents() as $gp) {
+                $gps[] = $gp;
+            }
         }
         return $gps;
     }
 
-    private function getGreatGrandParents(Person $person): array {
+    private function getGreatGrandParents(Person $person): array
+    {
         $ggps = [];
         foreach ($this->getGrandParents($person) as $gp) {
-            foreach ($gp->getParents() as $ggp) { $ggps[] = $ggp; }
+            foreach ($gp->getParents() as $ggp) {
+                $ggps[] = $ggp;
+            }
         }
         return $ggps;
     }
 
-    private function getGrandChildren(Person $person): array {
+    private function getGrandChildren(Person $person): array
+    {
         $gcs = [];
         foreach ($person->getChildren() as $child) {
-            foreach ($child->getChildren() as $gc) { $gcs[] = $gc; }
+            foreach ($child->getChildren() as $gc) {
+                $gcs[] = $gc;
+            }
         }
         return $gcs;
     }
 
-    private function getGreatGrandChildren(Person $person): array {
+    private function getGreatGrandChildren(Person $person): array
+    {
         $ggcs = [];
         foreach ($this->getGrandChildren($person) as $gc) {
-            foreach ($gc->getChildren() as $ggc) { $ggcs[] = $ggc; }
+            foreach ($gc->getChildren() as $ggc) {
+                $ggcs[] = $ggc;
+            }
         }
         return $ggcs;
     }
 
-    private function formatEmptyResult(Person $donor, Person $beneficiary): array {
+    private function formatEmptyResult(Person $donor, Person $beneficiary): array
+    {
         return ['donor' => $donor, 'beneficiary' => $beneficiary, 'relationship_code' => 'N/A', 'rules' => [], 'total_allowance' => 0];
     }
 
     /**
      * Calcule les statistiques globales pour le tableau de bord de l'utilisateur
      */
-/**
+    /**
      * Calcule les statistiques détaillées pour le dashboard familial
      */
     public function getUserDashboardStats(User $user): array
     {
         $persons = $user->getPeople();
         $limitDate = new \DateTimeImmutable('-15 years');
-        
+
         $activeDonations = [];
         $expiredDonations = [];
 

@@ -18,6 +18,12 @@
                         <i class="fas fa-users me-1"></i> Ma Famille
                     </a>
                 </li>
+                {# Lien vers les opportunités perdues #}
+                <li>
+                    <a href="{{ path('app_optimization_missed') }}" class="{{ app.request.attributes.get('_route') == 'app_optimization_missed' ? 'active' : '' }}">
+                        <i class="fas fa-users me-1"></i> Opportunités perdues
+                    </a>
+                </li>
             {% endif %}
         </ul>
 
