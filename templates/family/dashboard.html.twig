@@ -1,186 +1,213 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de Bord Patrimonial
-{% endblock %}
+{% block title %}Tableau de Bord Famille{% endblock %}
 
 {% block body %}
-	<div class="container-fluid py-4 bg-light min-vh-100">
-		<div
-			class="container">
+<div class="container-fluid py-4 bg-light min-vh-100">
+    <div class="container">
 
-			{# --- EN-TÊTE AVEC BOUTON D'ACTION --- #}
-			<div class="d-flex justify-content-between align-items-center mb-4">
-				<div>
-					<h1 class="h3 mb-1 fw-bold">Tableau de Bord Famille</h1>
-					<p class="text-muted small mb-0">Vue d'ensemble de votre stratégie de transmission</p>
-				</div>
-				{# ICI LE BOUTON + #}
-				{% include "components/buttons/_add_donation.html.twig" %}
-			</div>
+        {# --- ONBOARDING --- #}
+        {{ include('family/_onboarding_wizard.html.twig', { 'items': people }) }}
 
-			{# --- STATS RAPIDES --- #}
-			<div class="row g-3 mb-5">
-				<div class="col-md-4">
-					<div class="card border-0 shadow-sm rounded-4 p-3 h-100">
-						<div class="d-flex align-items-center">
-							<div class="icon-shape bg-primary-subtle text-primary rounded-3 p-3 me-3">
-								<i class="fas fa-users fa-lg"></i>
-							</div>
-							<div>
-								<div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Membres</div>
-								<div class="h4 mb-0 fw-bold">{{ totalMembers }}</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="card border-0 shadow-sm rounded-4 p-3 h-100">
-						<div class="d-flex align-items-center">
-							<div class="icon-shape bg-warning-subtle text-warning rounded-3 p-3 me-3">
-								<i class="fas fa-hourglass-half fa-lg"></i>
-							</div>
-							<div>
-								<div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Dons Actifs (-15 ans)</div>
-								<div class="h4 mb-0 fw-bold">{{ activeDonations|length }}</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="col-md-4">
-					<div class="card border-0 shadow-sm rounded-4 p-3 h-100">
-						<div class="d-flex align-items-center">
-							<div class="icon-shape bg-success-subtle text-success rounded-3 p-3 me-3">
-								<i class="fas fa-check-circle fa-lg"></i>
-							</div>
-							<div>
-								<div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Dons Purgés (+15 ans)</div>
-								<div class="h4 mb-0 fw-bold">{{ expiredDonations|length }}</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+        {# --- HEADER --- #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 fw-bold text-dark">👨‍👩‍👧‍👦 Ma Famille</h1>
+                <p class="text-muted small mb-0">Vue d'ensemble et répertoire des membres</p>
+            </div>
+            <div class="d-flex gap-2">
+                {# Bouton + (Modale) #}
+                {% include "components/buttons/_add_donation.html.twig" %}
+                
+                <a href="{{ path('app_person_new') }}" class="btn btn-primary px-4 shadow-sm rounded-4 fw-bold">
+                    <i class="fas fa-plus-circle me-2"></i>Nouveau Membre
+                </a>
+            </div>
+        </div>
 
-			<div
-				class="row g-4">
-				{# --- DONS ACTIFS --- #}
-				<div class="col-lg-8">
-					<div class="card border-0 shadow-sm rounded-4">
-						<div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-							<div>
-								<h5 class="fw-bold mb-0">
-									<i class="fas fa-exclamation-circle text-warning me-2"></i>Dons en cours de rapport fiscal</h5>
-								<p class="text-muted small mb-0">Impactent les plafonds actuels</p>
-							</div>
-							<span class="badge bg-light text-dark rounded-pill border">{{ activeDonations|length }}
-								dons</span>
-						</div>
-						<div class="card-body px-4 pb-4">
-							<div class="table-responsive">
-								<table class="table table-hover align-middle">
-									<thead class="table-light">
-										<tr style="font-size: 0.75rem; text-transform: uppercase;">
-											<th>Donateur</th>
-											<th>Bénéficiaire</th>
-											<th>Montant</th>
-											<th>Type</th>
-											<th>Date</th>
-										</tr>
-									</thead>
-									<tbody>
-										{% for donation in activeDonations %}
-											<tr>
-												<td class="fw-bold">{{ donation.donor.firstname }}</td>
-												<td>{{ donation.beneficiary.firstname }}</td>
-												<td class="text-primary fw-bold">{{ donation.amount|number_format(0, ',', ' ') }}
-													€</td>
-												<td>
-													<span class="badge bg-{{ donation.type|lower == 'sarkozy' ? 'warning' : 'info' }}-subtle text-dark border-0" style="font-size: 0.6rem;">
-														{{ donation.type|upper }}
-													</span>
-												</td>
-												<td class="small text-muted">{{ donation.createdAt|date('d/m/Y') }}</td>
-											</tr>
-										{% else %}
-											<tr>
-												<td colspan="5" class="text-center py-5 text-muted italic">Aucun don actif enregistré</td>
-											</tr>
-										{% endfor %}
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
+        {# --- STATS RAPIDES --- #}
+        <div class="row g-3 mb-5">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-shape bg-primary-subtle text-primary rounded-3 p-3 me-3">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Membres</div>
+                            <div class="h4 mb-0 fw-bold text-dark">{{ people|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-3 h-100 border-start border-warning border-4">
+                    <div class="d-flex align-items-center ps-2">
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Dons Actifs (-15 ans)</div>
+                            <div class="h4 mb-0 fw-bold text-warning">{{ activeDonations|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 p-3 h-100 text-white bg-primary">
+                    <div>
+                        <div class="small fw-bold text-uppercase opacity-75" style="font-size: 0.65rem;">Capacité de transmission</div>
+                        <div class="h3 mb-0 fw-bold">{{ totalAvailableAllowance|default(0)|number_format(0, ',', ' ') }} €</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-				{# --- DONS PURGÉS --- #}
-				<div class="col-lg-4">
-					<div class="card border-0 shadow-sm rounded-4 h-100">
-						<div class="card-header bg-white border-0 pt-4 px-4">
-							<h5 class="fw-bold text-success mb-0">
-								<i class="fas fa-history me-2"></i>Dons purgés</h5>
-							<p class="text-muted small mb-0">Abattements entièrement reconstitués</p>
-						</div>
-						<div class="card-body px-4 pb-4">
-							<div class="history-timeline">
-								{% for donation in expiredDonations %}
-									<div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3 border-start border-success border-4">
-										<div class="ps-2">
-											<div class="small fw-bold text-dark">{{ donation.donor.firstname }}
-												→
-												{{ donation.beneficiary.firstname }}</div>
-											<div class="text-muted" style="font-size: 0.7rem;">
-												<i class="far fa-calendar-alt me-1"></i>Acté en
-												{{ donation.createdAt|date('m/Y') }}
-											</div>
-										</div>
-										<div class="text-success fw-bold">
-											{{ donation.amount|number_format(0, ',', ' ') }}
-											€
-										</div>
-									</div>
-								{% else %}
-									<div class="text-center py-4">
-										<i class="fas fa-calendar-check text-light fa-3x mb-3"></i>
-										<p class="text-muted small italic">Aucun don de plus de 15 ans.</p>
-									</div>
-								{% endfor %}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+        <div class="row g-4">
+            {# --- COLONNE GAUCHE --- #}
+            <div class="col-lg-8">
+                {# TABLEAU DES MEMBRES #}
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="memberSearch" class="form-control bg-light border-0" placeholder="Rechercher un membre...">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light text-muted small">
+                                <tr>
+                                    <th class="ps-4">MEMBRE</th>
+                                    <th>DÉTAILS</th>
+                                    <th class="text-end pe-4">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="familyTable">
+                                {% for person in people %}
+                                    <tr class="member-row">
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    {% include "components/person/_avatar_with_initial.html.twig" with { 'person': person } %}
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold mb-0 text-dark">{{ person.firstname }} {{ person.lastname|upper }}</div>
+                                                    <small class="text-muted text-uppercase" style="font-size: 0.75rem;">       
+                                                        {% include "components/person/_genderIcon.html.twig" %}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{% include "components/person/_age_status_live.html.twig" %}</td>
+                                        <td class="text-end pe-4">
+                                            <div class="d-flex justify-content-end gap-2">
+                                                <a href="{{ path('app_person_edit', {id: person.id}) }}" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="fas fa-pen"></i></a>
+                                                <a href="{{ path('app_person_tree', {id: person.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-sitemap"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-	<style>
-		.icon-shape {
-			width: 48px;
-			height: 48px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: 0.3s;
-		}
-		.card {
-			transition: all 0.25s ease;
-			border: 1px solid rgba(0, 0, 0, 0.05) !important;
-		}
-		.card:hover {
-			transform: translateY(-3px);
-			box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
-		}
-		.table thead th {
-			border-top: none;
-			color: #64748b;
-			font-weight: 700;
-		}
-		.btn-primary {
-			background: #2563eb;
-			border: none;
-		}
-		.btn-primary:hover {
-			background: #1d4ed8;
-		}
-	</style>
+                {# --- ACCORDÉON : HISTORIQUE DES DONS --- #}
+                <div class="accordion border-0 shadow-sm rounded-4 overflow-hidden" id="donationLogs">
+                    <div class="accordion-item border-0">
+                        <div class="accordion-header bg-white d-flex justify-content-between align-items-center pe-3">
+                            <button class="accordion-button bg-white fw-bold text-dark shadow-none w-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLogs">
+                                <i class="fas fa-history me-2 text-primary"></i> Historique des dons
+                            </button>
+                            <div class="d-flex gap-2">
+                                {# Bouton qui déclenche la même modale que le header #}
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" data-bs-toggle="modal" data-bs-target="#addDonationModal">
+                                    <i class="fas fa-plus me-1"></i> Nouveau
+                                </button>
+                                {# Lien vers la page de gestion complète #}
+                                <a href="{{ path('app_donation_index')|default('#') }}" class="btn btn-sm btn-light text-muted rounded-pill px-3 py-1">
+                                    <i class="fas fa-cog me-1"></i> Gérer
+                                </a>
+                            </div>
+                        </div>
+                        <div id="collapseLogs" class="accordion-collapse collapse show">
+                            <div class="accordion-body p-0 bg-white">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0 small">
+                                        <thead class="table-light text-muted">
+                                            <tr>
+                                                <th class="ps-4">Date</th>
+                                                <th>Donateur → Bénéficiaire</th>
+                                                <th class="text-end pe-4">Montant</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% set allDonations = activeDonations|merge(expiredDonations|default([])) %}
+                                            {% for donation in allDonations|sort((a, b) => b.createdAt <=> a.createdAt) %}
+                                                <tr>
+                                                    <td class="ps-4 text-muted">{{ donation.createdAt|date('d/m/Y') }}</td>
+                                                    <td>
+                                                        <span class="fw-bold text-dark">{{ donation.donor.firstname }}</span> 
+                                                        <i class="fas fa-arrow-right mx-2 text-primary opacity-50" style="font-size: 0.7rem;"></i> 
+                                                        <span class="text-dark">{{ donation.beneficiary.firstname }}</span>
+                                                    </td>
+                                                    <td class="text-end pe-4 fw-bold text-primary">{{ donation.amount|number_format(0, ',', ' ') }} €</td>
+                                                </tr>
+                                            {% else %}
+                                                <tr><td colspan="3" class="text-center py-5 text-muted small">Aucun historique de don enregistré.</td></tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# --- COLONNE DROITE --- #}
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top" style="top: 20px;">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 text-dark">Dernières activités</h6>
+                        <div class="timeline">
+                            {% for donation in activeDonations|slice(0, 5) %}
+                                <div class="p-2 mb-2 bg-light rounded-3 border-start border-primary border-3">
+                                    <div class="d-flex justify-content-between small">
+                                        <span class="fw-bold text-dark">{{ donation.beneficiary.firstname }}</span>
+                                        <span class="text-primary fw-bold">{{ donation.amount|number_format(0, ',', ' ') }}€</span>
+                                    </div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">{{ donation.createdAt|date('d/m/Y') }}</div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted small italic py-2 text-center">Aucune activité récente.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-shape { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+    .bg-primary-subtle { background-color: #eef2ff !important; }
+    .text-primary { color: #4f46e5 !important; }
+    .bg-primary { background-color: #4f46e5 !important; }
+    .accordion-button:not(.collapsed) { background-color: white; color: #4f46e5; box-shadow: none; }
+    .member-row:hover { background-color: #fcfdfe; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('memberSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                let filter = this.value.toLowerCase();
+                document.querySelectorAll('.member-row').forEach(row => {
+                    row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

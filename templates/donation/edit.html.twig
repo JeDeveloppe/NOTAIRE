@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la donation{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            {# --- NAVIGATION DE RETOUR --- #}
+            <div class="mb-4">
+                <a href="{{ path('app_donation_index') }}" class="text-muted text-decoration-none small fw-bold text-uppercase">
+                    <i class="fas fa-chevron-left me-1"></i> Annuler et revenir à la liste
+                </a>
+            </div>
+
+            {# --- ENTÊTE DE LA PAGE --- #}
+            <div class="d-flex align-items-center mb-4">
+                <div class="icon-circle bg-warning-light text-warning me-3" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+                    <i class="fas fa-edit fa-lg"></i>
+                </div>
+                <div>
+                    <h1 class="h3 fw-bold mb-0 text-dark">Modifier l'acte</h1>
+                    <p class="text-muted mb-0">Donation du {{ donation.createdAt|date('d/m/Y') }} par {{ donation.donor.firstname }}</p>
+                </div>
+            </div>
+
+            {# --- CARTE DU FORMULAIRE --- #}
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 p-md-5">
+                    {# Inclusion du formulaire partagé #}
+                    {{ include('donation/_form.html.twig', { 'button_label': 'Mettre à jour' }) }}
+                </div>
+            </div>
+
+            {# --- NOTE DE SÉCURITÉ --- #}
+            <div class="mt-4 p-3 bg-white rounded-3 border-start border-info border-3 shadow-sm">
+                <div class="d-flex">
+                    <i class="fas fa-info-circle text-info me-2 mt-1"></i>
+                    <p class="small text-muted mb-0">
+                        La modification de cet acte impactera immédiatement les calculs d'abattements disponibles pour 
+                        <strong>{{ donation.beneficiary.firstname }}</strong> dans les simulations d'optimisation.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-warning-light { background-color: #fffbeb !important; }
+    .text-warning { color: #d97706 !important; }
+</style>
+{% endblock %}

@@ -1,0 +1,74 @@
+{# Affichage des messages flash #}
+<div class="flash-wrapper">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash-toast flash-{{ label }} shadow-lg animate__animated animate__fadeInRight">
+                <div class="d-flex align-items-center">
+                    <div class="flash-icon me-3">
+                        {% if label == 'success' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elseif label == 'danger' %}
+                            <i class="fas fa-exclamation-circle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flash-content">
+                        <div class="fw-bold small text-uppercase ls-wide">{{ label == 'success' ? 'Succès' : 'Information' }}</div>
+                        <div class="small">{{ message }}</div>
+                    </div>
+                    <button type="button" class="btn-close ms-3 small" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<style>
+    .flash-wrapper {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .flash-toast {
+        min-width: 300px;
+        background: white;
+        border-radius: 16px;
+        padding: 16px 20px;
+        border-left: 6px solid #e2e8f0;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .flash-success { border-left-color: #22c55e; }
+    .flash-success .flash-icon { color: #22c55e; }
+
+    .flash-danger { border-left-color: #ef4444; }
+    .flash-danger .flash-icon { color: #ef4444; }
+
+    .flash-icon { font-size: 1.5rem; }
+    .ls-wide { letter-spacing: 0.05em; font-size: 0.65rem; color: #64748b; }
+
+    /* Animation de sortie automatique simple en JS ou CSS */
+    @keyframes fadeOut {
+        from { opacity: 1; transform: translateX(0); }
+        to { opacity: 0; transform: translateX(20px); }
+    }
+</style>
+
+<script>
+    // Optionnel : Disparition automatique après 5 secondes
+    document.querySelectorAll('.flash-toast').forEach(toast => {
+        setTimeout(() => {
+            toast.style.transition = "all 0.5s ease";
+            toast.style.opacity = "0";
+            toast.style.transform = "translateX(20px)";
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    });
+</script>

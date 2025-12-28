@@ -17,15 +17,13 @@
 
     <div class="d-flex align-items-center">
         {# Avatar avec initiale #}
-        <div class="avatar-circle me-4 shadow-sm d-none d-md-flex align-items-center justify-content-center bg-{{ person.deceased ? 'secondary' : 'primary' }}-subtle text-{{ person.deceased ? 'secondary' : 'primary' }} fw-bold" style="width: 64px; height: 64px; border-radius: 18px; font-size: 1.5rem; border: 2px solid white;">
-            {{ person.firstname|first|upper }}
-        </div>
+		{% include "components/person/_avatar_with_initial.html.twig" with { 'person': person } %}
 
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
                     <li class="breadcrumb-item small">
-                        <a href="{{ path('app_person_index') }}" class="text-decoration-none text-muted">
+                        <a href="{{ path('app_family_dashboard') }}" class="text-decoration-none text-muted">
                             <i class="fas fa-users me-1"></i>Membres de la famille
                         </a>
                     </li>
@@ -35,21 +33,12 @@
             
             <h1 class="h3 fw-bold mb-1 text-dark d-flex align-items-center">
                 {{ person.firstname }} {{ person.lastname|upper }}
-                <span class="ms-2 opacity-50" style="font-size: 1.2rem;">
-                    <i class="fas {{ person.genderIcon }}"></i>
-                </span>
+                {% include "components/person/_genderIcon.html.twig" %}
             </h1>
 
             <div class="d-flex align-items-center gap-2">
                 {# Statut Vie/Décès et Âge #}
-                <span class="badge {{ person.deceased ? 'bg-secondary-subtle text-secondary' : 'bg-success-subtle text-success' }} rounded-pill px-3 py-2 fw-bold shadow-sm" style="font-size: 0.85rem;">
-                    <i class="fas {{ person.statusIcon }} me-2"></i>
-                    {{ person.age }} ans {{ person.deceased ? '(Décédé)' : '' }}
-                </span>
-                
-                <span class="badge bg-light text-muted border rounded-pill px-3 py-2 fw-normal" style="font-size: 0.75rem;">
-                    ID: #{{ person.id }}
-                </span>
+                {% include "components/person/_age_status_live.html.twig" %}
             </div>
         </div>
     </div>

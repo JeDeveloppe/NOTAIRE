@@ -141,8 +141,11 @@ class Person
     {
         if (!$this->parents->contains($parent)) {
             $this->parents->add($parent);
-            // On maintient la symétrie côté enfant
-            $parent->addChild($this);
+            // On ajoute l'enfant (soi-même) chez le parent 
+            // SANS appeler addParent() chez l'enfant pour éviter la boucle
+            if (!$parent->getChildren()->contains($this)) {
+                $parent->getChildren()->add($this);
+            }
         }
         return $this;
     }
@@ -150,7 +153,9 @@ class Person
     public function removeParent(self $parent): static
     {
         if ($this->parents->removeElement($parent)) {
-            $parent->removeChild($this);
+            if ($parent->getChildren()->contains($this)) {
+                $parent->getChildren()->removeElement($this);
+            }
         }
         return $this;
     }
@@ -167,8 +172,11 @@ class Person
     {
         if (!$this->children->contains($child)) {
             $this->children->add($child);
-            // On maintient la symétrie côté parent
-            $child->addParent($this);
+            // On ajoute le parent (soi-même) chez l'enfant
+            // IMPORTANT : C'est le côté 'parents' qui possède la table de liaison !
+            if (!$child->getParents()->contains($this)) {
+                $child->getParents()->add($this);
+            }
         }
         return $this;
     }
@@ -176,7 +184,9 @@ class Person
     public function removeChild(self $child): static
     {
         if ($this->children->removeElement($child)) {
-            $child->removeParent($this);
+            if ($child->getParents()->contains($this)) {
+                $child->getParents()->removeElement($this);
+            }
         }
         return $this;
     }

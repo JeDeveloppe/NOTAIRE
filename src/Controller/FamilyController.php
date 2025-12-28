@@ -21,36 +21,22 @@ final class FamilyController extends AbstractController
     public function dashboard(PersonRepository $personRepository, DonationService $donationService): Response
     {
         $user = $this->getUser();
-
-        // Si aucune personne n'est encore créée, on redirige vers la création
-        if($user->getPeople()->isEmpty()) {
-            return $this->redirectToRoute('app_person_new');
-        }
-
-        // On délègue tout le calcul au service
-        $stats = $donationService->getUserDashboardStats($user);
-
-        return $this->render('family/dashboard.html.twig', array_merge($stats, [
-            'recentPeople' => $personRepository->findBy(['owner' => $user], ['id' => 'DESC'], 5),
-        ]));
-    }
-
-    #[Route('/liste', name: 'app_person_index')]
-    public function index(PersonRepository $personRepository): Response
-    {
-        $user = $this->getUser();
-
-        // Si aucune personne n'est encore créée, on redirige vers la création
-        if($user->getPeople()->isEmpty()) {
-            return $this->redirectToRoute('app_person_new');
-        }
-
-        // On récupère uniquement les personnes appartenant à l'utilisateur connecté
         $people = $user->getPeople();
 
-        return $this->render('family/person/liste.html.twig', [
+        // On récupère les stats de base (dons actifs/expire)
+        $stats = $donationService->getUserDashboardStats($user);
+
+        // CALCUL DU TOTAL SANS TOUCHER AU SERVICE
+        $totalAvailable = 0;
+        foreach ($people as $person) {
+            $bilan = $donationService->getFullPatrimonialBilan($person);
+            $totalAvailable += $bilan['totalGlobal'];
+        }
+
+        return $this->render('family/dashboard.html.twig', array_merge($stats, [
             'people' => $people,
-        ]);
+            'totalAvailableAllowance' => $totalAvailable, // On injecte la variable attendue par le template
+        ]));
     }
 
     #[Route('/personne/ajouter-un-membre', name: 'app_person_new', methods: ['GET', 'POST'])]
@@ -73,7 +59,7 @@ final class FamilyController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Le membre a été ajouté.');
-            return $this->redirectToRoute('app_person_index');
+            return $this->redirectToRoute('app_family_dashboard');
         }
 
         return $this->render('family/person/new.html.twig', [
@@ -99,7 +85,7 @@ final class FamilyController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('info', 'Les informations ont été mises à jour.');
-            return $this->redirectToRoute('app_person_index');
+            return $this->redirectToRoute('app_family_dashboard');
         }
 
         return $this->render('family/person/edit.html.twig', [
@@ -123,7 +109,7 @@ final class FamilyController extends AbstractController
             $this->addFlash('danger', 'Le membre a été retiré de la famille.');
         }
 
-        return $this->redirectToRoute('app_person_index');
+        return $this->redirectToRoute('app_family_dashboard');
     }
 
     #[Route('/personne/{id}/arbre', name: 'app_person_tree', methods: ['GET'])]

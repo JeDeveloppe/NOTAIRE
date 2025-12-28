@@ -16,6 +16,8 @@
         {% endblock %}
     </head>
     <body class="d-flex flex-column min-vh-100">
+
+        {% include 'components/_flash_message.html.twig' %}
         
         {# Inclusion de la barre de navigation #}
         {% include 'components/_navigation.html.twig' %}

@@ -16,17 +16,28 @@ class PersonType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        // On récupère l'utilisateur connecté passé depuis le contrôleur
+        // 1. Récupération des données contextuelles
         $user = $options['user'];
+        $person = $builder->getData();
+        
+        // On identifie l'ID de la personne actuelle (null si c'est une création)
+        $currentId = ($person && $person->getId()) ? $person->getId() : null;
 
+        // 2. Champs de base (Toujours présents)
         $builder
             ->add('firstname', TextType::class, [
                 'label' => 'Prénom',
-                'attr' => ['class' => 'form-control', 'placeholder' => 'ex: Jean']
+                'attr' => [
+                    'class' => 'form-control rounded-3', 
+                    'placeholder' => 'ex: Jean'
+                ]
             ])
             ->add('lastname', TextType::class, [
                 'label' => 'Nom de famille',
-                'attr' => ['class' => 'form-control', 'placeholder' => 'ex: DUPONT']
+                'attr' => [
+                    'class' => 'form-control rounded-3 text-uppercase', 
+                    'placeholder' => 'ex: DUPONT'
+                ]
             ])
             ->add('gender', ChoiceType::class, [
                 'label' => 'Genre / Civilité',
@@ -36,8 +47,7 @@ class PersonType extends AbstractType
                 ],
                 'expanded' => true,
                 'multiple' => false,
-                // Cette option ajoute la classe Bootstrap pour l'alignement horizontal
-                'label_attr' => ['class' => 'form-label'],
+                'label_attr' => ['class' => 'form-label fw-bold'],
                 'choice_attr' => function () {
                     return ['class' => 'form-check-inline'];
                 },
@@ -46,40 +56,46 @@ class PersonType extends AbstractType
                 'label' => 'Date de naissance',
                 'widget' => 'single_text',
                 'input' => 'datetime_immutable',
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-control rounded-3']
             ]);
 
-        // Si ce n'est pas la première personne, on affiche les options avancées
+        // 3. Logique de filtrage pour les relations (Parents / Enfants)
         if (!$options['is_first_person']) {
+            
+            /** * Fonction de filtrage réutilisable pour exclure l'entité actuelle
+             */
+            $queryFilter = function (PersonRepository $er) use ($user, $currentId) {
+                $qb = $er->createQueryBuilder('p')
+                    ->where('p.owner = :user')
+                    ->setParameter('user', $user);
+
+                // Si on est en édition, on exclut la personne en cours pour éviter qu'elle soit son propre parent/enfant
+                if ($currentId) {
+                    $qb->andWhere('p.id != :currentId')
+                       ->setParameter('currentId', $currentId);
+                }
+
+                return $qb->orderBy('p.firstname', 'ASC');
+            };
+
             $builder
                 ->add('deathDate', DateType::class, [
-                    'label' => 'Date de décès (si nécessaire)',
+                    'label' => 'Date de décès (si applicable)',
                     'widget' => 'single_text',
                     'input' => 'datetime_immutable',
                     'required' => false,
-                    'attr' => ['class' => 'form-control']
+                    'attr' => ['class' => 'form-control rounded-3']
                 ])
                 ->add('parents', EntityType::class, [
                     'class' => Person::class,
                     'label' => 'Sélectionner le(s) parent(s)',
                     'multiple' => true,
-                    'expanded' => true,
+                    'expanded' => true, // Liste de cases à cocher pour une meilleure UX
                     'required' => false,
-                    'placeholder' => 'Choisir dans la liste...',
-                    // Filtrage crucial : on ne montre que les personnes de cet OWNER
-                    'query_builder' => function (PersonRepository $er) use ($user) {
-                        return $er->createQueryBuilder('p')
-                            ->where('p.owner = :user')
-                            ->setParameter('user', $user)
-                            ->orderBy('p.firstname', 'ASC');
-                    },
-                    'choice_label' => function (Person $person) {
-                        return $person->getFirstname() . ' ' . $person->getLastname();
-                    },
-                    'attr' => [
-                        'class' => 'form-select',
-                        'size' => '5' // Permet de voir plusieurs choix d'un coup
-                    ]
+                    'by_reference' => false, // INDISPENSABLE
+                    'query_builder' => $queryFilter,
+                    'choice_label' => fn(Person $p) => $p->getFirstname() . ' ' . $p->getLastname(),
+                    'attr' => ['class' => 'form-check-group border p-3 rounded-4 bg-light-subtle']
                 ])
                 ->add('children', EntityType::class, [
                     'class' => Person::class,
@@ -87,12 +103,10 @@ class PersonType extends AbstractType
                     'multiple' => true,
                     'expanded' => true,
                     'required' => false,
-                    'query_builder' => fn(PersonRepository $er) => $er->createQueryBuilder('p')
-                        ->where('p.owner = :user')
-                        ->setParameter('user', $user)
-                        ->orderBy('p.firstname', 'ASC'),
+                    'by_reference' => false, // INDISPENSABLE
+                    'query_builder' => $queryFilter,
                     'choice_label' => fn(Person $p) => $p->getFirstname() . ' ' . $p->getLastname(),
-                    'attr' => ['class' => 'form-select']
+                    'attr' => ['class' => 'form-check-group border p-3 rounded-4 bg-light-subtle']
                 ]);
         }
     }
@@ -102,10 +116,10 @@ class PersonType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Person::class,
             'is_first_person' => false,
-            'user' => null, // Nécessaire pour recevoir l'objet User du contrôleur
+            'user' => null,
         ]);
 
-        // On force la présence de l'utilisateur pour le filtrage
+        // L'utilisateur est obligatoire pour filtrer les données par propriétaire (sécurité)
         $resolver->setRequired('user');
     }
 }

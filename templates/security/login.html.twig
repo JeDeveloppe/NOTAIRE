@@ -1,28 +1,92 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Connexion | NotaryFlow{% endblock %}
 
 {% block body %}
-<form method="post">
-    {% if error %}
-        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
+<div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100">
+    <div class="bg-glow"></div>
 
-    {% if app.user %}
-        <div class="mb-3">
-            You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                
+                <div class="text-center mb-4">
+                    <a href="{{ path('app_home') }}" class="text-decoration-none">
+                        <h2 class="fw-black text-dark ls-tight">
+                            <span class="text-indigo-gradient">Notary</span>Flow
+                        </h2>
+                    </a>
+                </div>
+
+                <div class="card border-0 shadow-2xl rounded-5 p-4 p-lg-5 bg-white auth-card">
+                    <form method="post">
+                        <div class="text-center mb-4">
+                            <h1 class="h3 fw-bold mb-2">Bon retour parmi nous</h1>
+                            <p class="text-muted small">Accédez à votre dossier de transmission sécurisé.</p>
+                        </div>
+
+                        {% if error %}
+                            <div class="alert alert-danger border-0 rounded-4 mb-4 shadow-sm">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ error.messageKey|trans(error.messageData, 'security') }}
+                            </div>
+                        {% endif %}
+
+                        {% if app.user %}
+                            <div class="alert bg-indigo-soft text-indigo border-0 rounded-4 mb-4 text-center">
+                                <p class="small mb-2">Connecté en tant que : <strong>{{ app.user.userIdentifier }}</strong></p>
+                                <a href="{{ logout_path() }}" class="btn btn-sm btn-outline-danger rounded-pill">Déconnexion</a>
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label for="inputEmail" class="form-label small fw-bold text-muted">Email</label>
+                            <input type="email" value="{{ last_username }}" name="email" id="inputEmail" 
+                                   class="form-control form-control-lg rounded-4 border-light-subtle bg-light" 
+                                   autocomplete="email" required autofocus placeholder="votre@email.com">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="inputPassword" class="form-label small fw-bold text-muted">Mot de passe</label>
+                            <input type="password" name="password" id="inputPassword" 
+                                   class="form-control form-control-lg rounded-4 border-light-subtle bg-light" 
+                                   autocomplete="current-password" required placeholder="••••••••">
+                        </div>
+
+                        {# --- TA LIGNE TECHNIQUE QUI FONCTIONNE --- #}
+                        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+                        <button class="btn btn-ux-primary w-100 py-3 rounded-4 shadow-blue mb-4" type="submit">
+                            Se connecter <i class="fas fa-arrow-right-to-bracket ms-2"></i>
+                        </button>
+
+                        <div class="text-center">
+                            <p class="small text-muted mb-0">Besoin d'aide ? Contactez votre étude.</p>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="text-center mt-4 text-muted small">
+                    <i class="fas fa-shield-halved me-1"></i> Données protégées par chiffrement notariale
+                </div>
+            </div>
         </div>
-    {% endif %}
+    </div>
+</div>
 
-    <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <label for="inputEmail">Email</label>
-    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-    <label for="inputPassword">Password</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-    <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
-
-    <button class="btn btn-lg btn-primary" type="submit">
-        Sign in
-    </button>
-</form>
+<style>
+    :root { --indigo: #4f46e5; --indigo-soft: #eef2ff; --dark: #0f172a; }
+    .auth-wrapper { background-color: #f8fafc; position: relative; overflow: hidden; }
+    .bg-glow { position: absolute; top: 0; right: 0; width: 500px; height: 500px; background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, transparent 70%); z-index: 0; }
+    .auth-card { position: relative; z-index: 1; transition: transform 0.3s; }
+    .fw-black { font-weight: 900; }
+    .text-indigo-gradient { background: linear-gradient(45deg, var(--indigo), #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .form-control:focus { border-color: var(--indigo); box-shadow: 0 0 0 4px var(--indigo-soft); background-color: white !important; }
+    .btn-ux-primary { background: var(--dark); color: white; border: none; font-weight: 600; transition: all 0.3s; }
+    .btn-ux-primary:hover { background: #334155; transform: translateY(-2px); color: white; }
+    .shadow-blue { box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.2); }
+    .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); }
+    .bg-indigo-soft { background-color: var(--indigo-soft); }
+    .text-indigo { color: var(--indigo); }
+</style>
 {% endblock %}

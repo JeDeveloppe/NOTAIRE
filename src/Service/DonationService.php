@@ -163,7 +163,7 @@ class DonationService
                 }
             }
         }
-        dump($totals);
+     
         return $totals;
     }
 

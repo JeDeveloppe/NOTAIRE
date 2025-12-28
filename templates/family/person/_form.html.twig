@@ -3,94 +3,117 @@
 
 <div class="row g-3 mb-4">
     <div class="col-12">
-        <h5 class="text-muted border-bottom pb-2">État Civil</h5>
+        <h5 class="text-muted small fw-bold text-uppercase ls-wide border-bottom pb-2">État Civil</h5>
     </div>
 
-    {# Prénom #}
     <div class="col-md-6">
-        <label class="form-label">{{ form_label(form.firstname) }}</label>
-        {{ form_widget(form.firstname, {'attr': {'class': 'form-control'}}) }}
+        <label class="form-label small fw-bold text-muted">{{ form_label(form.firstname) }}</label>
+        {{ form_widget(form.firstname, {'attr': {'class': 'form-control rounded-3'}}) }}
         {{ form_errors(form.firstname) }}
     </div>
 
-    {# Nom #}
     <div class="col-md-6">
-        <label class="form-label">{{ form_label(form.lastname) }}</label>
-        {{ form_widget(form.lastname, {'attr': {'class': 'form-control'}}) }}
+        <label class="form-label small fw-bold text-muted">{{ form_label(form.lastname) }}</label>
+        {{ form_widget(form.lastname, {'attr': {'class': 'form-control rounded-3 text-uppercase'}}) }}
         {{ form_errors(form.lastname) }}
     </div>
 
-    {# Naissance #}
     <div class="col-md-6">
-        <label class="form-label">{{ form_label(form.birthdate) }}</label>
-        {{ form_widget(form.birthdate, {'attr': {'class': 'form-control'}}) }}
+        <label class="form-label small fw-bold text-muted">{{ form_label(form.birthdate) }}</label>
+        {{ form_widget(form.birthdate, {'attr': {'class': 'form-control rounded-3'}}) }}
         {{ form_errors(form.birthdate) }}
     </div>
 
-    {# Genre #}
     <div class="col-md-6">
-        <label class="form-label d-block">Genre / Civilité</label>
-        <div class="gender-inline-wrapper border rounded p-2 bg-white d-flex gap-4">
+        <label class="form-label small fw-bold text-muted d-block">Genre / Civilité</label>
+        <div class="gender-inline-wrapper border rounded-3 p-2 bg-white d-flex gap-4 h-100 align-items-center">
             {% for child in form.gender %}
-                <div class="form-check form-check-inline mb-0">
+                <div class="form-check form-check-inline mb-0 ms-2">
                     {{ form_widget(child, {'attr': {'class': 'form-check-input'}}) }}
-                    {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    {{ form_label(child, null, {'label_attr': {'class': 'form-check-label small'}}) }}
                 </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
-{# Blocs Conditionnels #}
+{# Blocs Conditionnels avec calcul de visibilité #}
 {% if not is_first %}
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <h5 class="text-muted border-bottom pb-2">Généalogie</h5>
-        </div>
+    {# On vérifie s'il y a réellement des gens à choisir #}
+    {% set has_parents = form.parents is defined and form.parents.vars.choices|length > 0 %}
+    {% set has_children = form.children is defined and form.children.vars.choices|length > 0 %}
 
-        {% if form.deathDate is defined %}
+    {% if has_parents or has_children or form.deathDate is defined %}
+        <div class="row g-3 mb-4">
             <div class="col-12">
-                <label class="form-label">{{ form_label(form.deathDate) }}</label>
-                {{ form_widget(form.deathDate, {'attr': {'class': 'form-control'}}) }}
+                <h5 class="text-muted small fw-bold text-uppercase ls-wide border-bottom pb-2">Généalogie</h5>
             </div>
-        {% endif %}
 
-        {% if form.parents is defined %}
-            <div class="col-md-6">
-                <div class="p-3 bg-light rounded border h-100">
-                    <label class="form-label fw-bold d-block">Parents</label>
-                    {% for parent_choice in form.parents %}
-                        <div class="form-check">
-                            {{ form_widget(parent_choice) }}
-                            {{ form_label(parent_choice) }}
-                        </div>
-                    {% endfor %}
+            {% if form.deathDate is defined %}
+                <div class="col-12 mb-2">
+                    <label class="form-label small fw-bold text-muted">{{ form_label(form.deathDate) }}</label>
+                    {{ form_widget(form.deathDate, {'attr': {'class': 'form-control rounded-3'}}) }}
                 </div>
-            </div>
-        {% endif %}
+            {% endif %}
 
-        {% if form.children is defined %}
-            <div class="col-md-6">
-                <div class="p-3 bg-light rounded border h-100">
-                    <label class="form-label fw-bold d-block">Enfants</label>
-                    {% for child_choice in form.children %}
-                        <div class="form-check">
-                            {{ form_widget(child_choice) }}
-                            {{ form_label(child_choice) }}
+            {# Affichage dynamique des Parents #}
+            {% if has_parents %}
+                <div class="{{ has_children ? 'col-md-6' : 'col-12' }}">
+                    <div class="p-3 bg-light rounded-4 border border-light-subtle h-100">
+                        <label class="form-label small fw-bold text-indigo d-block mb-3">
+                            <i class="fas fa-users-rays me-2"></i>Parents possibles
+                        </label>
+                        <div class="relation-scroll-area" style="max-height: 200px; overflow-y: auto;">
+                            {% for parent_choice in form.parents %}
+                                <div class="form-check custom-relation-check mb-2">
+                                    {{ form_widget(parent_choice, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(parent_choice, null, {'label_attr': {'class': 'form-check-label small'}}) }}
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
-            </div>
-        {% endif %}
-    </div>
+            {% endif %}
+
+            {# Affichage dynamique des Enfants #}
+            {% if has_children %}
+                <div class="{{ has_parents ? 'col-md-6' : 'col-12' }}">
+                    <div class="p-3 bg-light rounded-4 border border-light-subtle h-100">
+                        <label class="form-label small fw-bold text-indigo d-block mb-3">
+                            <i class="fas fa-children me-2"></i>Enfants possibles
+                        </label>
+                        <div class="relation-scroll-area" style="max-height: 200px; overflow-y: auto;">
+                            {% for child_choice in form.children %}
+                                <div class="form-check custom-relation-check mb-2">
+                                    {{ form_widget(child_choice, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(child_choice, null, {'label_attr': {'class': 'form-check-label small'}}) }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endif %}
 
-<div class="border-top pt-4">
-    {# On rend le jeton de sécurité manuellement #}
+<div class="pt-4">
     {{ form_widget(form._token) }}
-    
-    <button type="submit" class="btn btn-primary btn-lg w-100">Enregistrer</button>
+    <button type="submit" class="{{ button_class|default('btn btn-primary btn-lg w-100 rounded-4 shadow-sm') }}">
+        <i class="fas fa-save me-2"></i>{{ button_label|default('Enregistrer') }}
+    </button>
 </div>
 
-{# On ferme SANS rien laisser à Symfony #}
 {{ form_end(form, {render_rest: false}) }}
+
+<style>
+    .ls-wide { letter-spacing: 0.05em; }
+    .text-indigo { color: #4f46e5; }
+    .bg-light-subtle { background-color: #f8fafc; }
+    .custom-relation-check .form-check-input:checked {
+        background-color: #4f46e5;
+        border-color: #4f46e5;
+    }
+    .relation-scroll-area::-webkit-scrollbar { width: 4px; }
+    .relation-scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+</style>

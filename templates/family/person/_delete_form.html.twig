@@ -1,8 +1,44 @@
-<form method="post" action="{{ path('app_person_delete', {'id': person.id}) }}" onsubmit="return confirm('Attention : Cette action est irréversible. Voulez-vous vraiment supprimer ce membre de la famille ?');">
-    {# Le token CSRF est indispensable pour valider la sécurité du côté du contrôleur #}
+{# On retire l'attribut onsubmit car le Modal Bootstrap sert déjà de confirmation #}
+<form method="post" action="{{ path('app_person_delete', {'id': person.id}) }}">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ person.id) }}">
     
-    <button class="btn btn-outline-danger btn-sm">
-        <i class="fas fa-trash-alt me-1"></i> Supprimer définitivement
+    <button class="btn-delete-premium">
+        <span class="btn-content">
+            <span class="btn-text">Oui, supprimer définitivement</span>
+            <i class="fas fa-trash-can ms-2 opacity-50"></i>
+        </span>
     </button>
 </form>
+
+<style>
+    .btn-delete-premium {
+        width: 100%;
+        background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+        color: white;
+        border: none;
+        padding: 18px;
+        border-radius: 18px;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 20px -6px rgba(220, 38, 38, 0.5);
+    }
+
+    .btn-delete-premium:hover {
+        transform: scale(1.02);
+        filter: brightness(1.1);
+        box-shadow: 0 12px 25px -5px rgba(220, 38, 38, 0.6);
+    }
+
+    .btn-delete-premium:active {
+        transform: scale(0.98);
+    }
+
+    .btn-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

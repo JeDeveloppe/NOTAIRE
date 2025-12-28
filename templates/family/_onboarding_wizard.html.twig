@@ -1,0 +1,47 @@
+{# templates/family/_onboarding_wizard.html.twig #}
+
+{% set count = items|length %}
+{% set target = 4 %}
+
+{% if count > 0 and count < target %}
+    <div class="onboarding-progress-wrapper mb-5 p-4 rounded-5 shadow-smooth bg-white border border-indigo-light animate__animated animate__fadeInDown">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="onboarding-badge">
+                <i class="fas fa-database me-2"></i>Base de données
+            </div>
+            <span class="small fw-bold text-indigo">{{ count }} / {{ target }} membres conseillés</span>
+        </div>
+        
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="fw-black mb-1">
+                    {% if count == 1 %}
+                        Premier profil enregistré
+                    {% else %}
+                        <span class="text-success"><i class="fas fa-check-circle me-1"></i> Simulations activées !</span>
+                    {% endif %}
+                </h5>
+                <p class="text-muted small mb-0">
+                    {% if count >= 2 %}
+                        Vos données permettent d'analyser vos **abattements fiscaux**. Découvrez vos opportunités d'optimisation.
+                    {% else %}
+                        Ajoutez les personnes concernées par vos projets pour simuler vos abattements fiscaux.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 mt-3 mt-md-0 text-md-end">
+                {% if count >= 2 %}
+                    <a href="{{ path('app_optimization_dashboard') }}" class="btn btn-success btn-sm px-4 rounded-pill shadow-sm py-2 animate__animated animate__pulse animate__infinite">
+                        <i class="fas fa-calculator me-2"></i>Lancer l'analyse
+                    </a>
+                {% else %}
+                    <div class="progress rounded-pill shadow-inner" style="height: 12px; background-color: #f1f5f9;">
+                        <div class="progress-bar bg-indigo progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: {{ (count / target) * 100 }}%"></div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endif %}
