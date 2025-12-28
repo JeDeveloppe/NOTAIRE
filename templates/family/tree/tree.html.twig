@@ -1,0 +1,181 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Expertise Successorale - {{ person.firstname }}{% endblock %}
+
+{% block body %}
+<div class="tree-wrapper">
+    
+    {# --- TOOLBAR INTÉGRÉE --- #}
+    <div class="tree-toolbar">
+        <div class="toolbar-group">
+            <a href="{{ path('app_person_index') }}" class="tool-btn" title="Retour à la liste">
+                <i class="fas fa-list-ul"></i>
+            </a>
+            <div class="tool-divider"></div>
+            <div class="tool-info">
+                <span class="text-muted small d-block" style="line-height: 1;">Analyse de</span>
+                <strong>{{ person.firstname }} {{ person.lastname|upper }}</strong>
+            </div>
+        </div>
+
+        <div class="toolbar-group">
+            <div class="simulation-badge">
+                <i class="fas fa-calculator me-2"></i>
+                Base de simulation : <strong>{{ refAmount|number_format(0, ',', ' ') }} €</strong>
+            </div>
+            <button class="tool-btn accent" onclick="window.print()">
+                <i class="fas fa-file-pdf me-2"></i>Rapport
+            </button>
+        </div>
+    </div>
+
+    {# --- ZONE DE DESSIN DE L'ARBRE --- #}
+    <div class="tree-canvas">
+        <div class="tree">
+            <ul>
+                <li>
+                    {# --- ASCENDANTS --- #}
+                    {% if person.parents|length > 0 %}
+                        <div class="nodes-row">
+                            {% for parent in person.parents %}
+                                {{ _self.render_node(parent, 'Ascendant', 'ancestor', simulations) }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {# --- LIGNE MÉDIANE : FRATRIE + PIVOT --- #}
+                    <ul class="middle-row">
+                        {% for sibling in siblings %}
+                            <li>
+                                {{ _self.render_node(sibling, 'Fratrie', 'sibling', simulations) }}
+                            </li>
+                        {% endfor %}
+
+                        <li class="pivot-item">
+                            {# LE PIVOT (DONATEUR) #}
+                            <div class="person-card pivot shadow {{ person.gender == 'M' ? 'male' : 'female' }}">
+                                <div class="card-role">Donateur Pivot</div>
+                                <div class="card-content text-center">
+                                    <h4 class="name mb-0">{{ person.firstname }}</h4>
+                                    <span class="lastname">{{ person.lastname|upper }}</span>
+                                    <div class="mt-2">
+                                        <span class="badge rounded-pill bg-light text-dark border">{{ person|age }} ans</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# --- DESCENDANTS --- #}
+                            {% if person.children|length > 0 %}
+                                <ul>
+                                    {% for child in person.children %}
+                                        <li>
+                                            {{ _self.render_node(child, 'Descendant', 'descendant', simulations) }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{# --- MACRO POUR ÉVITER LA RÉPÉTITION DES NODES --- #}
+{% macro render_node(relative, roleLabel, cssClass, simulations) %}
+    {% set sim = simulations[relative.id] ?? null %}
+    <div class="person-card {{ cssClass }} shadow-sm">
+        <div class="card-role">{{ roleLabel }}</div>
+        <div class="card-content">
+            <span class="name">{{ relative.firstname }}</span>
+            
+            {% if sim %}
+                <div class="tax-data">
+                    <div class="tax-line">
+                        <span>Abattement</span>
+                        <span class="val text-success">{{ sim.allowance_applied|number_format(0, ',', ' ') }}€</span>
+                    </div>
+                    <div class="tax-line total">
+                        <span>Coût fiscal</span>
+                        <span class="val {{ sim.tax_to_pay > 0 ? 'text-danger' : 'text-muted' }}">
+                            {{ sim.tax_to_pay|number_format(0, ',', ' ') }}€
+                        </span>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <a href="{{ path('app_person_tree', {id: relative.id}) }}" class="node-link" title="Centrer l'analyse">
+                <i class="fas fa-crosshairs"></i>
+            </a>
+        </div>
+    </div>
+{% endmacro %}
+
+
+
+<style>
+    .tree-wrapper {
+        background: #f8fafc; min-height: 90vh; border-radius: 16px;
+        margin: 20px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* Toolbar */
+    .tree-toolbar {
+        background: white; border-bottom: 1px solid #e2e8f0;
+        padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .toolbar-group { display: flex; align-items: center; gap: 15px; }
+    .tool-btn {
+        width: 40px; height: 40px; border-radius: 10px; border: 1px solid #e2e8f0;
+        background: white; color: #64748b; display: flex; align-items: center; justify-content: center;
+        text-decoration: none; transition: 0.2s;
+    }
+    .tool-btn:hover { background: #f1f5f9; color: #1e293b; }
+    .tool-btn.accent { width: auto; padding: 0 20px; background: #1e293b; color: white; border: none; }
+    .simulation-badge { background: #eff6ff; color: #1e40af; padding: 8px 15px; border-radius: 8px; font-size: 0.85rem; border: 1px solid #dbeafe; }
+
+    /* Cartes et Nodes */
+    .person-card {
+        background: white; border-radius: 12px; min-width: 170px;
+        position: relative; border: 1px solid #e2e8f0; transition: 0.3s; text-align: left;
+    }
+    .card-role { 
+        font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.8px;
+        padding: 5px 12px; background: #f8fafc; border-bottom: 1px solid #edf2f7; color: #94a3b8; font-weight: 800;
+    }
+    .card-content { padding: 12px; position: relative; }
+    .name { font-weight: 700; font-size: 0.95rem; color: #1e293b; }
+    
+    /* Données Fiscales dans la carte */
+    .tax-data { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0; }
+    .tax-line { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 2px; }
+    .tax-line.total { font-weight: 700; margin-top: 4px; }
+    .val { font-family: 'Monaco', 'Consolas', monospace; }
+
+    /* Styles Pivot */
+    .pivot { border: 2px solid #3b82f6; transform: scale(1.1); z-index: 10; }
+    .pivot.male .card-role { background: #3b82f6; color: white; }
+    .pivot.female { border-color: #ec4899; }
+    .pivot.female .card-role { background: #ec4899; color: white; }
+
+    /* Lignes de l'arbre */
+    .tree ul { padding-top: 25px; position: relative; display: flex; justify-content: center; }
+    .tree li { text-align: center; list-style-type: none; position: relative; padding: 25px 10px 0 10px; }
+    .tree li::before, .tree li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 2px solid #cbd5e0; width: 50%; height: 25px; }
+    .tree li::after { right: auto; left: 50%; border-left: 2px solid #cbd5e0; }
+    .tree li:only-child::after, .tree li:only-child::before { display: none; }
+    .tree li:only-child { padding-top: 0; }
+    .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+    .tree li:last-child::before { border-right: 2px solid #cbd5e0; border-radius: 0 8px 0 0; }
+    .tree li:first-child::after { border-radius: 8px 0 0 0; }
+    .tree ul ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 2px solid #cbd5e0; height: 25px; }
+
+    /* Liens d'interaction */
+    .node-link { position: absolute; top: 12px; right: 12px; color: #cbd5e0; font-size: 0.8rem; transition: 0.2s; }
+    .node-link:hover { color: #3b82f6; }
+    .nodes-row { display: flex; gap: 40px; justify-content: center; margin-bottom: 40px; }
+
+    @media print { .tree-toolbar, .node-link { display: none; } .tree-wrapper { border: none; margin: 0; } }
+</style>
+{% endblock %}

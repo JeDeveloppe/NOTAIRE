@@ -1,0 +1,103 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{{ path('app_home') }}" class="brand">Notaire<strong>App</strong></a>
+
+        <ul class="nav-links">
+            <li><a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">Accueil</a></li>
+            
+            {% if is_granted('ROLE_USER') %}
+                {# Lien vers le nouveau Dashboard #}
+                <li>
+                    <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
+                        <i class="fas fa-chart-line me-1"></i> Dashboard
+                    </a>
+                </li>
+                {# Lien vers la liste des membres #}
+                <li>
+                    <a href="{{ path('app_person_index') }}" class="{{ app.request.attributes.get('_route') == 'app_person_index' ? 'active' : '' }}">
+                        <i class="fas fa-users me-1"></i> Ma Famille
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <div class="nav-auth">
+            {% if app.user %}
+                <div class="user-info">
+                    <span class="user-email">{{ app.user.email }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <span class="badge-admin">Admin</span>
+                    {% endif %}
+                </div>
+                <a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn-login">Connexion</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<style>
+    :root {
+        --nav-bg: #1e293b; /* Bleu ardoise très foncé */
+        --nav-active: #3b82f6; /* Bleu accent */
+    }
+
+    .navbar { 
+        display: flex; 
+        justify-content: center; 
+        padding: 0; 
+        background: var(--nav-bg); 
+        color: white; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .nav-container { 
+        width: 100%;
+        max-width: 1400px;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 0.75rem 2rem; 
+    }
+
+    .brand { font-size: 1.25rem; color: white; text-decoration: none; letter-spacing: -0.5px; }
+    .brand strong { color: var(--nav-active); }
+
+    .nav-links { list-style: none; display: flex; gap: 5px; margin: 0; padding: 0; }
+    .nav-links a { 
+        color: #94a3b8; 
+        text-decoration: none; 
+        padding: 8px 16px; 
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    
+    .nav-links a:hover { color: white; background: rgba(255,255,255,0.05); }
+    .nav-links a.active { color: white; background: var(--nav-active); }
+
+    .nav-auth { display: flex; align-items: center; gap: 20px; }
+    .user-info { display: flex; flex-direction: column; align-items: flex-end; }
+    .user-email { font-size: 0.8rem; color: #94a3b8; }
+
+    .btn-login { background: var(--nav-active); padding: 8px 20px; border-radius: 8px; color: white; text-decoration: none; font-weight: 600; }
+    .btn-logout { 
+        color: #f1f5f9; 
+        background: rgba(231, 76, 60, 0.1); 
+        width: 38px; 
+        height: 38px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border-radius: 8px; 
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-logout:hover { background: #e74c3c; color: white; }
+
+    .badge-admin { background: #f1c40f; color: #000; padding: 1px 6px; font-size: 0.65rem; border-radius: 4px; font-weight: 800; text-transform: uppercase; }
+</style>

@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle personne{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <a href="{{ path('app_person_index') }}" class="text-decoration-none text-secondary mb-3 d-inline-block">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white py-3">
+                    <h2 class="h4 mb-0">Ajouter une personne</h2>
+                </div>
+                <div class="card-body p-4">
+                    {{ include('family/person/_form.html.twig', {
+                        'button_label': 'Créer la personne',
+                        'button_class': 'btn-success'
+                    }) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Étude Notariale - Accueil{% endblock %}
+
+{% block body %}
+    {# 1. Section Hero (Header) #}
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
+        <div class="container-fluid py-5 text-center">
+            <h1 class="display-5 fw-bold text-primary">Conseil & Expertise Notariale</h1>
+            <p class="col-md-8 fs-4 mx-auto text-muted">
+                Accompagnement juridique pour vos projets immobiliers, successions et droit de la famille.
+            </p>
+            {# TEST JS : Bouton qui ouvre la Modale #}
+            <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="modal" data-bs-target="#appointmentModal">
+                Prendre rendez-vous
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        {# 2. Section Services (Cartes) #}
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Immobilier</h5>
+                    <p class="card-text">Sécurisez vos transactions : compromis, vente, copropriété et baux.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Famille</h5>
+                    <p class="card-text">Mariage, PACS, donations et protection de vos proches.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Succession</h5>
+                    <p class="card-text">Anticipez et gérez la transmission de votre patrimoine en toute sérénité.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# 3. TEST JS : Accordéon (FAQ) #}
+    <h2 class="mb-4">Questions Fréquentes</h2>
+    <div class="accordion mb-5" id="accordionFaq">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                    Quels sont les frais de notaire ?
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionFaq">
+                <div class="accordion-body">
+                    Ils se composent principalement de taxes reversées à l'État, de débours et des émoluments du notaire.
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                    Pourquoi consulter un notaire avant un achat ?
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFaq">
+                <div class="accordion-body">
+                    Pour vérifier la validité juridique du titre de propriété et purger les droits de préemption.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# 4. TEST JS : Modale (Fenêtre surgissante) #}
+    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Demande de rendez-vous</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Nom complet</label>
+                            <input type="text" class="form-control" placeholder="Jean Dupont">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Type de dossier</label>
+                            <select class="form-select">
+                                <option>Achat immobilier</option>
+                                <option>Contrat de mariage</option>
+                                <option>Succession</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary">Envoyer la demande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

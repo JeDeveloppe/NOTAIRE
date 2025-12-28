@@ -1,0 +1,259 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\User;
+use App\Entity\Person;
+use App\Entity\Donation;
+use App\Repository\DonationRuleRepository;
+
+class DonationService
+{
+    public function __construct(
+        private DonationRuleRepository $ruleRepository,
+        private PersonService $personService,
+        private array $taxBrackets
+    ) {}
+
+    /**
+     * BILAN COMPLET : Scanne tout l'arbre pour les simulations et l'historique
+     */
+    public function getFullPatrimonialBilan(Person $person): array
+    {
+        // 1. Simulations de RÉCEPTION (De qui je peux recevoir ?)
+        $received = [];
+        $potentialDonors = array_merge(
+            $person->getParents()->toArray(),
+            $this->getGrandParents($person),
+            $this->getGreatGrandParents($person),
+            $person->getUnclesAndAunts() // Méthode déjà présente dans ton entité Person
+        );
+
+        foreach ($potentialDonors as $donor) {
+            $received[] = $this->simulateMaxTaxFree($donor, $person);
+        }
+
+        // 2. Simulations de TRANSMISSION (À qui je peux donner ?)
+        $given = [];
+        $targets = array_merge(
+            $person->getChildren()->toArray(),
+            $this->getGrandChildren($person),
+            $this->getGreatGrandChildren($person),
+            $person->getSiblings(),
+            $person->getNephewsAndNieces()
+        );
+
+        foreach ($targets as $target) {
+            $given[] = $this->simulateMaxTaxFree($person, $target);
+        }
+
+        // 3. Registre Historique Réel (Dons déjà enregistrés)
+        $historyReceived = $person->getDonationsReceived()->toArray();
+        $historyGiven = $person->getDonationsGiven()->toArray();
+
+        $sorter = fn($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt();
+        usort($historyReceived, $sorter);
+        usort($historyGiven, $sorter);
+
+        return [
+            'person' => $person,
+            'receivedSimulations' => $received,
+            'givenSimulations' => $given,
+            'history_received' => $historyReceived,
+            'history_given' => $historyGiven,
+            'totalGlobal' => array_sum(array_column($given, 'total_allowance'))
+        ];
+    }
+
+    /**
+     * Calcule la capacité restante pour un binôme précis
+     */
+    public function simulateMaxTaxFree(Person $donor, Person $beneficiary): array
+    {
+        if (!$this->personService->isAlive($donor) || !$this->personService->isAlive($beneficiary)) {
+            return $this->formatEmptyResult($donor, $beneficiary);
+        }
+
+        $consumedAmounts = $this->getConsumedAmountsByTaxSystem($donor, $beneficiary);
+        $relCode = $this->determineRelationshipCode($donor, $beneficiary);
+        
+        // On récupère les règles (Abattement classique, Sarkozy, etc.)
+        $rules = $this->ruleRepository->findByRelationshipCode($relCode);
+        $rulesAnalysis = $this->buildRulesAnalysis($donor, $beneficiary, $rules, $consumedAmounts);
+
+        $totalAvailable = 0;
+        foreach ($rulesAnalysis as $rule) {
+            if ($rule['is_valid']) {
+                $totalAvailable += $rule['available'];
+            }
+        }
+
+        return [
+            'donor' => $donor,
+            'beneficiary' => $beneficiary,
+            'relationship_code' => $relCode,
+            'rules' => $rulesAnalysis,
+            'total_allowance' => $totalAvailable,
+        ];
+    }
+
+    private function buildRulesAnalysis(Person $donor, Person $beneficiary, array $rules, array $consumedAmounts): array
+    {
+        $analysis = [];
+        $donorAge = $this->personService->calculateAge($donor);
+        $beneficiaryAge = $this->personService->calculateAge($beneficiary);
+
+        foreach ($rules as $rule) {
+            $ageOk = ($donorAge < $rule->getDonorMaxAge()) && ($beneficiaryAge >= $rule->getReceiverMinAge());
+            $taxSystem = strtolower($rule->getTaxSystem() ?? 'classic');
+
+            $alreadyGiven = str_contains($taxSystem, 'sarkozy') ? $consumedAmounts['sarkozy'] : $consumedAmounts['classic'];
+            $available = $ageOk ? max(0, $rule->getAllowanceAmount() - $alreadyGiven) : 0;
+
+            $reason = "";
+            if ($donorAge >= $rule->getDonorMaxAge()) $reason = "Âge donateur trop élevé (> " . $rule->getDonorMaxAge() . " ans)";
+            if ($beneficiaryAge < $rule->getReceiverMinAge()) $reason = "Bénéficiaire trop jeune (< " . $rule->getReceiverMinAge() . " ans)";
+
+            $analysis[] = [
+                'label' => $rule->getLabel(),
+                'max_allowance' => (float)$rule->getAllowanceAmount(),
+                'consumed' => (float)$alreadyGiven,
+                'available' => (float)$available,
+                'is_valid' => $ageOk,
+                'tax_system' => $taxSystem,
+                'reason' => $reason
+            ];
+        }
+        return $analysis;
+    }
+
+    private function getConsumedAmountsByTaxSystem(Person $donor, Person $beneficiary): array
+    {
+        $limitDate = new \DateTimeImmutable('-15 years');
+        $totals = ['classic' => 0.0, 'sarkozy' => 0.0];
+
+        foreach ($beneficiary->getDonationsReceived() as $past) {
+            if ($past->getDonor() === $donor && $past->getCreatedAt() >= $limitDate) {
+                $type = strtolower($past->getType() ?? 'classic');
+                if (str_contains($type, 'sarkozy')) {
+                    $totals['sarkozy'] += (float)$past->getAmount();
+                } else {
+                    $totals['classic'] += (float)$past->getAmount();
+                }
+            }
+        }
+        return $totals;
+    }
+
+    /**
+     * Logique de détection des liens de parenté fiscaux
+     */
+    public function determineRelationshipCode(Person $donor, Person $beneficiary): string
+    {
+        // 1. Ligne descendante
+        if ($beneficiary->getParents()->contains($donor)) return 'ENFANT';
+        
+        foreach ($beneficiary->getParents() as $p) {
+            if ($p->getParents()->contains($donor)) return 'PETIT_ENFANT';
+            foreach ($p->getParents() as $gp) {
+                if ($gp->getParents()->contains($donor)) return 'ARRIERE_PETIT_ENFANT';
+            }
+        }
+
+        // 2. Ligne ascendante
+        if ($donor->getParents()->contains($beneficiary)) return 'PARENT';
+
+        // 3. Collatéraux
+        // Frères & Soeurs
+        foreach ($donor->getParents() as $dp) {
+            if ($beneficiary->getParents()->contains($dp)) return 'FRERE_SOEUR';
+        }
+        
+        // Oncles & Tantes (Si le donateur est le frère d'un parent du bénéficiaire)
+        foreach ($beneficiary->getParents() as $parent) {
+            if (in_array($donor, $parent->getSiblings(), true)) return 'ONCLE_TANTE';
+        }
+
+        // Neveux & Nièces (Si le bénéficiaire est l'enfant d'un frère du donateur)
+        foreach ($donor->getSiblings() as $sibling) {
+            if ($sibling->getChildren()->contains($beneficiary)) return 'NEVEU_NIECE';
+        }
+
+        return 'TIERS';
+    }
+
+    // --- HELPERS DE NAVIGATION GÉNÉALOGIQUE ---
+
+    private function getGrandParents(Person $person): array {
+        $gps = [];
+        foreach ($person->getParents() as $parent) {
+            foreach ($parent->getParents() as $gp) { $gps[] = $gp; }
+        }
+        return $gps;
+    }
+
+    private function getGreatGrandParents(Person $person): array {
+        $ggps = [];
+        foreach ($this->getGrandParents($person) as $gp) {
+            foreach ($gp->getParents() as $ggp) { $ggps[] = $ggp; }
+        }
+        return $ggps;
+    }
+
+    private function getGrandChildren(Person $person): array {
+        $gcs = [];
+        foreach ($person->getChildren() as $child) {
+            foreach ($child->getChildren() as $gc) { $gcs[] = $gc; }
+        }
+        return $gcs;
+    }
+
+    private function getGreatGrandChildren(Person $person): array {
+        $ggcs = [];
+        foreach ($this->getGrandChildren($person) as $gc) {
+            foreach ($gc->getChildren() as $ggc) { $ggcs[] = $ggc; }
+        }
+        return $ggcs;
+    }
+
+    private function formatEmptyResult(Person $donor, Person $beneficiary): array {
+        return ['donor' => $donor, 'beneficiary' => $beneficiary, 'relationship_code' => 'N/A', 'rules' => [], 'total_allowance' => 0];
+    }
+
+    /**
+     * Calcule les statistiques globales pour le tableau de bord de l'utilisateur
+     */
+/**
+     * Calcule les statistiques détaillées pour le dashboard familial
+     */
+    public function getUserDashboardStats(User $user): array
+    {
+        $persons = $user->getPeople();
+        $limitDate = new \DateTimeImmutable('-15 years');
+        
+        $activeDonations = [];
+        $expiredDonations = [];
+
+        foreach ($persons as $person) {
+            // On récupère les dons donnés par chaque membre de la famille
+            foreach ($person->getDonationsGiven() as $donation) {
+                if ($donation->getCreatedAt() >= $limitDate) {
+                    $activeDonations[] = $donation;
+                } else {
+                    $expiredDonations[] = $donation;
+                }
+            }
+        }
+
+        // Tri par date décroissante pour l'affichage
+        $sorter = fn($a, $b) => $b->getCreatedAt() <=> $a->getCreatedAt();
+        usort($activeDonations, $sorter);
+        usort($expiredDonations, $sorter);
+
+        return [
+            'totalMembers' => count($persons),
+            'activeDonations' => $activeDonations,
+            'expiredDonations' => $expiredDonations,
+        ];
+    }
+}

@@ -1,0 +1,96 @@
+{# templates/family/person/_form.html.twig #}
+{{ form_start(form) }}
+
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <h5 class="text-muted border-bottom pb-2">État Civil</h5>
+    </div>
+
+    {# Prénom #}
+    <div class="col-md-6">
+        <label class="form-label">{{ form_label(form.firstname) }}</label>
+        {{ form_widget(form.firstname, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.firstname) }}
+    </div>
+
+    {# Nom #}
+    <div class="col-md-6">
+        <label class="form-label">{{ form_label(form.lastname) }}</label>
+        {{ form_widget(form.lastname, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.lastname) }}
+    </div>
+
+    {# Naissance #}
+    <div class="col-md-6">
+        <label class="form-label">{{ form_label(form.birthdate) }}</label>
+        {{ form_widget(form.birthdate, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.birthdate) }}
+    </div>
+
+    {# Genre #}
+    <div class="col-md-6">
+        <label class="form-label d-block">Genre / Civilité</label>
+        <div class="gender-inline-wrapper border rounded p-2 bg-white d-flex gap-4">
+            {% for child in form.gender %}
+                <div class="form-check form-check-inline mb-0">
+                    {{ form_widget(child, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# Blocs Conditionnels #}
+{% if not is_first %}
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <h5 class="text-muted border-bottom pb-2">Généalogie</h5>
+        </div>
+
+        {% if form.deathDate is defined %}
+            <div class="col-12">
+                <label class="form-label">{{ form_label(form.deathDate) }}</label>
+                {{ form_widget(form.deathDate, {'attr': {'class': 'form-control'}}) }}
+            </div>
+        {% endif %}
+
+        {% if form.parents is defined %}
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded border h-100">
+                    <label class="form-label fw-bold d-block">Parents</label>
+                    {% for parent_choice in form.parents %}
+                        <div class="form-check">
+                            {{ form_widget(parent_choice) }}
+                            {{ form_label(parent_choice) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if form.children is defined %}
+            <div class="col-md-6">
+                <div class="p-3 bg-light rounded border h-100">
+                    <label class="form-label fw-bold d-block">Enfants</label>
+                    {% for child_choice in form.children %}
+                        <div class="form-check">
+                            {{ form_widget(child_choice) }}
+                            {{ form_label(child_choice) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endif %}
+
+<div class="border-top pt-4">
+    {# On rend le jeton de sécurité manuellement #}
+    {{ form_widget(form._token) }}
+    
+    <button type="submit" class="btn btn-primary btn-lg w-100">Enregistrer</button>
+</div>
+
+{# On ferme SANS rien laisser à Symfony #}
+{{ form_end(form, {render_rest: false}) }}

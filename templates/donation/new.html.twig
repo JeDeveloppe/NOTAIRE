@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Enregistrer un acte de donation{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                {# En-tête style "Dossier Notarial" #}
+                <div class="bg-primary py-3 px-4 d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-2 me-3">
+                        <i class="fas fa-file-signature text-white"></i>
+                    </div>
+                    <h2 class="h5 fw-bold mb-0 text-white">Nouvel Acte de Donation</h2>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                        
+                        {# Erreurs Globales (ex: Donateur == Bénéficiaire) #}
+                        {% if not form.vars.valid %}
+                            <div class="alert alert-danger border-0 rounded-3 shadow-sm mb-4">
+                                <h6 class="fw-bold"><i class="fas fa-exclamation-circle me-2"></i>Attention</h6>
+                                <ul class="mb-0 small">
+                                    {{ form_errors(form) }}
+                                    {% for child in form.children %}
+                                        {% for error in child.vars.errors %}
+                                            <li>{{ error.message }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-4 mb-4">
+                            {# DONATEUR #}
+                            <div class="col-md-6">
+                                {{ form_row(form.donor, {
+                                    'label': 'Donateur (Le disposant)',
+                                    'attr': {'class': 'form-select-lg border-2'}
+                                }) }}
+                            </div>
+                            {# BÉNÉFICIAIRE #}
+                            <div class="col-md-6">
+                                {{ form_row(form.beneficiary, {
+                                    'label': 'Bénéficiaire (Le gratifié)',
+                                    'attr': {'class': 'form-select-lg border-2'}
+                                }) }}
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            {# MONTANT #}
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">{{ form_label(form.amount) }}</label>
+                                <div class="input-group">
+                                    {{ form_widget(form.amount, {'attr': {'class': 'form-control-lg border-2', 'placeholder': '0.00'}}) }}
+                                    <span class="input-group-text bg-light border-2 fw-bold">€</span>
+                                </div>
+                                {{ form_help(form.amount) }}
+                            </div>
+                            {# TAXE PAYÉE #}
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">{{ form_label(form.taxPaid) }}</label>
+                                <div class="input-group">
+                                    {{ form_widget(form.taxPaid, {'attr': {'class': 'form-control-lg border-2', 'placeholder': '0.00'}}) }}
+                                    <span class="input-group-text bg-danger-subtle text-danger border-2 fw-bold">€</span>
+                                </div>
+                                {{ form_help(form.taxPaid) }}
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            {# TYPE DE DON #}
+                            <div class="col-md-6">
+                                {{ form_row(form.type, {
+                                    'label': 'Régime Fiscal',
+                                    'attr': {'class': 'form-select border-2'}
+                                }) }}
+                            </div>
+                            {# DATE #}
+                            <div class="col-md-6">
+                                {{ form_row(form.createdAt, {
+                                    'label': 'Date de l\'acte',
+                                    'attr': {'class': 'form-control border-2'}
+                                }) }}
+                            </div>
+                        </div>
+
+                        <div class="bg-light rounded-3 p-3 mb-4">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-info-circle text-primary mt-1 me-3"></i>
+                                <div class="small text-muted">
+                                    L'enregistrement de cet acte impactera les abattements disponibles pour une durée de <strong>15 ans</strong> à compter de la date saisie.
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4 opacity-10">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow">
+                                <i class="fas fa-save me-2"></i>Valider l'enregistrement
+                            </button>
+                            <a href="{{ path('app_family_dashboard') }}" class="btn btn-link text-muted">
+                                <i class="fas fa-times me-1"></i> Annuler la saisie
+                            </a>
+                        </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f8fafc; }
+    .card { border: none !important; }
+    .form-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; }
+    .form-select-lg, .form-control-lg { border-color: #e2e8f0 !important; }
+    .form-select-lg:focus, .form-control-lg:focus { border-color: #3b82f6 !important; box-shadow: none; }
+    .input-group-text { border-color: #e2e8f0 !important; }
+    .btn-primary { background-color: #2563eb; transition: all 0.2s; }
+    .btn-primary:hover { background-color: #1e40af; transform: translateY(-1px); }
+</style>
+{% endblock %}

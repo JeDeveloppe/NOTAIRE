@@ -1,23 +1,86 @@
-# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+# config/services.yaml
 
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-# See also https://symfony.com/doc/current/service_container/import.html
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # --- CONFIGURATION ADMIN (via .env) ---
+    admin_email: '%env(ADMIN_EMAIL)%'
+    admin_password: '%env(ADMIN_PASSWORD)%'
+
+    # --- CATALOGUE DES LIENS DE PARENTÉ ---
+    app.relationships:
+        - { name: 'Enfant', code: 'ENFANT' }
+        - { name: 'Petit-Enfant', code: 'PETIT_ENFANT' }
+        - { name: 'Arrière-Petit-Enfant', code: 'ARRIERE_PETIT_ENFANT' }
+        - { name: 'Frère / Sœur', code: 'FRERE_SOEUR' }
+        - { name: 'Neveu / Nièce', code: 'NEVEU_NIECE' }
+        - { name: 'Oncle / Tante', code: 'ONCLE_TANTE' }
+        - { name: 'Époux / PACS', code: 'CONJOINT' }
+        - { name: 'Personne Handicapée', code: 'HANDICAP' }
+        - { name: 'Tiers / Concubin', code: 'TIERS' }
+
+    # --- BARÈMES D'IMPOSITION (Applicables après abattement) ---
+    app.tax_brackets:
+        progressif_direct: # Pour ENFANT, PETIT_ENFANT, CONJOINT, HANDICAP
+            - { limit: 8072, rate: 0.05 }
+            - { limit: 12109, rate: 0.10 }
+            - { limit: 15932, rate: 0.15 }
+            - { limit: 552324, rate: 0.20 }
+            - { limit: 902838, rate: 0.30 }
+            - { limit: 1805677, rate: 0.40 }
+            - { limit: null, rate: 0.45 }
+        freres_soeurs:
+            - { limit: 24430, rate: 0.35 }
+            - { limit: null, rate: 0.45 }
+        neveux_nieces: 
+            - { limit: null, rate: 0.55 }
+        tiers:
+            - { limit: null, rate: 0.60 }
+
+    # --- CATALOGUE COMPLET DES RÈGLES DE DONATION (MAJ 2025) ---
+    app.donation_rules:
+        # --- LIGNE DIRECTE (ENFANTS) ---
+        - { label: 'Abattement Parent-Enfant', relationship_code: 'ENFANT', amount: 100000, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
+        - { label: 'Sarkozy (Argent) - Enfant', relationship_code: 'ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+
+        # --- LIGNE DIRECTE (PETITS-ENFANTS) ---
+        - { label: 'Abattement Petit-Enfant', relationship_code: 'PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
+        - { label: 'Sarkozy (Argent) - Petit-Enfant', relationship_code: 'PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+
+        # --- LIGNE DIRECTE (ARRIÈRE-PETITS-ENFANTS) ---
+        - { label: 'Abattement Arrière-Petit-Enfant', relationship_code: 'ARRIERE_PETIT_ENFANT', amount: 5310, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
+        - { label: 'Sarkozy (Argent) - Arrière-Petit-Enfant', relationship_code: 'ARRIERE_PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+
+        # --- COLLATÉRAUX (FRÈRES / SOEURS) ---
+        - { label: 'Abattement Frères et Sœurs', relationship_code: 'FRERE_SOEUR', amount: 15932, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'freres_soeurs' }
+
+        # --- COLLATÉRAUX (NEVEUX / NIÈCES) ---
+        - { label: 'Abattement Neveux/Nièces', relationship_code: 'NEVEU_NIECE', amount: 7967, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'neveux_nieces' }
+        - { label: 'Sarkozy (Argent) - Neveu/Nièce', relationship_code: 'NEVEU_NIECE', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+
+        # --- COLLATÉRAUX (ONCLES / TANTES) ---
+        - { label: 'Abattement reçu d’un Oncle/Tante', relationship_code: 'ONCLE_TANTE', amount: 7967, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'neveux_nieces' }
+        - { label: 'Sarkozy (Argent) - Reçu d’un Oncle/Tante', relationship_code: 'ONCLE_TANTE', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+
+        # --- CONJOINTS ---
+        - { label: 'Abattement Époux / PACS', relationship_code: 'CONJOINT', amount: 80724, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
+
+        # --- CAS SPÉCIFIQUES ---
+        - { label: 'Abattement Spécifique Handicap', relationship_code: 'HANDICAP', amount: 159325, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
+        - { label: 'Abattement Tiers / Concubin', relationship_code: 'TIERS', amount: 1594, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'tiers' }
 
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
+        bind:
+            $adminEmail: '%admin_email%'
+            $adminPassword: '%admin_password%'
+            $relationships: '%app.relationships%'
+            $donationRules: '%app.donation_rules%'
+            $taxBrackets: '%app.tax_brackets%'
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
-
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'

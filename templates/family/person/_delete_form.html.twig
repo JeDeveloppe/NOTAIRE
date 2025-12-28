@@ -1,0 +1,8 @@
+<form method="post" action="{{ path('app_person_delete', {'id': person.id}) }}" onsubmit="return confirm('Attention : Cette action est irréversible. Voulez-vous vraiment supprimer ce membre de la famille ?');">
+    {# Le token CSRF est indispensable pour valider la sécurité du côté du contrôleur #}
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ person.id) }}">
+    
+    <button class="btn btn-outline-danger btn-sm">
+        <i class="fas fa-trash-alt me-1"></i> Supprimer définitivement
+    </button>
+</form>
