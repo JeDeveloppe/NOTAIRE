@@ -16,20 +16,48 @@ class TaxOptimizationService
 
     public function getDonationAnalyses(User $user): array
     {
-        $persons = $user->getPeople();
+        $people = $user->getPeople();
         $analysis = [
-            'expired_periods' => [], // Abattements passés non saturés
-            'active_periods' => [],  // Abattements en cours (dans le délai des 15 ans)
-            'total_missed' => 0      // Total du potentiel non utilisé
+            'expired_periods' => [], // Abattements passés avec reliquat non utilisé
+            'active_periods' => [],  // Abattements en cours (cycle de 15 ans actif)
+            'never_used' => [],      // NOUVEAU : Droits jamais activés (perte de chance)
+            'total_missed' => 0      // Somme des reliquats + droits jamais activés
         ];
 
-        foreach ($persons as $person) {
+        // 1. Analyse des dons existants (Logique existante)
+        foreach ($people as $person) {
             foreach ($person->getDonationsGiven() as $donation) {
                 $this->processSingleDonation($donation, $analysis);
             }
         }
 
-        // Tri du plus récent au plus ancien
+        // 2. Analyse des relations "vierges" (Opportunités totalement manquées)
+        foreach ($people as $donor) {
+            foreach ($people as $beneficiary) {
+                if ($donor === $beneficiary) continue;
+
+                // On vérifie s'il existe au moins un don entre ces deux personnes
+                $donations = $this->donationService->getDonationsBetween($donor, $beneficiary);
+
+                if (empty($donations)) {
+                    // Si aucun don n'a été fait, on simule ce qui "aurait pu être purgé" il y a 15 ans
+                    $simulation = $this->donationService->simulateMaxTaxFree($donor, $beneficiary);
+                    foreach ($simulation['rules'] as $rule) {
+                        if ($rule['is_valid'] && $rule['available'] > 0) {
+                            $analysis['never_used'][] = [
+                                'donor' => $donor->getFirstname(),
+                                'beneficiary' => $beneficiary->getFirstname(),
+                                'label' => $rule['label'],
+                                'amount' => $rule['available']
+                            ];
+                            $analysis['total_missed'] += $rule['available'];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tris chronologiques
         usort($analysis['expired_periods'], fn($a, $b) => $b['startDate'] <=> $a['startDate']);
         usort($analysis['active_periods'], fn($a, $b) => $b['startDate'] <=> $a['startDate']);
 
@@ -48,7 +76,6 @@ class TaxOptimizationService
         $endDate = $startDate->modify("+$frequency years");
         $today = new \DateTimeImmutable();
 
-        // Calcul du potentiel non optimisé pour CE don précis
         $unoptimized = max(0, $maxAllowance - $donation->getAmount());
 
         $data = [
@@ -85,26 +112,27 @@ class TaxOptimizationService
         return null;
     }
 
+    // TaxOptimizationService.php
 
-    /**
-     * Calcule toutes les opportunités de dons au sein de la famille
-     * à une date donnée (permet de simuler le futur).
-     */
     public function getGlobalFamilyPlan(User $user, ?\DateTimeInterface $referenceDate = null): array
     {
-        // Si aucune date n'est fournie, on prend aujourd'hui
         $referenceDate = $referenceDate ?? new \DateTimeImmutable();
-
         $people = $user->getPeople();
         $plan = [];
+
+        // Liste des codes autorisés (Flux descendant uniquement)
+        $allowedCodes = ['ENFANT', 'PETIT_ENFANT', 'ARRIERE_PETIT_ENFANT'];
 
         foreach ($people as $donor) {
             foreach ($people as $beneficiary) {
                 if ($donor === $beneficiary) continue;
 
-                // On passe la date de référence au simulateur
-                // Note: Assurez-vous que votre DonationService supporte cet argument
                 $simulation = $this->donationService->simulateMaxTaxFree($donor, $beneficiary, $referenceDate);
+
+                // FILTRE : On ne garde que la ligne descendante
+                if (!in_array($simulation['relationship_code'], $allowedCodes)) {
+                    continue;
+                }
 
                 foreach ($simulation['rules'] as $rule) {
                     if ($rule['is_valid'] && $rule['available'] > 0) {
@@ -122,7 +150,6 @@ class TaxOptimizationService
             }
         }
 
-        // Tri par priorité (Sarkozy d'abord) puis montant disponible
         usort($plan, fn($a, $b) => [$a['priority'], $b['available']] <=> [$b['priority'], $a['available']]);
 
         return $plan;

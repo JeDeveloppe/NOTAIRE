@@ -163,43 +163,36 @@ class DonationService
                 }
             }
         }
-        dump( $totals);
+        dump($totals);
         return $totals;
     }
 
     /**
-     * Logique de détection des liens de parenté fiscaux
+     * Logique simplifiée de détection des liens de parenté fiscaux
      */
     public function determineRelationshipCode(Person $donor, Person $beneficiary): string
     {
-        // 1. Ligne descendante
-        if ($beneficiary->getParents()->contains($donor)) return 'ENFANT';
+        // --- 1. LIGNE DESCENDANTE (Robert donne à Marc) ---
+        if ($donor->getChildren()->contains($beneficiary)) return 'ENFANT';
 
-        foreach ($beneficiary->getParents() as $p) {
-            if ($p->getParents()->contains($donor)) return 'PETIT_ENFANT';
-            foreach ($p->getParents() as $gp) {
-                if ($gp->getParents()->contains($donor)) return 'ARRIERE_PETIT_ENFANT';
-            }
-        }
+        // Si Robert (donor) a Marc (beneficiary) dans ses petits-enfants
+        if (in_array($beneficiary, $this->getGrandChildren($donor), true)) return 'PETIT_ENFANT';
 
-        // 2. Ligne ascendante
+        if (in_array($beneficiary, $this->getGreatGrandChildren($donor), true)) return 'ARRIERE_PETIT_ENFANT';
+
+        // --- 2. LIGNE ASCENDANTE (Marc donne à Robert) ---
         if ($donor->getParents()->contains($beneficiary)) return 'PARENT';
 
-        // 3. Collatéraux
-        // Frères & Soeurs
-        foreach ($donor->getParents() as $dp) {
-            if ($beneficiary->getParents()->contains($dp)) return 'FRERE_SOEUR';
+        // Si Marc (donor) a Robert (beneficiary) dans ses grands-parents
+        if (in_array($beneficiary, $this->getGrandParents($donor), true)) return 'GRAND_PARENT';
+
+        // --- 3. COLLATÉRAUX ---
+        foreach ($donor->getParents() as $parent) {
+            if ($beneficiary->getParents()->contains($parent)) return 'FRERE_SOEUR';
         }
 
-        // Oncles & Tantes (Si le donateur est le frère d'un parent du bénéficiaire)
-        foreach ($beneficiary->getParents() as $parent) {
-            if (in_array($donor, $parent->getSiblings(), true)) return 'ONCLE_TANTE';
-        }
-
-        // Neveux & Nièces (Si le bénéficiaire est l'enfant d'un frère du donateur)
-        foreach ($donor->getSiblings() as $sibling) {
-            if ($sibling->getChildren()->contains($beneficiary)) return 'NEVEU_NIECE';
-        }
+        if (in_array($beneficiary, $donor->getNephewsAndNieces(), true)) return 'NEVEU_NIECE';
+        if (in_array($donor, $beneficiary->getNephewsAndNieces(), true)) return 'ONCLE_TANTE';
 
         return 'TIERS';
     }
@@ -290,5 +283,19 @@ class DonationService
             'activeDonations' => $activeDonations,
             'expiredDonations' => $expiredDonations,
         ];
+    }
+
+    /**
+     * Récupère tous les dons effectués entre un donateur et un bénéficiaire précis.
+     */
+    public function getDonationsBetween(Person $donor, Person $beneficiary): array
+    {
+        $results = [];
+        foreach ($donor->getDonationsGiven() as $donation) {
+            if ($donation->getBeneficiary() === $beneficiary) {
+                $results[] = $donation;
+            }
+        }
+        return $results;
     }
 }

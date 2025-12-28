@@ -52,13 +52,13 @@ class Person
     /**
      * @var Collection<int, Donation>
      */
-    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'donor')]
+    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'donor', cascade: ['remove'], orphanRemoval: true)]
     private Collection $donationsGiven;
 
     /**
      * @var Collection<int, Donation>
      */
-    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'beneficiary')]
+    #[ORM\OneToMany(targetEntity: Donation::class, mappedBy: 'beneficiary', cascade: ['remove'], orphanRemoval: true)]
     private Collection $donationsReceived;
 
     public function __construct()

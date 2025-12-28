@@ -1,151 +1,156 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Optimisation Fiscale - Analyse des Abattements
-{% endblock %}
+{% block title %}Analyse de la Perte de Chance Fiscale{% endblock %}
 
 {% block body %}
-	<div class="container-fluid py-5 bg-light min-vh-100">
-		<div
-			class="container">
-			{# --- HEADER --- #}
-			<div class="row mb-5 align-items-center">
-				<div class="col-md-8">
-					<h1 class="fw-bold display-6 mb-1">Analyse des Abattements</h1>
-					<p class="text-muted">Suivi détaillé de l'utilisation de vos droits de donation ligne par ligne.</p>
-				</div>
-				<div class="col-md-4 text-md-end">
-					<div class="p-3 bg-white shadow-sm rounded-4 border-start border-4 border-warning d-inline-block text-start">
-						<div class="small fw-bold text-warning text-uppercase" style="font-size: 0.6rem;">Potentiel non optimisé</div>
-						<div class="h3 fw-bold mb-0 text-dark">{{ totalMissed|number_format(0, ',', ' ') }}
-							€</div>
-					</div>
-				</div>
-			</div>
+<div class="container-fluid py-5 bg-light min-vh-100">
+    <div class="container">
+        {# --- HEADER --- #}
+        <div class="row mb-5 align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold display-6 mb-1">Analyse des Abattements</h1>
+                <p class="text-muted">Analyse historique de l'utilisation de vos droits fiscaux et des opportunités manquées.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="p-3 bg-white shadow-sm rounded-4 border-start border-4 border-danger d-inline-block text-start">
+                    <div class="small fw-bold text-danger text-uppercase" style="font-size: 0.6rem;">Total "Perte de chance"</div>
+                    {# Note : On utilise totalMissed car c'est le nom dans votre contrôleur #}
+                    <div class="h3 fw-bold mb-0 text-dark">{{ totalMissed|number_format(0, ',', ' ') }} €</div>
+                </div>
+            </div>
+        </div>
 
-			<div class="row g-4">
-				<div
-					class="col-lg-8">
-					{# --- TABLEAU DES DONS PASSÉS (PURGÉS) --- #}
-					<div class="card border-0 shadow-sm rounded-4 mb-4">
-						<div class="card-header bg-white py-4 px-4 border-0">
-							<div class="d-flex align-items-center">
-								<div class="icon-box bg-warning-subtle text-warning rounded-3 p-2 me-3">
-									<i class="fas fa-history"></i>
-								</div>
-								<div>
-									<h5 class="fw-bold mb-0">Historique des droits expirés</h5>
-									<p class="text-muted small mb-0">Donations de plus de 15 ans dont l'abattement n'a pas été saturé.</p>
-								</div>
-							</div>
-						</div>
-						<div class="table-responsive">
-							<table class="table align-middle mb-0">
-								<thead class="bg-light">
-									<tr class="small text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">
-										<th class="ps-4">Date du don</th>
-										<th>Flux de transmission</th>
-										<th>Plafond légal</th>
-										<th>Montant donné</th>
-										<th class="text-warning">Non optimisé</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for period in expiredPeriods %}
-										<tr>
-											<td class="ps-4">
-												<div class="fw-bold" style="font-size: 0.85rem;">{{ period.startDate|date('d/m/Y') }}</div>
-												<div class="small text-muted" style="font-size: 0.75rem;">Expiré le
-													{{ period.endDate|date('d/m/Y') }}</div>
-											</td>
-											<td style="font-size: 0.85rem;">
-												{{ period.donor }}
-												<i class="fas fa-arrow-right text-muted mx-1"></i>
-												{{ period.beneficiary }}
-											</td>
-											<td class="small">{{ period.plafond|number_format(0, ',', ' ') }}
-												€</td>
-											<td class="small fw-bold">{{ period.used|number_format(0, ',', ' ') }}
-												€</td>
-											<td class="fw-bold text-warning">
-												{% if period.unoptimized > 0 %}
-													{{ period.unoptimized|number_format(0, ',', ' ') }}
-													€
-												{% else %}
-													<span class="badge bg-success-subtle text-success">Optimisé</span>
-												{% endif %}
-											</td>
-										</tr>
-									{% else %}
-										<tr>
-											<td colspan="5" class="text-center py-4 text-muted small">Aucun historique de don expiré.</td>
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                
+                {# --- SECTION 1 : LES RELIQUATS (Dons partiels passés) --- #}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-4 px-4 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-warning-subtle text-warning rounded-3 p-2 me-3">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Cycles expirés avec reliquat</h5>
+                                <p class="text-muted small mb-0">Abattements qui n'ont pas été totalement utilisés avant leur expiration (15 ans).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr class="small text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">
+                                    <th class="ps-4">Période</th>
+                                    <th>Flux</th>
+                                    <th>Plafond</th>
+                                    <th>Utilisé</th>
+                                    <th class="text-warning">Perdu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {# Note : On utilise expiredPeriods car c'est le nom dans votre contrôleur #}
+                                {% for period in expiredPeriods %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="small text-muted">{{ period.startDate|date('Y') }} - {{ period.endDate|date('Y') }}</div>
+                                        </td>
+                                        <td style="font-size: 0.85rem;">
+                                            {{ period.donor }} <i class="fas fa-arrow-right text-muted mx-1"></i> {{ period.beneficiary }}
+                                        </td>
+                                        <td class="small">{{ period.plafond|number_format(0, ',', ' ') }} €</td>
+                                        <td class="small fw-bold">{{ period.used|number_format(0, ',', ' ') }} €</td>
+                                        <td class="fw-bold text-warning">
+                                            {{ period.unoptimized|number_format(0, ',', ' ') }} €
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted small">Aucun abattement expiré avec reliquat trouvé.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-				<div
-					class="col-lg-4">
-					{# --- NOTE PEDAGOGIQUE (EXISTANTE) --- #}
-					<div class="card border-0 bg-dark text-white rounded-4 shadow-lg p-4 mb-4">
-						<h5 class="fw-bold mb-3">
-							<i class="fas fa-lightbulb text-warning me-2"></i>Note Pédagogique</h5>
-						<p class="small opacity-75">
-							L'abattement fiscal est un
-							<strong>droit à donner sans taxes</strong>. Si vous effectuez un don inférieur au plafond, le reliquat est "perdu" pour la période fiscale concernée.
-						</p>
-						<p class="small opacity-75 mb-0">
-							À l'issue du cycle, le compteur repart à zéro : c'est le moment idéal pour optimiser votre transmission.
-						</p>
-					</div>
+                {# --- SECTION 2 : LES DROITS JAMAIS ACTIVÉS --- #}
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white py-4 px-4 border-0">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-danger-subtle text-danger rounded-3 p-2 me-3">
+                                <i class="fas fa-hourglass-end"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Abattements jamais activés</h5>
+                                <p class="text-muted small mb-0">Capacités de transmission qui auraient pu être "purgées" par le passé.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <tbody class="border-top">
+                                {# Cette variable doit être ajoutée dans votre contrôleur si elle ne l'est pas encore #}
+                                {% for item in never_used|default([]) %}
+                                    <tr>
+                                        <td class="ps-4" style="width: 150px;">
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Cycle Vierge</span>
+                                        </td>
+                                        <td style="font-size: 0.85rem;">
+                                            <span class="fw-bold">{{ item.donor }}</span> 
+                                            <i class="fas fa-arrow-right text-muted mx-1"></i> 
+                                            <span class="fw-bold">{{ item.beneficiary }}</span>
+                                            <div class="small text-muted">{{ item.label }}</div>
+                                        </td>
+                                        <td class="fw-bold text-danger text-end pe-4">
+                                            - {{ item.amount|number_format(0, ',', ' ') }} €
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted small">Toutes vos relations familiales ont activé leurs droits.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-					{# --- NOUVEAU BLOC : VERS LE FUTUR --- #}
-					<div class="card border-1 border-primary bg-primary-subtle rounded-4 p-4 border-dashed shadow-sm">
-						<div class="d-flex align-items-center mb-3">
-							<div class="icon-box bg-primary text-white rounded-circle p-2 me-3" style="width: 35px; height: 35px;">
-								<i class="fas fa-forward small"></i>
-							</div>
-							<h6 class="fw-bold mb-0 text-primary">Anticiper le futur</h6>
-						</div>
-						<p class="small text-dark opacity-75 mb-4">
-							Découvrez quand vos prochains plafonds se libèrent et planifiez vos futures transmissions pour une optimisation maximale.
-						</p>
-						{# Remplace 'app_optimization_future' par ta route réelle si différente #}
-						<a href="{{ path('app_optimization_dashboard') }}" class="btn btn-outline-primary w-100 py-2 rounded-pill fw-bold bg-white">
-							Voir les optimisations possibles
-							<i class="fas fa-arrow-right ms-2"></i>
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+            <div class="col-lg-4">
+                {# --- NOTE PEDAGOGIQUE --- #}
+                <div class="card border-0 bg-dark text-white rounded-4 shadow-lg p-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Note Pédagogique</h5>
+                    <p class="small opacity-75">
+                        L'abattement fiscal est un <strong>droit à donner sans taxes</strong> qui se renouvelle tous les 15 ans.
+                    </p>
+                    <p class="small opacity-75">
+                        
+                        Si vous n'utilisez pas ce droit, le "compteur" de 15 ans ne démarre pas. En attendant trop longtemps pour faire un premier don, vous perdez mathématiquement des cycles de transmission gratuite sur une vie entière.
+                    </p>
+                </div>
 
-	<style>
-		.icon-box {
-			width: 45px;
-			height: 45px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-		.bg-warning-subtle {
-			background-color: #fef3c7 !important;
-		}
-		.bg-success-subtle {
-			background-color: #dcfce7 !important;
-		}
-		.text-warning {
-			color: #d97706 !important;
-		}
-		.table td {
-			padding: 1rem;
-			border-bottom: 1px solid #f1f5f9;
-		}
-        .bg-primary-subtle { background-color: #eef2ff !important; }
-.border-dashed { border-style: dashed !important; border-width: 2px !important; }
-.btn-outline-primary:hover { transform: translateY(-2px); transition: all 0.2s; }
-	</style>
+                {# --- LIEN VERS LE FUTUR --- #}
+                <div class="card border-1 border-primary bg-primary-subtle rounded-4 p-4 border-dashed shadow-sm">
+                    <h6 class="fw-bold mb-2 text-primary">Reprendre la main</h6>
+                    <p class="small text-dark opacity-75 mb-4">
+                        Ne laissez plus vos abattements dormir. Consultez votre plan de transmission actuel.
+                    </p>
+                    <a href="{{ path('app_optimization_dashboard') }}" class="btn btn-primary w-100 py-2 rounded-pill fw-bold">
+                        Planifier mes dons <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-box { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
+    .bg-warning-subtle { background-color: #fff9db !important; }
+    .bg-danger-subtle { background-color: #fff5f5 !important; }
+    .bg-primary-subtle { background-color: #f0f7ff !important; }
+    .text-warning { color: #d97706 !important; }
+    .text-danger { color: #e03131 !important; }
+    .border-dashed { border-style: dashed !important; border-width: 2px !important; }
+</style>
 {% endblock %}

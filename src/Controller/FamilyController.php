@@ -22,6 +22,11 @@ final class FamilyController extends AbstractController
     {
         $user = $this->getUser();
 
+        // Si aucune personne n'est encore créée, on redirige vers la création
+        if($user->getPeople()->isEmpty()) {
+            return $this->redirectToRoute('app_person_new');
+        }
+
         // On délègue tout le calcul au service
         $stats = $donationService->getUserDashboardStats($user);
 
@@ -34,6 +39,12 @@ final class FamilyController extends AbstractController
     public function index(PersonRepository $personRepository): Response
     {
         $user = $this->getUser();
+
+        // Si aucune personne n'est encore créée, on redirige vers la création
+        if($user->getPeople()->isEmpty()) {
+            return $this->redirectToRoute('app_person_new');
+        }
+
         // On récupère uniquement les personnes appartenant à l'utilisateur connecté
         $people = $user->getPeople();
 

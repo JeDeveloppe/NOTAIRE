@@ -35,6 +35,7 @@ class OptimizationController extends AbstractController
         return $this->render('family/optimization/missed_opportunities.html.twig', [
             'expiredPeriods' => $analysis['expired_periods'], // Anciens dons (Perdus)
             'totalMissed'    => $analysis['total_missed'],
+            'never_used'      => $analysis['never_used'],
             'totalAvailable' => $dashboardStats['totalAvailableAllowance'] ?? 0,
         ]);
     }
