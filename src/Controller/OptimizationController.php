@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\DonationService;
+use App\Service\TaxCalculatorService;
 use App\Service\TaxOptimizationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,8 @@ class OptimizationController extends AbstractController
 {
     public function __construct(
         private TaxOptimizationService $optimizationService,
-        private DonationService $donationService
+        private DonationService $donationService,
+        private TaxCalculatorService $taxService
     ) {}
 
     #[Route('/opportunites-manquees', name: 'app_optimization_missed')]
@@ -52,10 +54,20 @@ class OptimizationController extends AbstractController
         $familyPlan = $this->optimizationService->getGlobalFamilyPlan($user, $referenceDate);
         $totalAvailable = array_sum(array_column($familyPlan, 'available'));
 
+        // Calcul des économies fiscales totales possibles
+        $totalSaving = 0;
+        foreach ($familyPlan as $item) {
+            $totalSaving += $this->taxService->calculateSaving(
+                $item['available'], 
+                $item['relationship_code']
+            );
+        }
+
         return $this->render('family/optimization/simuled_opportunities.html.twig', [
             'activePeriods'  => $analysis['active_periods'],
             'familyPlan'     => $familyPlan,
             'totalAvailable' => $totalAvailable,
+            'totalTaxSaving' => $totalSaving,
             'referenceDate'  => $referenceDate, // Utile pour l'affichage
         ]);
     }

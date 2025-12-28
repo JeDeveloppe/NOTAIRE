@@ -113,6 +113,7 @@ class TaxOptimizationService
                             'beneficiary' => $beneficiary,
                             'label' => $rule['label'],
                             'available' => $rule['available'],
+                            'relationship_code' => $simulation['relationship_code'],
                             'type' => $rule['tax_system'],
                             'priority' => str_contains($rule['tax_system'], 'sarkozy') ? 1 : 2
                         ];

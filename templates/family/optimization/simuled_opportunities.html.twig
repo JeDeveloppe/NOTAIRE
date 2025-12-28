@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Calendrier Stratégique Familial
+{% block title %}Tableau de Bord de Transmission
 {% endblock %}
 
 {% block body %}
@@ -8,230 +8,193 @@
 		<div
 			class="container">
 
-			{# --- HEADER & STATS --- #}
-			<div class="row mb-4 align-items-center">
+			{# --- HEADER --- #}
+			<div class="row mb-5 align-items-end">
 				<div class="col-md-7">
-					<h1 class="fw-bold display-6 mb-1">Plan d'Optimisation Global</h1>
-					<p class="text-muted">Explorez les capacités de transmission immédiates et futures au sein de votre famille.</p>
+					<h1 class="fw-bold display-6 mb-1 text-dark">Plan de Transmission Familial</h1>
+					<p class="text-muted">Suivi des abattements fiscaux et calendrier de régénération des droits.</p>
 				</div>
-				<div class="col-md-5 text-md-end">
-					<div class="p-3 bg-white shadow-sm rounded-4 border-start border-4 border-success d-inline-block text-start me-2">
-						<div class="small fw-bold text-success text-uppercase" style="font-size: 0.6rem;">
-							Capacité au
-							{{ referenceDate|date('d/m/Y') }}
-						</div>
-						<div class="h3 fw-bold mb-0 text-dark">{{ totalAvailable|number_format(0, ',', ' ') }}
-							€</div>
+				<div class="col-md-5">
+					<div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+						<form action="{{ path('app_optimization_dashboard') }}" method="get" class="row g-2 align-items-center">
+							<div class="col-sm-8">
+								<label class="small fw-bold text-muted text-uppercase mb-1 d-block">Simuler à une date future</label>
+								<input type="date" name="date" class="form-control form-control-sm" value="{{ referenceDate|date('Y-m-d') }}">
+							</div>
+							<div class="col-sm-4">
+								<label class="d-none d-sm-block mb-1">&nbsp;</label>
+								<button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Calculer</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
 
-			{# --- FILTRE DE SIMULATION TEMPORELLE --- #}
-			<div class="card border-0 shadow-sm rounded-4 mb-5 bg-dark text-white">
-				<div class="card-body p-4">
-					<div class="row align-items-center">
-						<div class="col-md-7">
-							<h5 class="fw-bold mb-1">
-								<i class="fas fa-magic text-warning me-2"></i>Simulateur temporel</h5>
-							<p class="small mb-0 opacity-75">Modifiez la date pour voir quels abattements se seront libérés (après le délai de 15 ans).</p>
+			{# --- CHIFFRES CLÉS : PROTECTION FISCALE --- #}
+			<div class="row g-4 mb-5">
+				<div class="col-md-6">
+					<div class="card border-0 shadow-sm rounded-4 bg-white border-start border-4 border-success">
+						<div class="card-body p-4">
+							<div class="small text-muted text-uppercase fw-bold mb-1">Capacité de transmission immédiate</div>
+							<h2 class="fw-bold text-dark mb-0">{{ totalAvailable|number_format(0, ',', ' ') }}
+								€</h2>
+							<div class="small text-success mt-2">
+								<i class="fas fa-shield-alt"></i>
+								Montant totalement exonéré de droits de succession
+							</div>
 						</div>
-						<div class="col-md-5">
-							<form action="{{ path('app_optimization_dashboard') }}" method="get" class="d-flex gap-2 justify-content-md-end mt-3 mt-md-0">
-								<div class="input-group" style="max-width: 250px;">
-									<span class="input-group-text bg-white border-0">
-										<i class="fas fa-calendar-alt text-muted"></i>
-									</span>
-									<input type="date" name="date" class="form-control border-0" value="{{ referenceDate|date('Y-m-d') }}">
-								</div>
-								<button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Simuler</button>
-								{% if app.request.query.get('date') %}
-									<a href="{{ path('app_optimization_dashboard') }}" class="btn btn-outline-light rounded-circle" title="Réinitialiser">
-										<i class="fas fa-sync-alt"></i>
-									</a>
-								{% endif %}
-							</form>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="card border-0 shadow-sm rounded-4 bg-dark text-white border-start border-4 border-warning">
+						<div class="card-body p-4">
+							<div class="small text-uppercase fw-bold mb-1 text-warning">Impôts économisés</div>
+							<h2 class="fw-bold mb-0 text-white">{{ totalTaxSaving|number_format(0, ',', ' ') }}
+								€</h2>
+							<div class="small mt-2 opacity-75">
+								<i class="fas fa-info-circle me-1"></i>
+								C'est le montant que vos proches
+								<strong>ne paieront pas</strong>
+								à l'administration fiscale en utilisant ces abattements dès maintenant.
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			{% if referenceDate > date() %}
-				<div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 d-flex align-items-center">
-					<div class="icon-box bg-warning text-dark rounded-circle me-3" style="min-width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-						<i class="fas fa-eye"></i>
-					</div>
-					<div>
-						<h6 class="fw-bold mb-0">Mode Projection :
-							{{ referenceDate|date('d/m/Y') }}</h6>
-						<small>Les montants ci-dessous incluent les abattements qui se seront régénérés d'ici cette date.</small>
-					</div>
-				</div>
-			{% endif %}
-
+			{# --- RÉPARTITION PAR BÉNÉFICIAIRE --- #}
+			<h5 class="fw-bold mb-4 text-dark">
+				<i class="fas fa-users me-2 text-primary"></i>État des abattements par bénéficiaire</h5>
 			<div
-				class="row g-4">
-				{# --- ACTIONS PRIORITAIRES (DONS DISPONIBLES À LA DATE DONNÉE) --- #}
-				<div class="col-lg-12">
-					<div class="card border-0 shadow-sm rounded-4">
-						<div class="card-header bg-white py-4 px-4 border-0 d-flex justify-content-between align-items-center">
-							<h5 class="fw-bold mb-0">
-								<i class="fas fa-rocket text-success me-2"></i>
-								Optimisations possibles
-								<span class="text-muted fw-normal" style="font-size: 0.9rem;">(à la date simulée)</span>
-							</h5>
-						</div>
-						<div class="table-responsive">
-							<table class="table align-middle mb-0">
-								<thead class="bg-light">
-									<tr class="small text-uppercase text-muted" style="font-size: 0.65rem;">
-										<th class="ps-4">Donateur</th>
-										<th>Bénéficiaire</th>
-										<th>Type d'Abattement</th>
-										<th>Potentiel de transmission</th>
-									</tr>
-								</thead>
-								<tbody>
-									{% for item in familyPlan %}
-										<tr>
-											<td class="ps-4">
-												<div class="fw-bold text-dark">{{ item.donor.firstname }}</div>
-												<div class="small text-muted">
-													{{ item.donor.getAge(referenceDate) }}
-													ans
-													<span class="opacity-50">(en
-														{{ referenceDate|date('Y') }})</span>
-												</div>
-											</td>
-											<td class="ps-4">
-												<div class="fw-bold text-dark">{{ item.beneficiary.firstname }}</div>
-												<div class="small text-muted">
-													{{ item.beneficiary.getAge(referenceDate) }}
-													ans
-													<span class="opacity-50">(en
-														{{ referenceDate|date('Y') }})</span>
-												</div>
-											</td>
-											<td>
-												<span class="badge {{ 'sarkozy' in item.type ? 'bg-info-subtle text-info border-info' : 'bg-light text-dark border' }} border px-2 py-1">
-													{{ item.label }}
-												</span>
-											</td>
-											<td>
-												<div class="fw-bold text-success" style="font-size: 1.1rem;">
-													{{ item.available|number_format(0, ',', ' ') }}
-													€
-												</div>
-											</td>
-										</tr>
-									{% else %}
-										<tr>
-											<td colspan="5" class="text-center py-5">
-												<i class="fas fa-info-circle text-muted mb-2 fa-2x"></i>
-												<p class="text-muted mb-0">Aucun abattement disponible pour cette configuration à cette date.</p>
-											</td>
-										</tr>
-									{% endfor %}
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
+				class="row g-4 mb-5">
+				{# Correction du bug de clé Twig #}
+				{% set groupedPlan = {} %}
+				{% for item in familyPlan %}
+					{% set benKey = 'ID_' ~ item.beneficiary.id %}
+					{% if groupedPlan[benKey] is not defined %}
+						{% set groupedPlan = groupedPlan|merge({(benKey): {'name': item.beneficiary.firstname, 'id': item.beneficiary.id, 'items': []}}) %}
+					{% endif %}
+					{% set currentGroup = groupedPlan[benKey] %}
+					{% set newItems = currentGroup.items|merge([item]) %}
+					{% set groupedPlan = groupedPlan|merge({(benKey): currentGroup|merge({'items': newItems})}) %}
+				{% endfor %}
 
-				{# --- CALENDRIER RÉEL DES LIBÉRATIONS (RAPPEL FISCAL) --- #}
-				<div class="col-lg-12 mt-4">
-					<div class="d-flex align-items-center mb-4">
-						<h5 class="fw-bold mb-0">
-							<i class="fas fa-calendar-alt text-primary me-2"></i>Échéancier des droits en cours de rapport</h5>
-						<hr class="flex-grow-1 ms-3 opacity-10">
-					</div>
-					<div class="row row-cols-1 row-cols-md-3 g-4">
-						{% for period in activePeriods|sort((a, b) => a.endDate <=> b.endDate) %}
-							<div class="col">
-								<div class="card border-0 shadow-sm rounded-4 h-100 border-top border-4 {{ period.endDate < referenceDate ? 'border-success' : 'border-primary' }}">
-									<div class="card-body">
-										<div class="d-flex justify-content-between align-items-start mb-3">
-											<div class="text-center bg-light rounded-3 p-2 border">
-												<div class="h4 fw-bold mb-0">{{ period.endDate|date('d') }}</div>
-												<div class="small fw-bold text-uppercase text-muted" style="font-size: 0.6rem;">{{ period.endDate|date('M Y') }}</div>
-											</div>
-											{% if period.endDate < referenceDate %}
-												<span class="badge bg-success-subtle text-success border border-success border-opacity-25">
-													<i class="fas fa-check me-1"></i>
-													Sera libéré
-												</span>
-											{% else %}
-												<span class="badge bg-primary-subtle text-primary border border-primary border-opacity-10">
-													Dans
-													{{ period.endDate.diff(date()).days }}
-													jours
-												</span>
-											{% endif %}
-										</div>
-										<div class="small text-muted text-uppercase fw-bold" style="font-size: 0.6rem;">Abattement mobilisé</div>
-										<h6 class="fw-bold mb-1">{{ period.donor }}
-											<i class="fas fa-arrow-right mx-1 small text-muted"></i>
-											{{ period.beneficiary }}</h6>
-										<p class="small text-muted mb-0">
-											Plafond :
-											<strong>{{ period.plafond|number_format(0, ',', ' ') }}
-												€</strong><br>
-											<span class="text-primary">{{ period.type }}</span>
-										</p>
-									</div>
+				{% for group in groupedPlan %}
+					<div class="col-lg-6">
+						<div class="card border-0 shadow-sm rounded-4 h-100">
+							<div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
+								<h4 class="fw-bold mb-0">{{ group.name }}</h4>
+								<div class="text-end">
+									{% set totalBen = 0 %}
+									{% for op in group.items %}
+										{% set totalBen = totalBen + op.available %}
+									{% endfor %}
+									<span class="badge bg-success-subtle text-success fs-6">{{ totalBen|number_format(0, ',', ' ') }}
+										€ disponibles</span>
 								</div>
 							</div>
-						{% else %}
-							<div class="col-12 text-center py-4 bg-white rounded-4 shadow-sm">
-								<p class="text-muted mb-0">Aucun don actif (tous vos abattements sont déjà disponibles).</p>
+							<div class="card-body p-4 pt-0">
+								<table class="table table-sm table-borderless align-middle mb-0">
+									<thead class="text-muted small text-uppercase">
+										<tr>
+											<th>Origine</th>
+											<th>Type</th>
+											<th class="text-end">Disponible</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for op in group.items %}
+											<tr class="border-top border-light">
+												<td class="py-3">
+													<div class="fw-bold text-dark">{{ op.donor.firstname }}</div>
+													<div class="small text-muted">{{ op.donor.getAge(referenceDate) }}
+														ans</div>
+												</td>
+												<td class="py-3">
+													<span class="small">{{ op.label }}</span>
+												</td>
+												<td class="py-3 text-end">
+													<div class="fw-bold text-primary">{{ op.available|number_format(0, ',', ' ') }}
+														€</div>
+													<a href="{{ path('app_donation_new', {donor: op.donor.id, beneficiary: group.id}) }}" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size: 0.75rem;">Saisir un don</a>
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
 							</div>
-						{% endfor %}
+						</div>
 					</div>
-				</div>
+				{% endfor %}
 			</div>
 
-			{# --- FOOTER INFO --- #}
-			<div class="mt-5 p-4 bg-white rounded-4 shadow-sm border">
-				<div class="row align-items-center">
-					<div class="col-md-1 text-center">
-						<i class="fas fa-info-circle text-primary fa-2x"></i>
+			{# --- TIMELINE : ÉCHÉANCIER DE RÉGÉNÉRATION --- #}
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h5 class="fw-bold mb-0">
+					<i class="fas fa-history me-2 text-primary"></i>Calendrier de rappel fiscal (15 ans)</h5>
+				<span class="badge bg-white text-muted border px-3 py-2 rounded-pill">Total des droits en cours :
+					{{ activePeriods|length }}</span>
+			</div>
+
+			<div class="row g-4">
+				{% for period in activePeriods|sort((a, b) => a.endDate <=> b.endDate) %}
+					<div class="col-md-6 col-xl-4">
+						<div class="card border-0 shadow-sm rounded-4 {{ period.endDate < referenceDate ? 'bg-success-subtle border-start border-4 border-success' : 'bg-white border-start border-4 border-light' }}">
+							<div class="card-body p-3">
+								<div class="d-flex justify-content-between align-items-start mb-2">
+									<div class="bg-light rounded p-2 text-center border" style="min-width: 60px;">
+										<div class="fw-bold mb-0">{{ period.endDate|date('d/m') }}</div>
+										<div class="small fw-bold text-muted">{{ period.endDate|date('Y') }}</div>
+									</div>
+									{% if period.endDate < referenceDate %}
+										<span class="badge bg-success">Libéré</span>
+									{% else %}
+										<span class="small text-muted">{{ period.endDate.diff(referenceDate).days }}
+											jours restants</span>
+									{% endif %}
+								</div>
+								<div class="fw-bold text-dark">{{ period.donor }}
+									<i class="fas fa-arrow-right mx-1 text-muted small"></i>
+									{{ period.beneficiary }}</div>
+								<div class="small text-muted">{{ period.type }}
+									:
+									<strong>{{ period.plafond|number_format(0, ',', ' ') }}
+										€</strong>
+								</div>
+							</div>
+						</div>
 					</div>
-					<div class="col-md-11">
-						<h6 class="fw-bold mb-1">Comment fonctionne cette simulation ?</h6>
+				{% endfor %}
+			</div>
+
+			{# --- NOTE DE SÉCURITÉ --- #}
+			<div class="mt-5 p-4 bg-white rounded-4 shadow-sm border">
+				<div class="d-flex">
+					<i class="fas fa-info-circle text-primary me-3 fa-lg mt-1"></i>
+					<div>
+						<h6 class="fw-bold mb-1">Règle fiscale du rappel de 15 ans</h6>
 						<p class="small text-muted mb-0">
-							Cette page calcule le reliquat de vos abattements en fonction du
-							<strong>délai de rappel fiscal de 15 ans</strong>. 
-								                        En changeant la date, le système ignore les donations qui auront plus de 15 ans à cette date-là, libérant ainsi de nouveaux plafonds de transmission.
+							Pour bénéficier à nouveau d'un abattement total, un délai de 15 ans doit s'écouler entre deux donations entre les mêmes personnes. Ce calendrier vous permet de visualiser précisément la date à laquelle vos droits sont "purgés" et redeviennent disponibles.
 						</p>
 					</div>
 				</div>
 			</div>
+
 		</div>
 	</div>
 
 	<style>
-		.bg-info-subtle {
-			background-color: #e0f2fe !important;
-		}
-		.bg-primary-subtle {
-			background-color: #eef2ff !important;
-		}
 		.bg-success-subtle {
 			background-color: #f0fdf4 !important;
 		}
-		.text-info {
-			color: #0369a1 !important;
+		.bg-primary-subtle {
+			background-color: #eff6ff !important;
 		}
-		.border-info {
-			border-color: #7dd3fc !important;
+		.text-success {
+			color: #15803d !important;
 		}
-		.table td {
-			padding: 1.1rem 1rem;
-		}
-		.card {
-			transition: transform 0.2s;
-		}
-		input[type="date"]::-webkit-calendar-picker-indicator {
-			cursor: pointer;
+		.table-borderless >:not(caption) > * > * {
+			border-bottom-width: 0;
 		}
 	</style>
 {% endblock %}
