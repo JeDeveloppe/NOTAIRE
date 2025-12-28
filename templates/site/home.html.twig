@@ -1,108 +1,174 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Étude Notariale - Accueil{% endblock %}
+{% block title %}Étude Notariale - Stratégie & Patrimoine{% endblock %}
 
 {% block body %}
-    {# 1. Section Hero (Header) #}
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
-        <div class="container-fluid py-5 text-center">
-            <h1 class="display-5 fw-bold text-primary">Conseil & Expertise Notariale</h1>
-            <p class="col-md-8 fs-4 mx-auto text-muted">
-                Accompagnement juridique pour vos projets immobiliers, successions et droit de la famille.
-            </p>
-            {# TEST JS : Bouton qui ouvre la Modale #}
-            <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="modal" data-bs-target="#appointmentModal">
-                Prendre rendez-vous
-            </button>
-        </div>
-    </div>
+    <div class="container py-5">
+        
+        {# --- 1. HERO SECTION : ÉPURÉE ET MODERNE --- #}
+        <section class="row align-items-center mb-5 pb-4">
+            <div class="col-lg-7">
+                {% if app.user %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill mb-3">
+                        <i class="fas fa-circle-check me-2"></i>Espace client sécurisé actif
+                    </span>
+                {% else %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill mb-3">
+                        <i class="fas fa-shield-halved me-2"></i>Outil d'expertise notariale
+                    </span>
+                {% endif %}
+                
+                <h1 class="display-3 fw-bolder text-dark mb-4 ls-tight">
+                    Maîtrisez votre <span class="text-primary">Transmission</span>
+                </h1>
+                <p class="lead text-muted mb-5 pe-lg-5">
+                    Une interface intelligente pour piloter vos abattements fiscaux, simuler vos donations et protéger vos héritiers en toute sérénité.
+                </p>
 
-    <div class="row g-4 mb-5">
-        {# 2. Section Services (Cartes) #}
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">Immobilier</h5>
-                    <p class="card-text">Sécurisez vos transactions : compromis, vente, copropriété et baux.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    {% if app.user %}
+                        <a href="{{ path('app_family_dashboard') }}" class="btn btn-primary btn-lg px-5 py-3 rounded-4 shadow-lg hover-lift">
+                            <i class="fas fa-chart-pie me-2"></i>Consulter mes plafonds
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="btn btn-primary btn-lg px-5 py-3 rounded-4 shadow-lg hover-lift">
+                            Commencer l'analyse
+                        </a>
+                        <a href="{{ path('app_register') }}" class="btn btn-light btn-lg px-4 py-3 rounded-4 border">
+                            Créer un compte
+                        </a>
+                    {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">Famille</h5>
-                    <p class="card-text">Mariage, PACS, donations et protection de vos proches.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title text-primary">Succession</h5>
-                    <p class="card-text">Anticipez et gérez la transmission de votre patrimoine en toute sérénité.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# 3. TEST JS : Accordéon (FAQ) #}
-    <h2 class="mb-4">Questions Fréquentes</h2>
-    <div class="accordion mb-5" id="accordionFaq">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                    Quels sont les frais de notaire ?
-                </button>
-            </h2>
-            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionFaq">
-                <div class="accordion-body">
-                    Ils se composent principalement de taxes reversées à l'État, de débours et des émoluments du notaire.
-                </div>
-            </div>
-        </div>
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-                    Pourquoi consulter un notaire avant un achat ?
-                </button>
-            </h2>
-            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFaq">
-                <div class="accordion-body">
-                    Pour vérifier la validité juridique du titre de propriété et purger les droits de préemption.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# 4. TEST JS : Modale (Fenêtre surgissante) #}
-    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Demande de rendez-vous</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label">Nom complet</label>
-                            <input type="text" class="form-control" placeholder="Jean Dupont">
+            
+            {# Illustration visuelle du Dashboard à droite #}
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="position-relative">
+                    <div class="glass-card p-4 rounded-5 shadow-sm border animate-float">
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="fw-bold">Optimisation</div>
+                            <div class="text-success fw-bold">100%</div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Type de dossier</label>
-                            <select class="form-select">
-                                <option>Achat immobilier</option>
-                                <option>Contrat de mariage</option>
-                                <option>Succession</option>
-                            </select>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 75%"></div>
                         </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary">Envoyer la demande</button>
+                        <div class="small text-muted">Prochaine purge fiscale : Juin 2029</div>
+                    </div>
+                    <div class="glass-card p-3 rounded-4 shadow-sm border position-absolute bottom-0 start-0 translate-middle-y ms-n5 animate-float-delayed">
+                        <i class="fas fa-coins text-warning me-2"></i>
+                        <span class="fw-bold">31 865 €</span> <span class="small text-muted">Sarkozy</span>
+                    </div>
                 </div>
             </div>
+        </section>
+
+        {# --- 2. SECTION SERVICES : CARTES INTERACTIVES --- #}
+        <div class="row g-4 mb-5">
+            {% set features = [
+                {
+                    'icon': 'fa-hourglass-start',
+                    'title': 'Règle des 15 ans',
+                    'desc': 'Calcul automatique de la réinitialisation de vos abattements par bénéficiaire.',
+                    'color': 'primary'
+                },
+                {
+                    'icon': 'fa-sack-dollar',
+                    'title': 'Plafonds Sarkozy',
+                    'desc': 'Optimisez le cumul des dons d\'argent sans entamer votre abattement principal.',
+                    'color': 'warning'
+                },
+                {
+                    'icon': 'fa-chart-line-down',
+                    'title': 'Marges Perdues',
+                    'desc': 'Identifiez les opportunités manquées sur vos dons passés pour mieux anticiper.',
+                    'color': 'danger'
+                }
+            ] %}
+
+            {% for f in features %}
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 p-3 feature-card">
+                        <div class="card-body">
+                            <div class="icon-box bg-{{ f.color }}-subtle text-{{ f.color }} mb-4">
+                                <i class="fas {{ f.icon }}"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">{{ f.title }}</h5>
+                            <p class="text-muted small lh-base">{{ f.desc }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# --- 3. SECTION INFO / RÉASSURANCE --- #}
+        <div class="bg-dark rounded-5 p-5 text-white mb-5 shadow-lg position-relative overflow-hidden">
+            <div class="row align-items-center position-relative" style="z-index: 2;">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-3">Besoin d'un accompagnement sur mesure ?</h2>
+                    <p class="text-white-50 mb-0">Nos notaires analysent votre situation familiale pour définir la meilleure stratégie de protection.</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                    <button class="btn btn-outline-light btn-lg px-4 rounded-pill border-2" data-bs-toggle="modal" data-bs-target="#appointmentModal">
+                        Prendre rendez-vous
+                    </button>
+                </div>
+            </div>
+            {# Décoration de fond #}
+            <div class="position-absolute top-50 start-0 translate-middle bg-primary opacity-25" style="width: 300px; height: 300px; border-radius: 50%; filter: blur(80px);"></div>
         </div>
     </div>
+
+    <style>
+        /* Typography */
+        .ls-tight { letter-spacing: -0.025em; }
+        
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            width: 280px;
+        }
+
+        /* Animations */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: #fff;
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important;
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 18px;
+            font-size: 1.5rem;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 6s ease-in-out infinite; animation-delay: 2s; }
+
+        /* Colors Customization */
+        .bg-primary-subtle { background-color: #eef2ff !important; }
+        .text-primary { color: #4338ca !important; }
+        .bg-warning-subtle { background-color: #fffbeb !important; }
+        .bg-danger-subtle { background-color: #fee2e2 !important; }
+    </style>
 {% endblock %}
