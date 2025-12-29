@@ -19,3 +19,33 @@ body {
 .container-fluid {
     background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.03), transparent);
 }
+.logo-text {
+    font-size: 1.8rem;
+    font-family: 'Inter', sans-serif; /* Ou ta police actuelle */
+    letter-spacing: -0.03em;
+    display: flex;
+    align-items: baseline;
+}
+
+/* LIG : Bleu uni très solide */
+.text-lig {
+    color: #5c67f2; 
+    font-weight: 850; /* Très gras pour l'ancrage */
+}
+
+/* née : Dégradé de couleur SANS transparence */
+.text-nee {
+    font-weight: 700;
+    /* On part du bleu EXACT du LIG (top-left) vers un bleu plus sombre ou gris anthracite (bottom-right) */
+    background: linear-gradient(135deg, #5c67f2 0%, #2d3748 100%);
+    
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    
+    display: inline-block;
+    /* Courbe légère vers le bas */
+    transform: translateY(1.5px) rotate(1deg);
+    
+    /* Raccordement serré au G */
+    margin-left: -1px;
+}

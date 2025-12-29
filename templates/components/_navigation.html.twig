@@ -1,14 +1,12 @@
 <nav class="navbar">
     <div class="nav-container">
         {# SECTION LOGO : Mise à jour vers images/logo.png #}
-        <a href="{{ path('app_home') }}" class="brand d-flex align-items-center text-decoration-none">
-            <img src="{{ asset('images/logo.png') }}" 
-                 alt="Logo Lignée" 
-                 width="35" 
-                 height="35" 
-                 class="me-2 rounded-circle">
-            <span><strong>L</strong>ignée</span>
-        </a>
+		<a href="{{ path('app_home') }}" class="brand d-flex align-items-center text-decoration-none">
+			<img src="{{ asset('images/logo.png') }}" alt="Logo" width="35" height="35" class="me-2">
+			<span class="logo-text">
+				<span class="text-lig"><strong>LIG</strong></span><span class="text-nee">née</span>
+			</span>
+		</a>
 
         <ul class="nav-links">
             <li>
