@@ -57,13 +57,18 @@ class DonationController extends AbstractController
 
             $this->addFlash('success', 'Le don a bien été enregistré.');
 
-            return $this->redirectToRoute('app_family_dashboard');
+            // Turbo gère très bien les redirections standards vers le Dashboard
+            return $this->redirectToRoute('app_donation_index');
         }
+
+        // --- CORRECTION TURBO ICI ---
+        // Si le formulaire est soumis mais invalide, on renvoie un code 422
+        $response = new Response(null, $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK);
 
         return $this->render('donation/new.html.twig', [
             'donation' => $donation,
             'form' => $form->createView(),
-        ]);
+        ], $response);
     }
 
     #[Route('/supprimer/{id}', name: 'app_donation_delete', methods: ['POST'])]

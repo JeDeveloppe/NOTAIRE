@@ -1,3 +1,4 @@
+{# templates/family/dashboard.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Tableau de Bord Famille{% endblock %}
@@ -6,18 +7,23 @@
 <div class="container-fluid py-4 bg-light min-vh-100">
     <div class="container">
 
-        {# --- ONBOARDING --- #}
-        {{ include('family/_onboarding_wizard.html.twig', { 'items': people }) }}
+        {# --- ONBOARDING WIZARD --- #}
+        {{ include('family/_onboarding_wizard.html.twig', { 
+            'items': people, 
+            'donations': activeDonations|merge(expiredDonations|default([])) 
+        }) }}
 
         {# --- HEADER --- #}
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
             <div>
-                <h1 class="h3 mb-1 fw-bold text-dark">👨‍👩‍👧‍👦 Ma Famille</h1>
-                <p class="text-muted small mb-0">Vue d'ensemble et répertoire des membres</p>
+                <h1 class="h3 mb-1 fw-black text-dark">👨‍👩‍👧‍👦 Ma Famille</h1>
+                <p class="text-muted small mb-0">Pilotez votre stratégie de transmission et vos abattements.</p>
             </div>
             <div class="d-flex gap-2">
-                {# Bouton + (Modale) #}
-                {% include "components/buttons/_add_donation.html.twig" %}
+                {# Bouton + (Modale Donation) #}
+                <button type="button" class="btn btn-white border shadow-sm rounded-4 fw-bold px-3" data-bs-toggle="modal" data-bs-target="#addDonationModal">
+                    <i class="fas fa-hand-holding-usd me-2 text-primary"></i>Saisir un don
+                </button>
                 
                 <a href="{{ path('app_person_new') }}" class="btn btn-primary px-4 shadow-sm rounded-4 fw-bold">
                     <i class="fas fa-plus-circle me-2"></i>Nouveau Membre
@@ -25,36 +31,59 @@
             </div>
         </div>
 
-        {# --- STATS RAPIDES --- #}
+        {# --- STATS RAPIDES & CAPACITÉ --- #}
         <div class="row g-3 mb-5">
+            {# Membres #}
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 p-3 h-100">
                     <div class="d-flex align-items-center">
-                        <div class="icon-shape bg-primary-subtle text-primary rounded-3 p-3 me-3">
+                        <div class="icon-shape bg-primary-subtle text-primary rounded-4 p-3 me-3">
                             <i class="fas fa-users fa-lg"></i>
                         </div>
                         <div>
                             <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Membres</div>
-                            <div class="h4 mb-0 fw-bold text-dark">{{ people|length }}</div>
+                            <div class="h4 mb-0 fw-black text-dark">{{ people|length }}</div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {# Dons Actifs #}
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm rounded-4 p-3 h-100 border-start border-warning border-4">
                     <div class="d-flex align-items-center ps-2">
+                        <div class="icon-shape bg-warning-subtle text-warning rounded-4 p-3 me-3">
+                            <i class="fas fa-clock fa-lg"></i>
+                        </div>
                         <div>
-                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Dons Actifs (-15 ans)</div>
-                            <div class="h4 mb-0 fw-bold text-warning">{{ activeDonations|length }}</div>
+                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Rappel fiscal (-15 ans)</div>
+                            <div class="h4 mb-0 fw-black text-dark">{{ activeDonations|length }} <span class="small text-muted fw-normal" style="font-size: 0.8rem;">acte(s)</span></div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {# CAPACITÉ DE TRANSMISSION (UX OPTIMISÉE) #}
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 p-3 h-100 text-white bg-primary">
-                    <div>
-                        <div class="small fw-bold text-uppercase opacity-75" style="font-size: 0.65rem;">Capacité de transmission</div>
-                        <div class="h3 mb-0 fw-bold">{{ totalAvailableAllowance|default(0)|number_format(0, ',', ' ') }} €</div>
+                <div class="card border-0 shadow-lg rounded-4 p-3 h-100 bg-white border-bottom border-primary border-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Optimisation disponible</div>
+                            <div class="h3 mb-0 fw-black text-primary">{{ totalAvailableAllowance|default(0)|number_format(0, ',', ' ') }} €</div>
+                        </div>
+                        <div class="bg-primary-subtle text-primary rounded-circle p-2" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="progress rounded-pill shadow-inner" style="height: 8px; background-color: #f1f5f9;">
+                            {# Ici, on pourrait calculer un % réel basé sur les plafonds théoriques #}
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 65%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted fw-bold" style="font-size: 0.65rem;">Potentiel d'exonération</span>
+                            <a href="{{ path('app_optimization_dashboard') }}" class="text-primary fw-bold text-decoration-none" style="font-size: 0.65rem;">Détails <i class="fas fa-chevron-right ms-1"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -66,23 +95,26 @@
                 {# TABLEAU DES MEMBRES #}
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
                     <div class="card-header bg-white border-0 pt-4 px-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
-                            <input type="text" id="memberSearch" class="form-control bg-light border-0" placeholder="Rechercher un membre...">
+                        <div class="d-flex align-items-center">
+                            <h5 class="fw-bold mb-0 me-3">Répertoire</h5>
+                            <div class="input-group flex-grow-1">
+                                <span class="input-group-text bg-light border-0 py-2"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="memberSearch" class="form-control bg-light border-0 py-2" placeholder="Rechercher un membre...">
+                            </div>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table align-middle mb-0">
                             <thead class="bg-light text-muted small">
                                 <tr>
-                                    <th class="ps-4">MEMBRE</th>
-                                    <th>DÉTAILS</th>
-                                    <th class="text-end pe-4">ACTIONS</th>
+                                    <th class="ps-4 border-0 py-3">MEMBRE</th>
+                                    <th class="border-0">STATUT</th>
+                                    <th class="text-end pe-4 border-0">ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody id="familyTable">
                                 {% for person in people %}
-                                    <tr class="member-row">
+                                    <tr class="member-row transition-all">
                                         <td class="ps-4 py-3">
                                             <div class="d-flex align-items-center">
                                                 <div class="me-3">
@@ -90,7 +122,7 @@
                                                 </div>
                                                 <div>
                                                     <div class="fw-bold mb-0 text-dark">{{ person.firstname }} {{ person.lastname|upper }}</div>
-                                                    <small class="text-muted text-uppercase" style="font-size: 0.75rem;">       
+                                                    <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">       
                                                         {% include "components/person/_genderIcon.html.twig" %}
                                                     </small>
                                                 </div>
@@ -98,9 +130,9 @@
                                         </td>
                                         <td>{% include "components/person/_age_status_live.html.twig" %}</td>
                                         <td class="text-end pe-4">
-                                            <div class="d-flex justify-content-end gap-2">
-                                                <a href="{{ path('app_person_edit', {id: person.id}) }}" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="fas fa-pen"></i></a>
-                                                <a href="{{ path('app_person_tree', {id: person.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill"><i class="fas fa-sitemap"></i></a>
+                                            <div class="btn-group shadow-xs rounded-pill bg-white border p-1">
+                                                <a href="{{ path('app_person_edit', {id: person.id}) }}" class="btn btn-sm btn-link text-muted px-3 border-end" title="Modifier"><i class="fas fa-pen"></i></a>
+                                                <a href="{{ path('app_person_tree', {id: person.id}) }}" class="btn btn-sm btn-link text-primary px-3" title="Voir l'arbre"><i class="fas fa-sitemap"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -110,21 +142,16 @@
                     </div>
                 </div>
 
-                {# --- ACCORDÉON : HISTORIQUE DES DONS --- #}
-                <div class="accordion border-0 shadow-sm rounded-4 overflow-hidden" id="donationLogs">
+                {# --- HISTORIQUE DES DONS --- #}
+                <div class="accordion border-0 shadow-sm rounded-4 overflow-hidden mb-4" id="donationLogs">
                     <div class="accordion-item border-0">
                         <div class="accordion-header bg-white d-flex justify-content-between align-items-center pe-3">
                             <button class="accordion-button bg-white fw-bold text-dark shadow-none w-auto" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLogs">
-                                <i class="fas fa-history me-2 text-primary"></i> Historique des dons
+                                <i class="fas fa-history me-2 text-primary"></i> Historique des actes
                             </button>
                             <div class="d-flex gap-2">
-                                {# Bouton qui déclenche la même modale que le header #}
-                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1" data-bs-toggle="modal" data-bs-target="#addDonationModal">
-                                    <i class="fas fa-plus me-1"></i> Nouveau
-                                </button>
-                                {# Lien vers la page de gestion complète #}
-                                <a href="{{ path('app_donation_index')|default('#') }}" class="btn btn-sm btn-light text-muted rounded-pill px-3 py-1">
-                                    <i class="fas fa-cog me-1"></i> Gérer
+                                <a href="{{ path('app_donation_index') }}" class="btn btn-sm btn-light text-muted rounded-pill px-3 fw-bold shadow-xs">
+                                    <i class="fas fa-cog me-1"></i> Gérer tout
                                 </a>
                             </div>
                         </div>
@@ -135,7 +162,7 @@
                                         <thead class="table-light text-muted">
                                             <tr>
                                                 <th class="ps-4">Date</th>
-                                                <th>Donateur → Bénéficiaire</th>
+                                                <th>Flux</th>
                                                 <th class="text-end pe-4">Montant</th>
                                             </tr>
                                         </thead>
@@ -146,13 +173,13 @@
                                                     <td class="ps-4 text-muted">{{ donation.createdAt|date('d/m/Y') }}</td>
                                                     <td>
                                                         <span class="fw-bold text-dark">{{ donation.donor.firstname }}</span> 
-                                                        <i class="fas fa-arrow-right mx-2 text-primary opacity-50" style="font-size: 0.7rem;"></i> 
+                                                        <i class="fas fa-arrow-right mx-2 text-primary opacity-50"></i> 
                                                         <span class="text-dark">{{ donation.beneficiary.firstname }}</span>
                                                     </td>
-                                                    <td class="text-end pe-4 fw-bold text-primary">{{ donation.amount|number_format(0, ',', ' ') }} €</td>
+                                                    <td class="text-end pe-4 fw-black text-primary">{{ donation.amount|number_format(0, ',', ' ') }} €</td>
                                                 </tr>
                                             {% else %}
-                                                <tr><td colspan="3" class="text-center py-5 text-muted small">Aucun historique de don enregistré.</td></tr>
+                                                <tr><td colspan="3" class="text-center py-5 text-muted">Aucun don enregistré.</td></tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
@@ -163,22 +190,41 @@
                 </div>
             </div>
 
-            {# --- COLONNE DROITE --- #}
+            {# --- COLONNE DROITE (CONSEILS & TIMELINE) --- #}
             <div class="col-lg-4">
+                {# BLOC CONSEIL / ANALYSE #}
+                <div class="card border-0 shadow-sm rounded-4 bg-primary text-white mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3 d-flex align-items-center">
+                            <i class="fas fa-lightbulb me-2 text-warning"></i> Stratégie
+                        </h6>
+                        <p class="small mb-4 opacity-75">
+                            Basé sur vos données, vous pouvez optimiser vos donations pour réduire les droits de succession futurs.
+                        </p>
+                        <a href="{{ path('app_optimization_dashboard') }}" class="btn btn-white btn-sm w-100 rounded-pill fw-bold py-2 shadow-sm text-primary">
+                            Consulter l'analyse fiscale
+                        </a>
+                    </div>
+                </div>
+
+                {# TIMELINE #}
                 <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top" style="top: 20px;">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3 text-dark">Dernières activités</h6>
+                        <h6 class="fw-bold mb-3 text-dark">Derniers actes</h6>
                         <div class="timeline">
                             {% for donation in activeDonations|slice(0, 5) %}
-                                <div class="p-2 mb-2 bg-light rounded-3 border-start border-primary border-3">
-                                    <div class="d-flex justify-content-between small">
-                                        <span class="fw-bold text-dark">{{ donation.beneficiary.firstname }}</span>
-                                        <span class="text-primary fw-bold">{{ donation.amount|number_format(0, ',', ' ') }}€</span>
+                                <div class="p-2 mb-2 bg-light rounded-4 border-start border-primary border-4 position-relative">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold text-dark small" style="font-size: 0.75rem;">{{ donation.beneficiary.firstname }}</span>
+                                        <span class="text-primary fw-black small">{{ donation.amount|number_format(0, ',', ' ') }}€</span>
                                     </div>
-                                    <div class="text-muted" style="font-size: 0.7rem;">{{ donation.createdAt|date('d/m/Y') }}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">{{ donation.createdAt|date('d M Y') }}</div>
                                 </div>
                             {% else %}
-                                <p class="text-muted small italic py-2 text-center">Aucune activité récente.</p>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-stream text-light fa-2x mb-2"></i>
+                                    <p class="text-muted small mb-0">Rien à signaler</p>
+                                </div>
                             {% endfor %}
                         </div>
                     </div>
@@ -188,13 +234,36 @@
     </div>
 </div>
 
+{# --- MODALE NOUVELLE DONATION --- #}
+{# Assure-toi que le composant de bouton appelle bien 'addDonationModal' #}
+<div class="modal fade" id="addDonationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-5">
+            <div class="modal-header border-0 pt-4 px-4">
+                <h5 class="fw-black mb-0">Enregistrer un nouvel acte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                {{ render(path('app_donation_new')) }}
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
+    .fw-black { font-weight: 900; }
     .icon-shape { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
     .bg-primary-subtle { background-color: #eef2ff !important; }
+    .bg-warning-subtle { background-color: #fffbeb !important; }
     .text-primary { color: #4f46e5 !important; }
     .bg-primary { background-color: #4f46e5 !important; }
-    .accordion-button:not(.collapsed) { background-color: white; color: #4f46e5; box-shadow: none; }
-    .member-row:hover { background-color: #fcfdfe; }
+    .btn-white { background: white; color: #4f46e5; border: none; }
+    .btn-white:hover { background: #f8fafc; color: #4338ca; }
+    .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
+    .transition-all { transition: all 0.2s ease; }
+    .member-row:hover { background-color: #f8fafc; transform: scale(1.005); }
+    .shadow-xs { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .accordion-button:not(.collapsed) { background-color: transparent; color: inherit; box-shadow: none; }
 </style>
 
 <script>

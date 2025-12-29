@@ -1,46 +1,74 @@
 {# templates/family/_onboarding_wizard.html.twig #}
 
-{% set count = items|length %}
-{% set target = 4 %}
+{% set memberCount = items|length %}
+{% set donationCount = donations|length|default(0) %}
+{% set memberTarget = 4 %}
 
-{% if count > 0 and count < target %}
+{# On affiche le wizard tant que la cible de membres n'est pas atteinte #}
+{% if memberCount > 0 and memberCount < memberTarget %}
     <div class="onboarding-progress-wrapper mb-5 p-4 rounded-5 shadow-smooth bg-white border border-indigo-light animate__animated animate__fadeInDown">
+        
         <div class="d-flex align-items-center justify-content-between mb-3">
             <div class="onboarding-badge">
-                <i class="fas fa-database me-2"></i>Base de données
+                <i class="fas fa-magic me-2"></i>Assistant de configuration
             </div>
-            <span class="small fw-bold text-indigo">{{ count }} / {{ target }} membres conseillés</span>
+            <div class="progress-stats">
+                <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3">
+                    Profils : {{ memberCount }} / {{ memberTarget }}
+                </span>
+                {% if donationCount > 0 %}
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3 ms-2">
+                        <i class="fas fa-check me-1"></i> Historique saisi
+                    </span>
+                {% endif %}
+            </div>
         </div>
         
         <div class="row align-items-center">
-            <div class="col-md-8">
-                <h5 class="fw-black mb-1">
-                    {% if count == 1 %}
-                        Premier profil enregistré
-                    {% else %}
-                        <span class="text-success"><i class="fas fa-check-circle me-1"></i> Simulations activées !</span>
-                    {% endif %}
-                </h5>
-                <p class="text-muted small mb-0">
-                    {% if count >= 2 %}
-                        Vos données permettent d'analyser vos **abattements fiscaux**. Découvrez vos opportunités d'optimisation.
-                    {% else %}
-                        Ajoutez les personnes concernées par vos projets pour simuler vos abattements fiscaux.
-                    {% endif %}
-                </p>
-            </div>
-            <div class="col-md-4 mt-3 mt-md-0 text-md-end">
-                {% if count >= 2 %}
-                    <a href="{{ path('app_optimization_dashboard') }}" class="btn btn-success btn-sm px-4 rounded-pill shadow-sm py-2 animate__animated animate__pulse animate__infinite">
-                        <i class="fas fa-calculator me-2"></i>Lancer l'analyse
-                    </a>
+            <div class="col-md-7">
+                {% if memberCount < 2 %}
+                    <h5 class="fw-black mb-1 text-dark">Commencez par votre famille</h5>
+                    <p class="text-muted small mb-0">
+                        Ajoutez au moins **deux personnes** pour simuler les liens de parenté et les abattements.
+                    </p>
                 {% else %}
-                    <div class="progress rounded-pill shadow-inner" style="height: 12px; background-color: #f1f5f9;">
-                        <div class="progress-bar bg-indigo progress-bar-striped progress-bar-animated" 
-                             role="progressbar" 
-                             style="width: {{ (count / target) * 100 }}%"></div>
-                    </div>
+                    <h5 class="fw-black mb-1 text-success">
+                        <i class="fas fa-check-circle me-1"></i> Simulation disponible !
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        {% if donationCount == 0 %}
+                            L'analyse est prête, mais renseignez vos <span class="fw-bold">dons passés</span> pour une précision fiscale optimale (règle des 15 ans).
+                        {% else %}
+                            Votre base s'enrichit. Continuez pour affiner vos futures stratégies successorales.
+                        {% endif %}
+                    </p>
                 {% endif %}
+            </div>
+
+            <div class="col-md-5 mt-3 mt-md-0 text-md-end">
+                <div class="d-flex flex-column flex-sm-row justify-content-md-end gap-2 align-items-center">
+                    
+                    {% if memberCount < 2 %}
+                        {# Barre de progression si vraiment trop peu de membres #}
+                        <div class="progress rounded-pill shadow-inner w-100" style="height: 12px; background-color: #f1f5f9; min-width: 150px;">
+                            <div class="progress-bar bg-indigo progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: {{ (memberCount / memberTarget) * 100 }}%"></div>
+                        </div>
+                    {% else %}
+                        {# OPTIONS SI SIMULATION POSSIBLE #}
+                        {% if donationCount == 0 %}
+                            <a href="{{ path('app_donation_index') }}" class="btn btn-outline-warning btn-sm px-3 rounded-pill fw-bold border-2">
+                                <i class="fas fa-history me-1"></i> + Historique des dons
+                            </a>
+                        {% endif %}
+                        
+                        <a href="{{ path('app_optimization_dashboard') }}" class="btn btn-success btn-sm px-4 rounded-pill shadow-sm py-2 fw-bold animate__animated animate__pulse animate__infinite">
+                            <i class="fas fa-calculator me-2"></i>Lancer l'analyse
+                        </a>
+                    {% endif %}
+                    
+                </div>
             </div>
         </div>
     </div>

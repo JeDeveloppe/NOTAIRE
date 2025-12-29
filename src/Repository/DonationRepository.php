@@ -2,9 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\User;
 use App\Entity\Donation;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Donation>
@@ -16,6 +17,19 @@ class DonationRepository extends ServiceEntityRepository
         parent::__construct($registry, Donation::class);
     }
 
+    /**
+     * Récupère toutes les donations dont le donateur appartient à l'utilisateur
+     */
+    public function findAllDonationsByUser(User $user): array
+    {
+        return $this->createQueryBuilder('d')
+            ->join('d.donor', 'p') // On joint la table Person (le donateur)
+            ->where('p.owner = :user') // On filtre par le propriétaire de la personne
+            ->setParameter('user', $user)
+            ->orderBy('d.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
     //    /**
     //     * @return Donation[] Returns an array of Donation objects
     //     */

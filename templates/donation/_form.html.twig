@@ -1,8 +1,20 @@
 {# templates/donation/_form.html.twig #}
 
-{{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+{# 1. On détermine dynamiquement la route en fonction de l'existence de l'objet #}
+{% set formAction = donation.id 
+    ? path('app_donation_edit', {id: donation.id}) 
+    : path('app_donation_new') 
+%}
+
+{{ form_start(form, {
+    'action': formAction,
+    'attr': {
+        'id': 'donation_form',
+        'class': 'needs-validation'
+    }
+}) }}
     
-    <div class="row g-4">
+    <div class="row g-4 text-start">
         {# SECTION 1 : LES ACTEURS #}
         <div class="col-12">
             <div class="p-3 rounded-4 bg-light border-start border-primary border-4 mb-2">
@@ -16,7 +28,7 @@
                             <span class="input-group-text bg-white border-end-0"><i class="fas fa-hand-holding-heart text-primary"></i></span>
                             {{ form_widget(form.donor, {'attr': {'class': 'form-select border-start-0'}}) }}
                         </div>
-                        {{ form_errors(form.donor) }}
+                        <div class="text-danger small">{{ form_errors(form.donor) }}</div>
                     </div>
                     <div class="col-md-6">
                         {{ form_label(form.beneficiary, 'Qui reçoit le don ?', {'label_attr': {'class': 'form-label small fw-bold text-muted'}}) }}
@@ -24,7 +36,7 @@
                             <span class="input-group-text bg-white border-end-0"><i class="fas fa-user-graduate text-success"></i></span>
                             {{ form_widget(form.beneficiary, {'attr': {'class': 'form-select border-start-0'}}) }}
                         </div>
-                        {{ form_errors(form.beneficiary) }}
+                        <div class="text-danger small">{{ form_errors(form.beneficiary) }}</div>
                     </div>
                 </div>
             </div>
@@ -32,7 +44,7 @@
 
         {# SECTION 2 : MONTANT ET DATE #}
         <div class="col-md-6">
-            <div class="p-3 rounded-4 border h-100">
+            <div class="p-3 rounded-4 border h-100 bg-white shadow-sm">
                 <h6 class="fw-bold mb-3 text-dark">
                     <i class="fas fa-coins me-2 text-warning"></i>Valeur & Date
                 </h6>
@@ -42,7 +54,7 @@
                         {{ form_widget(form.amount, {'attr': {'class': 'form-control fw-bold text-primary', 'placeholder': '0'}}) }}
                         <span class="input-group-text bg-primary text-white border-0">€</span>
                     </div>
-                    {{ form_errors(form.amount) }}
+                    <div class="text-danger small">{{ form_errors(form.amount) }}</div>
                 </div>
                 <div class="mb-0">
                     {{ form_label(form.createdAt, null, {'label_attr': {'class': 'form-label small fw-bold text-muted'}}) }}
@@ -53,14 +65,15 @@
 
         {# SECTION 3 : FISCALITÉ #}
         <div class="col-md-6">
-            <div class="p-3 rounded-4 border h-100">
+            <div class="p-3 rounded-4 border h-100 bg-white shadow-sm">
                 <h6 class="fw-bold mb-3 text-dark">
                     <i class="fas fa-file-invoice-dollar me-2 text-info"></i>Détails fiscaux
                 </h6>
                 <div class="mb-3">
                     {{ form_label(form.type, null, {'label_attr': {'class': 'form-label small fw-bold text-muted'}}) }}
                     {{ form_widget(form.type, {'attr': {'class': 'form-select'}}) }}
-                    <div class="form-text small">{{ form_help(form.type) }}</div>
+                    <div class="form-text small text-muted">{{ form_help(form.type) }}</div>
+                    <div class="text-danger small">{{ form_errors(form.type) }}</div>
                 </div>
                 <div class="mb-0">
                     {{ form_label(form.taxPaid, null, {'label_attr': {'class': 'form-label small fw-bold text-muted'}}) }}
@@ -68,7 +81,8 @@
                         {{ form_widget(form.taxPaid, {'attr': {'class': 'form-control', 'placeholder': '0'}}) }}
                         <span class="input-group-text bg-light text-muted">€</span>
                     </div>
-                    <div class="form-text x-small text-danger">{{ form_help(form.taxPaid) }}</div>
+                    <div class="form-text x-small text-info mt-1">{{ form_help(form.taxPaid) }}</div>
+                    <div class="text-danger small">{{ form_errors(form.taxPaid) }}</div>
                 </div>
             </div>
         </div>
@@ -76,9 +90,14 @@
         {# ACTIONS #}
         <div class="col-12 text-end mt-4">
             <hr class="opacity-10 mb-4">
+            {# Le bouton d'annulation renvoie vers l'index #}
             <a href="{{ path('app_donation_index') }}" class="btn btn-light rounded-pill px-4 me-2">Annuler</a>
-            <button type="submit" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
-                <i class="fas fa-check-circle me-2"></i>Enregistrer l'acte
+            
+            {# Le bouton de soumission est lié à l'ID du formulaire #}
+            <button type="submit" form="donation_form" class="btn btn-primary rounded-pill px-5 fw-bold shadow-sm">
+                <i class="fas fa-check-circle me-2"></i>
+                {# Texte dynamique du bouton #}
+                {{ donation.id ? 'Mettre à jour' : 'Enregistrer l\'acte' }}
             </button>
         </div>
     </div>
@@ -90,6 +109,6 @@
     .input-group-text { color: #6c757d; }
     .form-control:focus, .form-select:focus {
         border-color: #4f46e5;
-        box-shadow: 0 0 0 0.25 row rgba(79, 70, 229, 0.1);
+        box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.1);
     }
 </style>

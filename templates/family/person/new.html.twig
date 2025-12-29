@@ -10,12 +10,38 @@
             {# --- NAVIGATION DISCRÈTE --- #}
             <nav class="mb-4">
                 <a href="{{ path('app_family_dashboard') }}" class="text-decoration-none text-muted small fw-bold hover-translate-x d-inline-flex align-items-center">
-                    <i class="fas fa-arrow-left me-2"></i>RETOUR À LA LISTE
+                    <i class="fas fa-arrow-left me-2"></i>RETOUR AU TABLEAU DE BORD
                 </a>
             </nav>
 
-            {# --- HEADER ÉPURÉ (PLUS DE BANDEAU NOIR) --- #}
-            <div class="text-center mb-5">
+            {# --- STEPPER UX (DYNAMISE LE HAUT DE PAGE) --- #}
+            <div class="stepper-wrapper mb-5">
+                <div class="d-flex justify-content-between position-relative">
+                    {# Ligne de fond #}
+                    <div class="position-absolute top-50 start-0 end-0 translate-middle-y bg-light" style="height: 2px; z-index: 0;"></div>
+                    {# Ligne de progression (50% si is_first, 25% sinon pour montrer qu'on avance) #}
+                    <div class="position-absolute top-50 start-0 translate-middle-y bg-indigo transition-all" style="height: 2px; width: {{ is_first ? '20%' : '50%' }}; z-index: 1;"></div>
+
+                    {# Step 1 #}
+                    <div class="step-item active">
+                        <div class="step-icon shadow-sm"><i class="fas fa-user-plus"></i></div>
+                        <span class="step-label">Identité</span>
+                    </div>
+                    {# Step 2 #}
+                    <div class="step-item {{ not is_first ? 'active' : 'pending' }}">
+                        <div class="step-icon shadow-sm"><i class="fas fa-sitemap"></i></div>
+                        <span class="step-label">Liens</span>
+                    </div>
+                    {# Step 3 #}
+                    <div class="step-item pending">
+                        <div class="step-icon shadow-sm"><i class="fas fa-calculator"></i></div>
+                        <span class="step-label">Analyse</span>
+                    </div>
+                </div>
+            </div>
+
+            {# --- HEADER ÉPURÉ --- #}
+            <div class="text-center mb-5 animate__animated animate__fadeIn">
                 {% if is_first %}
                     <div class="onboarding-badge mb-3">
                         <i class="fas fa-star me-2"></i>Première étape
@@ -31,10 +57,13 @@
             </div>
 
             {# --- CARTE DE FORMULAIRE "GLASS-STYLE" --- #}
-            <div class="card border-0 shadow-smooth rounded-5 bg-white">
+            <div class="card border-0 shadow-smooth rounded-5 bg-white overflow-hidden">
+                {# Petite barre de couleur décorative au sommet de la carte #}
+                <div class="h-2px bg-indigo w-100"></div>
+                
                 <div class="card-body p-4 p-lg-5">
                     
-                    {# Petit rappel visuel interne si c'est la 1ère personne #}
+                    {# Rappel visuel interne #}
                     {% if is_first %}
                         <div class="d-flex align-items-center mb-4 p-3 rounded-4 bg-indigo-subtle border border-indigo-light">
                             <div class="icon-circle-sm bg-indigo text-white me-3">
@@ -46,7 +75,7 @@
 
                     {{ include('family/person/_form.html.twig', {
                         'button_label': is_first ? 'Lancer ma stratégie' : 'Enregistrer le profil',
-                        'button_class': 'btn btn-ux-primary w-100 py-3 rounded-4 fw-bold mt-3'
+                        'button_class': 'btn btn-ux-primary w-100 py-3 rounded-4 fw-bold mt-3 shadow-lg'
                     }) }}
                 </div>
             </div>
@@ -60,10 +89,28 @@
         --indigo: #4f46e5;
         --indigo-light: #c7d2fe;
         --indigo-subtle: #f5f7ff;
+        --text-muted: #64748b;
     }
 
     .fw-black { font-weight: 850; letter-spacing: -0.02em; }
+    .h-2px { height: 4px; }
     
+    /* Stepper UX */
+    .stepper-wrapper { max-width: 400px; margin: 0 auto; }
+    .step-item { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .step-icon {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: white; border: 2px solid #e2e8f0;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem; color: var(--text-muted);
+        transition: all 0.4s ease;
+    }
+    .step-label { font-size: 0.65rem; font-weight: 800; text-uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    
+    .step-item.active .step-icon { background: var(--indigo); border-color: var(--indigo); color: white; transform: scale(1.1); }
+    .step-item.active .step-label { color: var(--indigo); }
+    .step-item.pending .step-icon { background: #f8fafc; }
+
     /* Carte Ombre Douce */
     .shadow-smooth {
         box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05), 0 20px 25px -5px rgba(0,0,0,0.02) !important;
@@ -71,31 +118,22 @@
 
     /* Badge Onboarding */
     .onboarding-badge {
-        display: inline-flex;
-        align-items: center;
-        background: var(--indigo-subtle);
-        color: var(--indigo);
-        padding: 6px 16px;
-        border-radius: 99px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        text-transform: uppercase;
+        display: inline-flex; align-items: center;
+        background: var(--indigo-subtle); color: var(--indigo);
+        padding: 6px 16px; border-radius: 99px;
+        font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
         border: 1px solid var(--indigo-light);
     }
 
     /* Bouton Primary UX */
     .btn-ux-primary {
-        background: var(--indigo);
-        color: white;
-        border: none;
+        background: var(--indigo); color: white; border: none;
         box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
         transition: all 0.3s ease;
     }
     .btn-ux-primary:hover {
-        background: #4338ca;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        color: white;
+        background: #4338ca; transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4); color: white;
     }
 
     /* Utilitaires */
@@ -107,6 +145,7 @@
         display: flex; align-items: center; justify-content: center;
         font-size: 0.8rem; flex-shrink: 0;
     }
+    .transition-all { transition: all 0.5s ease; }
     .bg-indigo { background-color: var(--indigo); }
     .text-indigo { color: var(--indigo); }
     .border-indigo-light { border-color: var(--indigo-light) !important; }

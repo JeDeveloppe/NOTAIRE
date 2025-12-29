@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Person;
 use App\Form\PersonType;
+use App\Repository\DonationRepository;
 use App\Service\DonationService;
 use App\Repository\PersonRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,13 +19,14 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class FamilyController extends AbstractController
 {
     #[Route('/', name: 'app_family_dashboard')]
-    public function dashboard(PersonRepository $personRepository, DonationService $donationService): Response
+    public function dashboard(PersonRepository $personRepository, DonationService $donationService, DonationRepository $donationRepository): Response
     {
         $user = $this->getUser();
         $people = $user->getPeople();
 
         // On récupère les stats de base (dons actifs/expire)
         $stats = $donationService->getUserDashboardStats($user);
+        $donations = $donationRepository->findAllDonationsByUser($user);
 
         // CALCUL DU TOTAL SANS TOUCHER AU SERVICE
         $totalAvailable = 0;
@@ -36,6 +38,7 @@ final class FamilyController extends AbstractController
         return $this->render('family/dashboard.html.twig', array_merge($stats, [
             'people' => $people,
             'totalAvailableAllowance' => $totalAvailable, // On injecte la variable attendue par le template
+            'donations' => $donations
         ]));
     }
 

@@ -4,7 +4,7 @@ namespace App\Form;
 
 use App\Entity\Donation;
 use App\Entity\Person;
-use App\Repository\DonationRuleRepository; // Ajouté
+use App\Repository\DonationRuleRepository;
 use App\Repository\PersonRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -16,7 +16,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DonationType extends AbstractType
 {
-    // On injecte le repository des règles
     public function __construct(
         private DonationRuleRepository $ruleRepository
     ) {}
@@ -25,13 +24,10 @@ class DonationType extends AbstractType
     {
         $user = $options['user'];
 
-        // On récupère les types de systèmes fiscaux distincts depuis la BDD
-        // pour alimenter le champ "type" de façon dynamique
+        // Récupération dynamique des règles fiscales
         $rules = $this->ruleRepository->findAll();
         $typeChoices = [];
         foreach ($rules as $rule) {
-            // On utilise le tax_system comme valeur (ex: sarkozy, progressif_direct)
-            // Et le label comme texte lisible
             $typeChoices[$rule->getLabel()] = $rule->getTaxSystem();
         }
 
@@ -39,6 +35,8 @@ class DonationType extends AbstractType
             ->add('donor', EntityType::class, [
                 'class' => Person::class,
                 'label' => 'Donateur',
+                'placeholder' => 'Choisir le donateur...', // Champ vide au départ
+                'required' => true,
                 'choice_label' => fn(Person $p) => $p->getFirstname() . ' ' . strtoupper($p->getLastname()),
                 'query_builder' => function (PersonRepository $er) use ($user) {
                     return $er->createQueryBuilder('p')
@@ -50,6 +48,8 @@ class DonationType extends AbstractType
             ->add('beneficiary', EntityType::class, [
                 'class' => Person::class,
                 'label' => 'Bénéficiaire',
+                'placeholder' => 'Choisir le bénéficiaire...', // Champ vide au départ
+                'required' => true,
                 'choice_label' => fn(Person $p) => $p->getFirstname() . ' ' . strtoupper($p->getLastname()),
                 'query_builder' => function (PersonRepository $er) use ($user) {
                     return $er->createQueryBuilder('p')
@@ -64,27 +64,27 @@ class DonationType extends AbstractType
             ])
             ->add('type', ChoiceType::class, [
                 'label' => 'Nature fiscale du don',
-                'choices' => $typeChoices, // Liste dynamique issue de la BDD
+                'choices' => $typeChoices,
+                'placeholder' => 'Sélectionnez la règle fiscale...', // Champ vide au départ
                 'help' => 'Sélectionnez la règle fiscale à appliquer pour ce don.'
             ])
             ->add('createdAt', DateType::class, [
                 'label' => 'Date du don',
                 'widget' => 'single_text',
-                'data' => new \DateTime(),
+                'data' => new \DateTime(), // Date du jour par défaut
             ])
             ->add('taxPaid', NumberType::class, [
                 'label' => 'Impôts payés pour cet acte (€)',
-                'required' => true, // Rend le champ obligatoire
+                'required' => true,
                 'html5' => true,
                 'scale' => 2,
                 'attr' => [
                     'placeholder' => '0',
-                    'class' => 'form-control-lg',
                     'min' => 0,
                     'step' => '0.01'
                 ],
                 'help' => 'Indiquez 0 si l\'acte était totalement exonéré.'
-            ]);;
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
