@@ -68,7 +68,7 @@ class DonationType extends AbstractType
                 'placeholder' => 'Sélectionnez la règle fiscale...', // Champ vide au départ
                 'help' => 'Sélectionnez la règle fiscale à appliquer pour ce don.'
             ])
-            ->add('createdAt', DateType::class, [
+            ->add('donateAt', DateType::class, [
                 'label' => 'Date du don',
                 'widget' => 'single_text',
                 'data' => new \DateTime(), // Date du jour par défaut

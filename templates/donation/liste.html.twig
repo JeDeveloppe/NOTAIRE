@@ -39,7 +39,7 @@
                     {% for donation in donations %}
                         <tr class="donation-row">
                             <td class="ps-4 text-muted">
-                                {{ donation.createdAt|date('d/m/Y') }}
+                                {{ donation.donateAt|date('d/m/Y') }}
                             </td>
                             <td>
                                 <span class="fw-bold text-dark">{{ donation.donor.firstname }}</span>

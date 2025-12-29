@@ -38,6 +38,9 @@ class Donation
     #[ORM\Column]
     private ?int $taxPaid = null;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $donateAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -111,6 +114,18 @@ class Donation
     public function setTaxPaid(int $taxPaid): static
     {
         $this->taxPaid = $taxPaid;
+
+        return $this;
+    }
+
+    public function getDonateAt(): ?\DateTimeImmutable
+    {
+        return $this->donateAt;
+    }
+
+    public function setDonateAt(\DateTimeImmutable $donateAt): static
+    {
+        $this->donateAt = $donateAt;
 
         return $this;
     }

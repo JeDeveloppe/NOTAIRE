@@ -123,6 +123,7 @@ class AppInitCommand extends Command
         $don->setAmount(80000);
         // Date : il y a 2 ans (donc dans le délai des 15 ans)
         $don->setCreatedAt(new \DateTimeImmutable('-2 years'));
+        $don->setDonateAt(new \DateTimeImmutable('-2 years'));
         // TRÈS IMPORTANT : Le type doit correspondre au tax_system de votre règle YAML
         // Si votre règle "Enfant" utilise 'progressif_direct', mettez 'progressif_direct' ici.
         $don->setType('progressif_direct');

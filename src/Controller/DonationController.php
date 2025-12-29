@@ -52,6 +52,7 @@ class DonationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $donation->setCreatedAt(new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')));
             $entityManager->persist($donation);
             $entityManager->flush();
 
