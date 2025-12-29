@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Protection des Données (RGPD) - Lignée{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm rounded-5 p-4 p-md-5 bg-white">
+                
+                {# Header #}
+                <div class="d-flex align-items-center mb-4">
+                    <div class="icon-circle bg-primary-subtle text-primary me-3">
+                        <i class="fas fa-user-shield fa-lg"></i>
+                    </div>
+                    <h1 class="h2 fw-bolder mb-0 text-primary">Protection de vos données (RGPD)</h1>
+                </div>
+                
+                <p class="text-muted small">Dernière mise à jour : {{ "now"|date("d/m/Y") }}</p>
+                <hr class="my-4 opacity-10">
+
+                {# SECTION 1 #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">1. Responsable du traitement</h2>
+                    <p>Le responsable de la collecte et du traitement des données est la plateforme <strong>Lignée</strong>, représentée par [Ton Nom/Société].</p>
+                </section>
+
+                {# SECTION 2 #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">2. Données collectées</h2>
+                    <p>Nous collectons les informations nécessaires à la constitution de votre <strong>dossier d'analyse patrimoniale</strong> (Identité, email, composition du patrimoine, liens de parenté).</p>
+                </section>
+
+                {# SECTION 3 - LA LOGIQUE DE VERROUILLAGE #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">3. Accès au dossier par les Offices Notariaux</h2>
+                    <p>Pour vous permettre d'obtenir un conseil, votre dossier est rendu accessible aux <strong>Offices Notariaux partenaires</strong> opérant dans votre secteur géographique.</p>
+                    
+                    <div class="alert alert-info border-0 rounded-4 p-4 shadow-sm mb-3">
+                        <h4 class="h6 fw-bold"><i class="fas fa-lock me-2"></i>Exclusivité de traitement</h4>
+                        <p class="small mb-0">
+                            Dès qu'une Étude Notariale procède au <strong>verrouillage de votre dossier</strong> pour le prendre en charge, vos données personnelles ne sont plus accessibles aux autres Offices. 
+                            <br><br>
+                            <strong>Remise en ligne :</strong> Si l'Étude ayant verrouillé le dossier ne procède à aucune prise de contact dans les délais impartis, le verrou est levé et le dossier est <strong>remis à disposition</strong> des autres Offices partenaires du secteur afin de vous garantir une réponse.
+                        </p>
+                    </div>
+                    <p class="small text-muted italic">Ce système garantit que vos données ne sont traitées que par un seul interlocuteur à la fois.</p>
+                </section>
+
+                {# SECTION 4 #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">4. Conservation</h2>
+                    <p>Vos données sont supprimées de la plateforme après 1 an d'inactivité de votre compte. L'Office Notarial ayant traité votre dossier conserve les informations selon ses propres obligations légales d'archivage professionnel.</p>
+                </section>
+
+                {# SECTION 5 #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-success mb-3">5. Vos droits</h2>
+                    <p>Vous disposez d'un droit d'accès, de rectification et de suppression (droit à l'oubli) en écrivant à : <strong>rgpd@lignee.fr</strong>.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f8fafc; }
+    .icon-circle { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+    .bg-primary-subtle { background-color: #eef2ff !important; }
+    .text-primary { color: #4f46e5 !important; }
+    .alert-info { background-color: #f0f7ff; color: #075985; border: 1px solid #e0f2fe !important; }
+    h2 { border-left: 4px solid #4f46e5; padding-left: 15px; }
+</style>
+{% endblock %}

@@ -67,16 +67,46 @@ parameters:
         - { label: 'Abattement Spécifique Handicap', relationship_code: 'HANDICAP', amount: 159325, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct', is_bidirectional: false }
         - { label: 'Abattement Tiers / Concubin', relationship_code: 'TIERS', amount: 1594, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'tiers', is_bidirectional: false }
 
+    app.simulation_statuses:
+        OPEN: 
+            label: 'Disponible'
+            color: 'success'
+            points: 0
+            description: 'Dossier libre.'
+        RESERVED: 
+            label: 'Réservé'
+            color: 'warning'
+            points: 5
+            description: 'Dossier pris. Le notaire gagne 5 pts de réactivité.'
+        CONTACTED: 
+            label: 'Contact Établi'
+            color: 'info'
+            points: 20
+            description: 'Le notaire a rappelé le client. Gain de confiance.'
+        CLOSED: 
+            label: 'Dossier Signé'
+            color: 'primary'
+            points: 100
+            description: 'Succès total de la mise en relation.'
+        EXPIRED: 
+            label: 'Échu / Non rappelé'
+            color: 'danger'
+            points: -30
+            description: 'Pénalité lourde : le notaire n’a pas rappelé à temps.'
+
+
 services:
     _defaults:
         autowire: true
         autoconfigure: true
         bind:
+            $projectDir: '%kernel.project_dir%'
             $adminEmail: '%admin_email%'
             $adminPassword: '%admin_password%'
             $relationships: '%app.relationships%'
             $donationRules: '%app.donation_rules%'
             $taxBrackets: '%app.tax_brackets%'
+            $simulationStatuses: '%app.simulation_statuses%'
 
     App\:
         resource: '../src/'

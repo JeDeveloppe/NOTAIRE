@@ -1,0 +1,220 @@
+{# templates/_partials/_footer.html.twig #}
+<footer class="footer-custom position-relative pt-5 pb-4 mt-5">
+
+    {# LE LOGO QUI S'ÉCHAPPE DU FOOTER #}
+    <div class="footer-logo-container">
+        <a href="{{ path('app_home') }}" class="logo-escape-box shadow-lg">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo Lignée" class="footer-main-logo">
+        </a>
+    </div>
+
+    <div class="container pt-4">
+        <div class="row gy-5 align-items-center">
+
+            {# Navigation Gauche : Particuliers #}
+            <div class="col-lg-4 col-md-6 order-lg-1 order-2 text-center text-lg-start">
+                <div class="ps-lg-4">
+                    <h6 class="footer-heading">Particuliers</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <a href="{{ app.user ? path('app_simulation') : path('app_register') }}" class="footer-link">
+                                Simuler ma donation
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
+                                <span class="footer-link opacity-50">Guide succession</span>
+                                <span class="badge-coming-soon">Bientôt</span>
+                            </div>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ path('app_site_donation_rules') }}" class="footer-link">Abattements</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {# Pitch Central & Preuve Sociale #}
+            <div class="col-lg-4 col-md-12 order-lg-2 order-1 text-center">
+                <div class="mt-4 mt-lg-5">
+                    <h2 class="h4 fw-bolder text-white mb-2">Lignée</h2>
+                    <p class="footer-description mx-auto mb-3">
+                        L'expertise notariale accessible en un clic.
+                    </p>
+
+                    {% if total_simulations is defined and total_simulations > 0 %}
+                        <div class="simulation-counter mt-3">
+                            <span class="badge rounded-pill bg-white-translucent">
+                                <i class="fas fa-shield-check me-1 text-indigo"></i>
+                                Déjà <strong>+{{ total_simulations }}</strong> simulations sécurisées.
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Navigation Droite : Professionnels #}
+            <div class="col-lg-4 col-md-6 order-lg-3 order-3 text-center text-lg-end">
+                <div class="pe-lg-4">
+                    <h6 class="footer-heading">Espace Notaire</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <a href="{{ path('app_site_legal_cgv_pro') }}" class="footer-link-pro">
+                                <i class="fas fa-briefcase me-1"></i> Devenir Partenaire
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{{ path('app_login') }}" class="footer-link">Se connecter à l'espace membre</a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="mailto:pro@lignee.fr" class="footer-link small">Support & Assistance</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {# Ligne de séparation élégante #}
+        <div class="footer-divider-elegant mt-5 mb-4"></div>
+
+        {# Barre Légale Basse #}
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="footer-copyright small mb-md-0 mb-3">
+                    © {{ "now"|date("Y") }} <span class="text-white fw-bold">Lignée</span>. 
+                    <span class="opacity-50">Tous droits réservés.</span>
+                </p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <ul class="list-inline mb-0 legal-nav">
+                    <li class="list-inline-item">
+                        <a href="{{ path('app_site_legal_cgu') }}">CGU</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="{{ path('app_site_legal_cgu') }}#mentions">Mentions Légales</a>
+                    </li>
+                    <li class="list-inline-item">
+                        <a href="{{ path('app_site_legal_rgpd') }}">Confidentialité</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    :root {
+        --footer-bg: #0f172a;
+        --indigo-brand: #818cf8;
+        --text-muted: #94a3b8;
+    }
+
+    .footer-custom {
+        background-color: var(--footer-bg);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* LOGO ESCAPE */
+    .footer-logo-container {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 100;
+    }
+
+    .logo-escape-box {
+        background-color: #ffffff;
+        padding: 25px 40px;
+        border-radius: 15px;
+        display: block;
+        transition: all 0.3s ease;
+        border: 2px solid var(--footer-bg);
+    }
+
+    .logo-escape-box:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .footer-main-logo { height: 140px; width: auto; }
+
+    /* TYPOGRAPHIE */
+    .footer-heading {
+        color: #ffffff;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 2.5px;
+        font-weight: 800;
+        margin-bottom: 1.25rem;
+        opacity: 0.8;
+    }
+
+    .footer-description {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-style: italic;
+    }
+
+    .footer-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+
+    .footer-link:hover { color: #ffffff; }
+
+    .footer-link-pro {
+        color: var(--indigo-brand) !important;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    /* BADGE BIENTÔT */
+    .badge-coming-soon {
+        font-size: 0.6rem;
+        background-color: rgba(129, 140, 248, 0.1);
+        color: var(--indigo-brand);
+        border: 1px solid rgba(129, 140, 248, 0.2);
+        padding: 1px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+        text-transform: uppercase;
+    }
+
+    /* BARRE LÉGALE BASSE */
+    .footer-divider-elegant {
+        height: 1px;
+        background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.1) 50%, rgba(255,255,255,0));
+    }
+
+    .legal-nav a {
+        color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: 0.3s;
+    }
+
+    .legal-nav a:hover { color: #ffffff; }
+
+    .footer-copyright { color: rgba(255, 255, 255, 0.4); }
+
+    .bg-white-translucent {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #cbd5e1;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+    }
+
+    .text-indigo { color: var(--indigo-brand); }
+
+    @media(max-width: 992px) {
+        .footer-main-logo { height: 90px; }
+        .logo-escape-box { padding: 15px 25px; }
+    }
+</style>

@@ -3,6 +3,15 @@ body {
     background-color: #f1f5f9; /* Un gris-bleu très doux qui fait ressortir le blanc */
 }
 
+html {
+    scroll-behavior: smooth; /* Permet un défilement doux vers l'ancre */
+}
+
+/* Évite que le haut de la section soit caché par une éventuelle navbar fixe */
+section[id] {
+    scroll-margin-top: 100px; 
+}
+
 /* 2. On booste la carte pour qu'elle "flotte" vraiment */
 .card.shadow-smooth {
     background-color: #ffffff;

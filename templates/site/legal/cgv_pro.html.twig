@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CGV Professionnels - Lignée Pro{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-lg rounded-5 p-4 p-md-5 bg-white">
+                
+                {# Header #}
+                <div class="d-flex align-items-center mb-5">
+                    <div class="icon-circle bg-primary-subtle text-primary me-4">
+                        <i class="fas fa-briefcase fa-2x"></i>
+                    </div>
+                    <div>
+                        <h1 class="h2 fw-bolder mb-1">Conditions Générales de Vente</h1>
+                        <p class="text-muted mb-0">Réglementation des services destinés aux Offices Notariaux</p>
+                    </div>
+                </div>
+
+                {# SECTION 1 : ACCÈS AUX DOSSIERS #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">1. Accès aux Dossiers et Sectorisation</h2>
+                    <p>L'Office Notarial accède aux <strong>Dossiers d'analyse</strong> correspondant aux codes postaux renseignés lors de son inscription ou dans ses paramètres de secteur. L'accès aux données est partagé entre les offices d'un même secteur jusqu'au verrouillage effectif d'un dossier.</p>
+                </section>
+
+                {# SECTION 2 : LE SYSTÈME DE VERROUILLAGE #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-primary mb-4">2. Verrouillage Exclusif et Délais</h2>
+                    <div class="alert alert-info border-0 rounded-4 p-4 shadow-sm mb-4">
+                        <p class="mb-2"><strong>Principe de priorité :</strong> Le premier Office Notarial qui active l'action "Contacter" procède au <strong>verrouillage exclusif</strong> du dossier.</p>
+                        <ul class="small mb-0">
+                            <li>Le dossier devient immédiatement invisible pour les autres offices du secteur.</li>
+                            <li>L'Office dispose d'une exclusivité de <strong>15 jours</strong> pour traiter la demande.</li>
+                            <li>Une première prise de contact (téléphone ou email) est impérative sous <strong>72h ouvrées</strong>.</li>
+                        </ul>
+                    </div>
+                    <p class="small text-muted italic">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Si aucun avancement n'est enregistré sur la plateforme sous 15 jours, le verrou est automatiquement levé et le dossier est remis à disposition des autres offices du secteur.
+                    </p>
+                </section>
+
+                {# SECTION 3 : LE BARÈME (DYNAMIQUE) #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-4">3. Indice de Performance de l'Étude (IPE)</h2>
+                    <p>Le maintien du droit de verrouillage est conditionné par la réactivité de l'Étude. Chaque action génère des points crédités ou débités selon le barème suivant :</p>
+
+                    <div class="card border-0 bg-light rounded-4 overflow-hidden">
+                        <table class="table table-hover mb-0">
+                            <thead class="bg-secondary-subtle">
+                                <tr class="small text-muted">
+                                    <th class="ps-4">Statut de l'action</th>
+                                    <th class="text-center">Points</th>
+                                    <th class="pe-4">Impact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for status in available_statuses %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <span class="badge bg-{{ status.color }}">{{ status.label }}</span>
+                                        </td>
+                                        <td class="text-center fw-bold {{ status.points >= 0 ? 'text-success' : 'text-danger' }}">
+                                            {{ status.points > 0 ? '+' : '' }}{{ status.points }}
+                                        </td>
+                                        <td class="pe-4 small text-muted">{{ status.description }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                {# SECTION 4 : ABONNEMENT #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">4. Conditions Financières</h2>
+                    <p>L'accès à la plateforme fait l'objet d'un abonnement mensuel. Les tarifs sont révisables annuellement. Tout mois entamé est dû dans son intégralité. La résiliation s'effectue avec un préavis de 15 jours avant la date de renouvellement.</p>
+                </section>
+
+                {# SECTION 5 : RESPONSABILITÉ #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-dark mb-3">5. Déontologie et Responsabilité</h2>
+                    <p>L'Office Notarial s'engage à respecter les règles déontologiques de la profession dans le cadre de la prise de contact. Lignée n'intervient pas dans la relation juridique entre l'Office et le Client et ne saurait être tenue responsable des conseils prodigués.</p>
+                </section>
+
+                <div class="text-center mt-5">
+                    <a href="mailto:pro@lignee.fr" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm">
+                        <i class="fas fa-headset me-2"></i>Support dédié aux Offices
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; }
+    .icon-circle { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 15px; }
+    .bg-primary-subtle { background-color: #eef2ff !important; }
+    .text-primary { color: #4f46e5 !important; }
+    h2 { border-left: 4px solid #4f46e5; padding-left: 15px; }
+    .table td { padding: 1.25rem 1rem; border-color: #e5e7eb; }
+    .btn-primary { background-color: #4f46e5; border: none; }
+</style>
+{% endblock %}

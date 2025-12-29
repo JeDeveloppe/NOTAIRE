@@ -2,7 +2,9 @@
 
 namespace App\Form;
 
+use App\Entity\City;
 use App\Entity\User;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -25,6 +27,7 @@ class RegistrationFormType extends AbstractType
                 ],
                 'label' => 'Adresse Email'
             ])
+            ->add('city', CityAutocompleteField::class)
             ->add('plainPassword', PasswordType::class, [
                 'mapped' => false,
                 'attr' => [
@@ -44,7 +47,7 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
-                'label' => 'J\'accepte les conditions générales',
+                'label' => false, // Désactive le label automatique pour éviter le doublon
                 'attr' => ['class' => 'form-check-input me-2'],
                 'constraints' => [
                     new IsTrue(message: 'Vous devez accepter nos conditions pour continuer.'),

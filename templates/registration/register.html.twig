@@ -7,7 +7,7 @@
     <div class="register-card p-4 p-md-5 rounded-5 shadow-lg border-0 bg-white position-relative overflow-hidden">
         
         {# Barre de progression décorative #}
-        <div class="position-absolute top-0 start-0 w-100 h-1" style="background: linear-gradient(90deg, #10b981, #3b82f6); height: 6px;"></div>
+        <div class="position-absolute top-0 start-0 w-100" style="background: linear-gradient(90deg, #10b981, #3b82f6); height: 6px;"></div>
 
         <div class="text-center mb-5">
             <div class="icon-circle bg-success-subtle text-success mx-auto mb-4">
@@ -26,22 +26,19 @@
             {% endif %}
 
             <div class="form-floating mb-3">
-                {{ form_widget(registrationForm.email, {
-                    'attr': {
-                        'class': 'form-control border-0 bg-light rounded-4 px-4',
-                        'placeholder': 'nom@exemple.com'
-                    }
-                }) }}
+                {{ form_widget(registrationForm.email) }}
                 <label for="{{ registrationForm.email.vars.id }}" class="ms-2 text-muted">Adresse Email</label>
             </div>
 
+            {# Champ VILLE - Aligné sur le design des autres inputs #}
+            <div class="mb-3">
+                <label for="{{ registrationForm.city.vars.id }}" class="form-label small text-muted ms-3 mb-1">Votre Ville (ou Code Postal)</label>
+                {{ form_widget(registrationForm.city) }}
+                {{ form_errors(registrationForm.city) }}
+            </div>
+
             <div class="form-floating mb-3">
-                {{ form_widget(registrationForm.plainPassword, {
-                    'attr': {
-                        'class': 'form-control border-0 bg-light rounded-4 px-4',
-                        'placeholder': 'Mot de passe'
-                    }
-                }) }}
+                {{ form_widget(registrationForm.plainPassword) }}
                 <label for="{{ registrationForm.plainPassword.vars.id }}" class="ms-2 text-muted">Mot de passe</label>
                 <div class="form-text mt-2 px-2" style="font-size: 0.7rem;">
                     <i class="fas fa-info-circle me-1"></i> Minimum 6 caractères
@@ -50,9 +47,9 @@
 
             <div class="mb-4 px-2">
                 <div class="form-check custom-checkbox d-flex align-items-center">
-                    {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input me-2'}}) }}
+                    {{ form_widget(registrationForm.agreeTerms) }}
                     <label class="form-check-label small text-muted" for="{{ registrationForm.agreeTerms.vars.id }}">
-                        J'accepte les <a href="#" class="text-primary text-decoration-none">conditions générales</a>
+                        J'accepte les <a href="#" class="text-primary text-decoration-none fw-bold">conditions générales</a>
                     </label>
                 </div>
             </div>
@@ -88,14 +85,47 @@
         border-radius: 50%;
     }
 
-    /* Style des widgets Symfony */
+    /* --- CORRECTION ALIGNEMENT VILLE (UX AUTOCOMPLETE) --- */
+    .ts-control {
+        border: none !important;
+        background-color: #f8f9fa !important; /* bg-light matching form-floating */
+        border-radius: 1rem !important; /* rounded-4 */
+        padding: 0 1.5rem !important; /* On gère le padding horizontal */
+        min-height: 3.625rem !important; /* Hauteur identique aux form-floating de Bootstrap 5 */
+        display: flex !important;
+        align-items: center !important;
+        box-shadow: none !important;
+    }
+
+    /* Centre le texte et le placeholder verticalement */
+    .ts-control > input, .ts-control > .item {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .ts-wrapper.focus .ts-control {
+        background-color: #fff !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+        border: 1px solid #10b981 !important;
+    }
+
+    .ts-dropdown {
+        border-radius: 1rem !important;
+        border: none !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        padding: 0.5rem !important;
+        margin-top: 5px !important;
+    }
+
+    /* Style général des inputs classiques */
     .form-control:focus {
         background-color: #fff !important;
         box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
         border: 1px solid #10b981 !important;
     }
 
-    /* Animation du bouton */
     .hover-lift {
         transition: all 0.2s ease;
     }
@@ -108,7 +138,12 @@
     .text-success { color: #10b981 !important; }
     .btn-success { background-color: #10b981; border: none; }
     .btn-success:hover { background-color: #059669; }
-    
     .text-primary { color: #3b82f6 !important; }
+
+    /* Correction visuelle pour la checkbox */
+    .form-check-input:checked {
+        background-color: #10b981;
+        border-color: #10b981;
+    }
 </style>
 {% endblock %}

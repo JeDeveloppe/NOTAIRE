@@ -42,6 +42,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Person::class, mappedBy: 'owner')]
     private Collection $people;
 
+    #[ORM\ManyToOne(inversedBy: 'users')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?City $city = null;
+
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Simulation $simulation = null;
+
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Notary $notary = null;
+
     public function __construct()
     {
         $this->people = new ArrayCollection();
@@ -148,6 +158,52 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $person->setOwner(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getSimulation(): ?Simulation
+    {
+        return $this->simulation;
+    }
+
+    public function setSimulation(Simulation $simulation): static
+    {
+        // set the owning side of the relation if necessary
+        if ($simulation->getUser() !== $this) {
+            $simulation->setUser($this);
+        }
+
+        $this->simulation = $simulation;
+
+        return $this;
+    }
+
+    public function getNotary(): ?Notary
+    {
+        return $this->notary;
+    }
+
+    public function setNotary(Notary $notary): static
+    {
+        // set the owning side of the relation if necessary
+        if ($notary->getUser() !== $this) {
+            $notary->setUser($this);
+        }
+
+        $this->notary = $notary;
 
         return $this;
     }

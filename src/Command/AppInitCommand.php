@@ -3,11 +3,16 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Entity\Notary;
 use App\Entity\Person;
 use App\Entity\Donation;
 use App\Entity\DonationRule;
 use App\Entity\Relationship;
+use App\Service\CityService;
+use App\Entity\SimulationStatus;
+use App\Repository\CityRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Service\CountryInitializerService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,10 +27,14 @@ class AppInitCommand extends Command
     public function __construct(
         private EntityManagerInterface $em,
         private UserPasswordHasherInterface $hasher,
+        private CountryInitializerService $countryInitializer, // Nouveau
+        private CityRepository $cityRepository,
+        private CityService $cityService, // Nouveau
         private array $relationships,
         private array $donationRules,
         private string $adminEmail,
-        private string $adminPassword
+        private string $adminPassword,
+        private array $simulationStatuses
     ) {
         parent::__construct();
     }
@@ -46,7 +55,35 @@ class AppInitCommand extends Command
             $this->getApplication()->find($cmd['command'])->run(new ArrayInput($cmd), $output);
         }
 
-        // 2. Import des Relationships
+        // --- NOUVEAU : INITIALISATION GÉOGRAPHIQUE ---
+
+        // 2. Initialisation des Pays
+        $io->section('Initialisation des pays (FR, BE...)');
+        $this->countryInitializer->initializeCountries($io);
+
+        // 3. Import des Villes (France)
+        $io->section('Importation du référentiel des villes');
+        $this->cityService->importCitiesOfFrance($io);
+
+        // ----------------------------------------------
+
+        // 3. Import des simulations_status
+        $io->section('Importation des statuts de simulation');
+        foreach ($this->simulationStatuses as $code => $data) {
+            $status = new SimulationStatus();
+
+            // Le code (OPEN, RESERVED, etc.) est la clé du tableau dans services.yaml
+            $status->setCode($code);
+            $status->setLabel($data['label']);
+            $status->setPoints($data['points']);
+            $status->setDescription($data['description']);
+            $status->setColor($data['color']);
+
+            $this->em->persist($status);
+            $io->text("-> Ajout du statut : <info>" . $data['label'] . "</info> (" . $data['points'] . " pts)");
+        }
+
+        // 4. Import des Relationships (anciennement étape 2)
         $io->section('Importation des liens de parenté');
         $createdRels = [];
         foreach ($this->relationships as $data) {
@@ -58,7 +95,7 @@ class AppInitCommand extends Command
             $io->text("-> Ajout du lien : " . $data['name']);
         }
 
-        // 3. Import des DonationRules (MODIFIÉ ICI)
+        // 5. Import des DonationRules
         $io->section('Importation des règles fiscales');
         foreach ($this->donationRules as $data) {
             $rule = new DonationRule();
@@ -69,25 +106,24 @@ class AppInitCommand extends Command
             $rule->setReceiverMinAge($data['receiver_min_age']);
             $rule->setIsCumulative($data['cumulative']);
             $rule->setIsBidirectional($data['is_bidirectional']);
-
-            // INDISPENSABLE : On récupère le tax_system du YAML
             $rule->setTaxSystem($data['tax_system'] ?? 'tiers');
-
             $rule->setRelationship($createdRels[$data['relationship_code']] ?? null);
             $this->em->persist($rule);
-            $io->text("-> Ajout de la règle : " . $data['label'] . " (Système : " . ($data['tax_system'] ?? 'tiers') . ")");
+            $io->text("-> Ajout de la règle : " . $data['label']);
         }
 
-        // 4. Création Admin
+        // 6. Création Admin
         $io->section('Création de l\'administrateur');
         $admin = new User();
         $admin->setEmail($this->adminEmail);
         $admin->setRoles(['ROLE_ADMIN']);
         $admin->setPassword($this->hasher->hashPassword($admin, $this->adminPassword));
+        $admin->setCity($this->cityRepository->findOneBy(['name' => 'Paris']));
+        // Optionnel : $admin->setCity('Paris'); // Si tu veux tester le nouveau champ
         $this->em->persist($admin);
         $io->text("-> Admin créé : " . $this->adminEmail);
 
-        // 5. Création d'une famille de test
+        // 7. Création d'une famille de test
         $io->section('Création de la famille Dubois');
 
         $gp = new Person();
@@ -101,12 +137,6 @@ class AppInitCommand extends Command
         $pere->addParent($gp);
         $this->em->persist($pere);
 
-        $tante = new Person();
-        $tante->setFirstname('Marie')->setLastname('Dubois')->setGender('F')
-            ->setBirthdate(new \DateTimeImmutable('1975-03-14'))->setOwner($admin);
-        $tante->addParent($gp);
-        $this->em->persist($tante);
-
         $enfant = new Person();
         $enfant->setFirstname('Marc')->setLastname('Dubois')->setGender('M')
             ->setBirthdate(new \DateTimeImmutable('2002-01-10'))->setOwner($admin);
@@ -115,27 +145,41 @@ class AppInitCommand extends Command
 
         $this->em->flush();
 
-        // 6. Simulation d'une donation passée (Rappel fiscal)
+        // 8. Simulation d'une donation
         $io->section('Simulation d\'une donation de 80k€');
-
         $don = new Donation();
-        $don->setDonor($pere); // Jean donne...
-        $don->setBeneficiary($enfant); // ...à Marc
+        $don->setDonor($pere);
+        $don->setBeneficiary($enfant);
         $don->setAmount(80000);
-        // Date : il y a 2 ans (donc dans le délai des 15 ans)
         $don->setCreatedAt(new \DateTimeImmutable('-2 years'));
         $don->setDonateAt(new \DateTimeImmutable('-2 years'));
-        // TRÈS IMPORTANT : Le type doit correspondre au tax_system de votre règle YAML
-        // Si votre règle "Enfant" utilise 'progressif_direct', mettez 'progressif_direct' ici.
         $don->setType('progressif_direct');
         $don->setTaxPaid(0);
 
         $this->em->persist($don);
-        $io->text("-> Donation de 80 000 € créée (Jean -> Marc)");
+
+        // 9. Création d'un Notaire de test
+        $io->section('Création du compte Notaire');
+
+        $notaryUser = new User();
+        $notaryUser->setEmail('notaire@exemple.com');
+        $notaryUser->setRoles(['ROLE_NOTARY']);
+        $notaryUser->setPassword($this->hasher->hashPassword($notaryUser, 'notaire123'));
+        $notaryUser->setCity($this->cityRepository->findOneBy(['name' => 'Paris']));
+        $this->em->persist($notaryUser);
+
+        // On crée l'entité métier liée
+        $notaryProfile = new Notary();
+        $notaryProfile->setName('Étude de Maître Durand');
+        $notaryProfile->setUser($notaryUser); 
+        $this->em->persist($notaryProfile);
+
+        $io->text("-> Notaire créé : notaire@exemple.com");
+
 
         $this->em->flush();
 
-        $io->success('Base de données initialisée avec succès !');
+        $io->success('Système complet initialisé avec géo-données !');
 
         return Command::SUCCESS;
     }
