@@ -1,119 +1,113 @@
 <nav class="navbar">
-	<div class="nav-container">
-		<a href="{{ path('app_home') }}" class="brand">Notaire<strong>App</strong>
-		</a>
+    <div class="nav-container">
+        {# SECTION LOGO : Mise à jour vers images/logo.png #}
+        <a href="{{ path('app_home') }}" class="brand d-flex align-items-center text-decoration-none">
+            <img src="{{ asset('images/logo.png') }}" 
+                 alt="Logo Lignée" 
+                 width="35" 
+                 height="35" 
+                 class="me-2 rounded-circle">
+            <span><strong>L</strong>ignée</span>
+        </a>
 
-		<ul class="nav-links">
-			<li>
-				<a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
-					Accueil
-				</a>
-			</li>
-			<li class="nav-item-dropdown">
-				<a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_site_' ? 'active' : ''}}">
-					Guides
-					<i class="fas fa-chevron-down ms-1 small op-50"></i>
-				</a>
-				<ul
-					class="dropdown-menu shadow-lg">
-					{# RÈGLES FISCALES #}
-					<li>
-						<a href="{{ path('app_site_donation_rules') }}">
-							<div class="icon-circle bg-indigo-subtle">
-								<i class="fas fa-balance-scale text-indigo"></i>
-							</div>
-							<div>
-								<span class="d-block fw-bold">Règles Fiscales</span>
-								<small class="text-muted">Abattements & 15 ans</small>
-							</div>
-						</a>
-					</li>
+        <ul class="nav-links">
+            <li>
+                <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
+                    Accueil
+                </a>
+            </li>
+            <li class="nav-item-dropdown">
+                <a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_site_' ? 'active' : ''}}">
+                    Guides
+                    <i class="fas fa-chevron-down ms-1 small op-50"></i>
+                </a>
+                <ul class="dropdown-menu shadow-lg">
+                    <li>
+                        <a href="{{ path('app_site_donation_rules') }}">
+                            <div class="icon-circle bg-indigo-subtle">
+                                <i class="fas fa-balance-scale text-indigo"></i>
+                            </div>
+                            <div>
+                                <span class="d-block fw-bold">Règles Fiscales</span>
+                                <small class="text-muted">Abattements & 15 ans</small>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="dropdown-divider"></li>
+                    <li>
+                        <a href="#" class="opacity-75 cursor-not-allowed">
+                            <div class="icon-circle bg-light">
+                                <i class="fas fa-file-invoice-dollar text-muted"></i>
+                            </div>
+                            <div>
+                                <span class="d-block fw-bold">Succession</span>
+                                <small class="text-muted">Barèmes de calcul (Bientôt)</small>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
-					<li class="dropdown-divider"></li>
+            {% if is_granted('ROLE_USER') %}
+                <li>
+                    <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
+                        <i class="fas fa-users me-1"></i>
+                        Ma Famille
+                    </a>
+                </li>
 
-					{# FUTUR GUIDE : DROITS DE SUCCESSION #}
-					<li>
-						<a href="#" class="opacity-75 cursor-not-allowed">
-							<div class="icon-circle bg-light">
-								<i class="fas fa-file-invoice-dollar text-muted"></i>
-							</div>
-							<div>
-								<span class="d-block fw-bold">Succession</span>
-								<small class="text-muted">Barèmes de calcul (Bientôt)</small>
-							</div>
-						</a>
-					</li>
-				</ul>
-			</li>
+                <li class="nav-item-dropdown">
+                    <a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_optimization' ? 'active' : ''}}">
+                        <i class="fas fa-chart-pie me-1"></i>
+                        Optimisation
+                        <i class="fas fa-chevron-down ms-1 small op-50"></i>
+                    </a>
+                    <ul class="dropdown-menu shadow-lg">
+                        <li>
+                            <a href="{{ path('app_optimization_dashboard') }}">
+                                <div class="icon-circle bg-primary-light">
+                                    <i class="fas fa-magic text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="d-block fw-bold">Opportunités</span>
+                                    <small class="text-muted">Simulations & abattements</small>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="dropdown-divider"></li>
+                        <li>
+                            <a href="{{ path('app_optimization_missed') }}">
+                                <div class="icon-circle bg-danger-light">
+                                    <i class="fas fa-history text-danger"></i>
+                                </div>
+                                <div>
+                                    <span class="d-block fw-bold">Opportunités perdues</span>
+                                    <small class="text-muted">Analyse du passé</small>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            {% endif %}
+        </ul>
 
-			{% if is_granted('ROLE_USER') %}
-				{# GESTION DES DONNÉES #}
-				<li>
-					<a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
-						<i class="fas fa-users me-1"></i>
-						Ma Famille
-					</a>
-				</li>
-
-				{# REGROUPEMENT DES SIMULATEURS (DROPDOWN) #}
-				<li class="nav-item-dropdown">
-					<a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_optimization' ? 'active' : ''}}">
-						<i class="fas fa-chart-pie me-1"></i>
-						Optimisation
-						<i class="fas fa-chevron-down ms-1 small op-50"></i>
-					</a>
-
-					<ul
-						class="dropdown-menu shadow-lg">
-						{# 2. OPPORTUNITÉS ACTUELLES #}
-						<li>
-							<a href="{{ path('app_optimization_dashboard') }}">
-								<div class="icon-circle bg-primary-light">
-									<i class="fas fa-magic text-primary"></i>
-								</div>
-								<div>
-									<span class="d-block fw-bold">Opportunités</span>
-									<small class="text-muted">Simulations & abattements</small>
-								</div>
-							</a>
-						</li>
-						<li class="dropdown-divider"></li>
-
-						{# 3. OPPORTUNITÉS PERDUES #}
-						<li>
-							<a href="{{ path('app_optimization_missed') }}">
-								<div class="icon-circle bg-danger-light">
-									<i class="fas fa-history text-danger"></i>
-								</div>
-								<div>
-									<span class="d-block fw-bold">Opportunités perdues</span>
-									<small class="text-muted">Analyse du passé</small>
-								</div>
-							</a>
-						</li>
-					</ul>
-				</li>
-			{% endif %}
-		</ul>
-
-		<div class="nav-auth">
-			{% if app.user %}
-				<div class="user-info d-none d-md-flex">
-					<span class="user-email">{{ app.user.email }}</span>
-					{% if is_granted('ROLE_ADMIN') %}
-						<span class="badge-admin">Admin</span>
-					{% endif %}
-				</div>
-				<a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
-					<i class="fas fa-power-off"></i>
-				</a>
-			{% else %}
-				<a href="{{ path('app_login') }}" class="btn-login">Connexion</a>
-			{% endif %}
-		</div>
-	</div>
+        <div class="nav-auth">
+            {% if app.user %}
+                <div class="user-info d-none d-md-flex">
+                    <span class="user-email">{{ app.user.email }}</span>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <span class="badge-admin">Admin</span>
+                    {% endif %}
+                </div>
+                <a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn-login">Connexion</a>
+            {% endif %}
+        </div>
+    </div>
 </nav>
-
 <style>:root
 {
 	--nav-bg: #1e293b;
