@@ -1,0 +1,187 @@
+<div {{ attributes }} class="donation-rule-search">
+    {# --- BARRE DE RECHERCHE CONVERSATIONNELLE --- #}
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-smooth rounded-pill p-3 bg-white">
+                <div class="row g-3 align-items-center">
+                    <div class="col-md-auto ps-4">
+                        <span class="fw-bold text-dark">Le bénéficiaire sera :</span>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-primary">
+                                <i class="fas fa-users"></i>
+                            </span>
+                            <select data-model="relationshipId" class="form-select border-0 shadow-none fw-bold text-primary">
+                                <option value="">Choisir un lien de parenté...</option>
+                                {% for rel in this.relationships %}
+                                    <option value="{{ rel.id }}">{{ rel.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-auto d-none d-md-block text-muted opacity-50">|</div>
+
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent border-0 text-muted">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" 
+                                   data-model="query" 
+                                   class="form-control border-0 shadow-none" 
+                                   placeholder="ou nom de la règle...">
+                        </div>
+                    </div>
+                    
+                    <div class="col text-center pe-4">
+                        <div data-loading="show" class="spinner-border spinner-border-sm text-primary"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# --- GRILLE DE RÉSULTATS --- #}
+    <div class="row g-4 position-relative">
+        <div data-loading="addClass(opacity-50)" class="row g-4">
+            {% for rule in this.rules %}
+                {# ID pour ancres : remplace espaces et accents #}
+                {% set rule_id = rule.label|lower|replace({' ': '-', "'": '-', 'é': 'e', 'è': 'e', 'à': 'a'}) %}
+                
+                <div class="col-lg-4 col-md-6 animate__animated animate__fadeInUp rule-anchor-target" id="regle-{{ rule_id }}">
+                    <div class="card border-0 shadow-smooth rounded-5 h-100 bg-white overflow-hidden hover-lift {{ rule.isCumulative ? 'card-cumulable' : '' }}">
+                        
+                        {# HEADER #}
+                        <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
+                            <span class="badge bg-indigo-subtle text-indigo rounded-pill px-3">
+                                {{ rule.relationship.label }}
+                            </span>
+                            {% if rule.isCumulative %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 small">
+                                    <i class="fas fa-plus-circle me-1"></i>Cumulable
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {# CORPS #}
+                        <div class="card-body p-4 text-center">
+                            <h6 class="text-muted small text-uppercase fw-bold mb-1 d-flex justify-content-center align-items-center">
+                                {{ rule.label }}
+                                <a href="#regle-{{ rule_id }}" class="ms-2 text-light-emphasis opacity-25 link-anchor">
+                                    <i class="fas fa-link fa-xs"></i>
+                                </a>
+                            </h6>
+
+                            {# Badge de réversibilité (Propriété de l'entité) #}
+                            {% if rule.isBidirectional %}
+                                <div class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill mb-2" style="font-size: 0.65rem;">
+                                    <i class="fas fa-arrows-left-right me-1"></i> Abattement réciproque
+                                </div>
+                            {% endif %}
+
+                            <div class="h2 fw-black text-primary my-3">
+                                {{ rule.allowanceAmount|number_format(0, ',', ' ') }} €
+                            </div>
+                            
+                            <div class="bg-light rounded-4 p-3 text-start small">
+                                <div class="mb-2">
+                                    <i class="fas fa-sync me-2 opacity-50 text-indigo"></i>Renouvellement : <b>{{ rule.frequencyYears }} ans</b>
+                                </div>
+                                
+                                {% if rule.donorMaxAge %}
+                                    <div class="mb-2">
+                                        <i class="fas fa-user-clock me-2 opacity-50 text-indigo"></i>Donateur : 
+                                        {% if rule.donorMaxAge >= 99 %}
+                                            <b class="text-dark">Théorique ({{ rule.donorMaxAge }} ans)*</b>
+                                        {% else %}
+                                            <b>< {{ rule.donorMaxAge }} ans</b>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if rule.receiverMinAge %}
+                                    <div>
+                                        <i class="fas fa-baby me-2 opacity-50 text-indigo"></i>Bénéficiaire : <b>> {{ rule.receiverMinAge }} ans</b>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {# FOOTER #}
+                        <div class="card-footer bg-white border-0 pb-4 px-4 text-center">
+                            <div class="text-muted italic x-small">
+                                Système : {{ rule.taxSystem|replace({'_': ' '})|capitalize }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <div class="icon-circle bg-light mx-auto mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-search fa-2x text-muted"></i>
+                    </div>
+                    <h5 class="fw-bold">Aucun résultat trouvé</h5>
+                    <p class="text-muted">Essayez de sélectionner un autre bénéficiaire.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {# --- NOTES DE BAS DE PAGE --- #}
+    <div class="mt-5 p-4 rounded-4 bg-white shadow-sm border-start border-primary border-4 text-muted" style="font-size: 0.85rem;">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <p class="mb-0">
+                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                    <strong>* Théorique :</strong> L'âge de 99 ans indique une absence de limite légale stricte pour cet abattement, sous réserve de la pleine capacité juridique du donateur.
+                </p>
+            </div>
+            <div class="col-md-6 border-start-md">
+                <p class="mb-0">
+                    <i class="fas fa-arrows-left-right me-2 text-warning"></i>
+                    <strong>Réciprocité :</strong> L'abattement réciproque signifie que la règle s'applique quel que soit le sens du don entre les deux personnes (ex: Parent vers Enfant ou Enfant vers Parent).
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-black { font-weight: 900; }
+    .shadow-smooth { box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+    .x-small { font-size: 0.75rem; }
+    
+    .hover-lift {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    /* Gestion des ancres */
+    .rule-anchor-target { scroll-margin-top: 120px; }
+    .rule-anchor-target:target .card {
+        border: 2px solid #4f46e5 !important;
+        box-shadow: 0 0 25px rgba(79, 70, 229, 0.25);
+    }
+
+    .card-cumulable:hover {
+        border: 2px solid #198754 !important;
+        background-color: #f8fffb !important;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 45px -10px rgba(79, 70, 229, 0.15);
+    }
+
+    .link-anchor:hover { opacity: 1 !important; color: #4f46e5 !important; }
+    .bg-indigo-subtle { background-color: #f5f7ff; }
+    .text-indigo { color: #4f46e5; }
+    .bg-success-subtle { background-color: #e6ffed; }
+
+    @media (min-width: 768px) {
+        .border-start-md { border-left: 1px solid #dee2e6 !important; padding-left: 1.5rem; }
+    }
+</style>

@@ -38,34 +38,34 @@ parameters:
     # --- CATALOGUE COMPLET DES RÈGLES DE DONATION (MAJ 2025) ---
     app.donation_rules:
         # --- LIGNE DIRECTE (ENFANTS) ---
-        - { label: 'Abattement Parent-Enfant', relationship_code: 'ENFANT', amount: 100000, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
-        - { label: 'Sarkozy (Argent) - Enfant', relationship_code: 'ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+        - { label: 'Abattement Parent-Enfant', relationship_code: 'ENFANT', amount: 100000, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct', is_bidirectional: true }
+        - { label: 'Sarkozy (Argent) - Enfant', relationship_code: 'ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy', is_bidirectional: false }
 
         # --- LIGNE DIRECTE (PETITS-ENFANTS) ---
-        - { label: 'Abattement Petit-Enfant', relationship_code: 'PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
-        - { label: 'Sarkozy (Argent) - Petit-Enfant', relationship_code: 'PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+        - { label: 'Abattement Petit-Enfant', relationship_code: 'PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct', is_bidirectional: false }
+        - { label: 'Sarkozy (Argent) - Petit-Enfant', relationship_code: 'PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy', is_bidirectional: false }
 
         # --- LIGNE DIRECTE (ARRIÈRE-PETITS-ENFANTS) ---
-        - { label: 'Abattement Arrière-Petit-Enfant', relationship_code: 'ARRIERE_PETIT_ENFANT', amount: 5310, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
-        - { label: 'Sarkozy (Argent) - Arrière-Petit-Enfant', relationship_code: 'ARRIERE_PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+        - { label: 'Abattement Arrière-Petit-Enfant', relationship_code: 'ARRIERE_PETIT_ENFANT', amount: 5310, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct', is_bidirectional: false }
+        - { label: 'Sarkozy (Argent) - Arrière-Petit-Enfant', relationship_code: 'ARRIERE_PETIT_ENFANT', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy', is_bidirectional: false }
 
         # --- COLLATÉRAUX (FRÈRES / SOEURS) ---
-        - { label: 'Abattement Frères et Sœurs', relationship_code: 'FRERE_SOEUR', amount: 15932, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'freres_soeurs' }
+        - { label: 'Abattement Frères et Sœurs', relationship_code: 'FRERE_SOEUR', amount: 15932, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'freres_soeurs', is_bidirectional: true }
 
         # --- COLLATÉRAUX (NEVEUX / NIÈCES) ---
-        - { label: 'Abattement Neveux/Nièces', relationship_code: 'NEVEU_NIECE', amount: 7967, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'neveux_nieces' }
-        - { label: 'Sarkozy (Argent) - Neveu/Nièce', relationship_code: 'NEVEU_NIECE', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+        - { label: 'Abattement Neveux/Nièces', relationship_code: 'NEVEU_NIECE', amount: 7967, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'neveux_nieces', is_bidirectional: false }
+        - { label: 'Sarkozy (Argent) - Neveu/Nièce', relationship_code: 'NEVEU_NIECE', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy', is_bidirectional: false }
 
         # --- COLLATÉRAUX (ONCLES / TANTES) ---
-        - { label: 'Abattement reçu d’un Oncle/Tante', relationship_code: 'ONCLE_TANTE', amount: 7967, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'neveux_nieces' }
-        - { label: 'Sarkozy (Argent) - Reçu d’un Oncle/Tante', relationship_code: 'ONCLE_TANTE', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy' }
+        - { label: 'Abattement reçu d’un Oncle/Tante', relationship_code: 'ONCLE_TANTE', amount: 7967, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'neveux_nieces', is_bidirectional: false }
+        - { label: 'Sarkozy (Argent) - Reçu d’un Oncle/Tante', relationship_code: 'ONCLE_TANTE', amount: 31865, frequency: 15, donor_max_age: 80, receiver_min_age: 18, cumulative: true, tax_system: 'sarkozy', is_bidirectional: false }
 
         # --- CONJOINTS ---
-        - { label: 'Abattement Époux / PACS', relationship_code: 'CONJOINT', amount: 80724, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
+        - { label: 'Abattement Époux / PACS', relationship_code: 'CONJOINT', amount: 80724, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct', is_bidirectional: true }
 
         # --- CAS SPÉCIFIQUES ---
-        - { label: 'Abattement Spécifique Handicap', relationship_code: 'HANDICAP', amount: 159325, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct' }
-        - { label: 'Abattement Tiers / Concubin', relationship_code: 'TIERS', amount: 1594, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'tiers' }
+        - { label: 'Abattement Spécifique Handicap', relationship_code: 'HANDICAP', amount: 159325, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'progressif_direct', is_bidirectional: false }
+        - { label: 'Abattement Tiers / Concubin', relationship_code: 'TIERS', amount: 1594, frequency: 15, donor_max_age: 99, receiver_min_age: 0, cumulative: true, tax_system: 'tiers', is_bidirectional: false }
 
 services:
     _defaults:

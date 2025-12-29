@@ -68,6 +68,7 @@ class AppInitCommand extends Command
             $rule->setDonorMaxAge($data['donor_max_age']);
             $rule->setReceiverMinAge($data['receiver_min_age']);
             $rule->setIsCumulative($data['cumulative']);
+            $rule->setIsBidirectional($data['is_bidirectional']);
 
             // INDISPENSABLE : On récupère le tax_system du YAML
             $rule->setTaxSystem($data['tax_system'] ?? 'tiers');

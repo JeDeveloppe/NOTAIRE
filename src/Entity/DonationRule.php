@@ -42,6 +42,9 @@ class DonationRule
     #[ORM\JoinColumn(nullable: false)]
     private ?Relationship $relationship = null;
 
+    #[ORM\Column]
+    private ?bool $isBidirectional = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -132,6 +135,18 @@ class DonationRule
     public function setRelationship(?Relationship $relationship): static
     {
         $this->relationship = $relationship;
+        return $this;
+    }
+
+    public function isBidirectional(): ?bool
+    {
+        return $this->isBidirectional;
+    }
+
+    public function setIsBidirectional(bool $isBidirectional): static
+    {
+        $this->isBidirectional = $isBidirectional;
+
         return $this;
     }
 }

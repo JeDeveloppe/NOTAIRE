@@ -36,7 +36,12 @@ class FirstPersonRedirectSubscriber implements EventSubscriberInterface
         $routeName = $request->attributes->get('_route');
 
         // 1. On ignore si ce n'est pas une route (ex: assets) ou si c'est une route autorisée
-        if (!$routeName || in_array($routeName, self::ALLOWED_ROUTES) || str_starts_with($routeName, '_')) {
+        if (
+            !$routeName ||
+            in_array($routeName, self::ALLOWED_ROUTES) ||
+            str_starts_with($routeName, '_') ||
+            str_starts_with($routeName, 'app_site_')
+        ) {
             return;
         }
 
@@ -49,7 +54,7 @@ class FirstPersonRedirectSubscriber implements EventSubscriberInterface
         // 3. LOGIQUE DE BLOCAGE
         // Si l'utilisateur n'a personne dans sa famille
         if ($user->getPeople()->isEmpty()) {
-            
+
             // Optionnel : Ajouter un message flash pour expliquer pourquoi il est redirigé
             $request->getSession()->getFlashBag()->add('info', 'Veuillez créer le premier membre de votre famille pour continuer.');
 

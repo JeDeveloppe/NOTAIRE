@@ -25,6 +25,30 @@ class DonationRuleRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult(); // Retourne un tableau d'objets DonationRule
     }
+
+    /**
+     * C'est cette méthode que le composant appelle
+     */
+    public function findBySearchQuery(string $query, ?int $relationshipId): array
+    {
+        $qb = $this->createQueryBuilder('dr')
+            ->leftJoin('dr.relationship', 'r')
+            ->addSelect('r');
+
+        if (!empty($query)) {
+            // On cherche dans le label de la règle OU le label de la relation
+            $qb->andWhere('dr.label LIKE :query OR r.label LIKE :query')
+               ->setParameter('query', '%'.$query.'%');
+        }
+
+        if ($relationshipId) {
+            $qb->andWhere('r.id = :relId')
+               ->setParameter('relId', $relationshipId);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+    
     //    /**
     //     * @return DonationRule[] Returns an array of DonationRule objects
     //     */

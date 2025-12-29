@@ -9,6 +9,42 @@
 					Accueil
 				</a>
 			</li>
+			<li class="nav-item-dropdown">
+				<a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_site_' ? 'active' : ''}}">
+					Guides
+					<i class="fas fa-chevron-down ms-1 small op-50"></i>
+				</a>
+				<ul
+					class="dropdown-menu shadow-lg">
+					{# RÈGLES FISCALES #}
+					<li>
+						<a href="{{ path('app_site_donation_rules') }}">
+							<div class="icon-circle bg-indigo-subtle">
+								<i class="fas fa-balance-scale text-indigo"></i>
+							</div>
+							<div>
+								<span class="d-block fw-bold">Règles Fiscales</span>
+								<small class="text-muted">Abattements & 15 ans</small>
+							</div>
+						</a>
+					</li>
+
+					<li class="dropdown-divider"></li>
+
+					{# FUTUR GUIDE : DROITS DE SUCCESSION #}
+					<li>
+						<a href="#" class="opacity-75 cursor-not-allowed">
+							<div class="icon-circle bg-light">
+								<i class="fas fa-file-invoice-dollar text-muted"></i>
+							</div>
+							<div>
+								<span class="d-block fw-bold">Succession</span>
+								<small class="text-muted">Barèmes de calcul (Bientôt)</small>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</li>
 
 			{% if is_granted('ROLE_USER') %}
 				{# GESTION DES DONNÉES #}
