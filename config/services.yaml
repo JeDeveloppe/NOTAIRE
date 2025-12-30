@@ -93,6 +93,62 @@ parameters:
             color: 'danger'
             points: -30
             description: 'Pénalité lourde : le notaire n’a pas rappelé à temps.'
+    
+    app.offers:
+        PACK_LAUNCH:
+            name: 'Pack de lancement'
+            code: 'PACK_LAUNCH'
+            base_sectors: 5
+            max_notaries_per_sector: 2
+            is_addon: false
+            price_ht: 0
+            description: 'Offre exclusive pour les premiers notaires.'
+            badge: 'Offre limitée'
+            is_on_website: true
+            
+        PACK_STANDARD:
+            name: 'Pack standard'
+            code: 'PACK_STANDARD'
+            base_sectors: 5
+            max_notaries_per_sector: 2
+            is_addon: false
+            price_ht: 19999
+            description: 'Accès complet aux outils Lignée.'
+            badge: null
+            is_on_website: false
+
+        ADDON_POSTAL_CODE_1:
+            name: 'Code postal supplémentaire (+1)'
+            code: 'ADDON_POSTAL_CODE_1'
+            base_sectors: 1
+            max_notaries_per_sector: 2
+            is_addon: true
+            price_ht: 4999
+            description: 'Ajoutez un code postal à votre zone.'
+            badge: 'Flexible'
+            is_on_website: true
+        
+        ADDON_POSTAL_CODE_3:
+            name: 'Codes postaux supplémentaire (+3)'
+            code: 'ADDON_POSTAL_CODE_3'
+            base_sectors: 3
+            max_notaries_per_sector: 2
+            is_addon: true
+            price_ht: 12999
+            description: 'Ajoutez 3 codes postaux à votre zone.'
+            badge: 'Flexible'
+            is_on_website: true
+        
+        ADDON_POSTAL_CODE_5:
+            name: 'Codes postaux supplémentaire (+5)'
+            code: 'ADDON_POSTAL_CODE_5'
+            base_sectors: 5
+            max_notaries_per_sector: 2
+            is_addon: true
+            price_ht: 19999
+            description: 'Ajoutez 5 codes postaux à votre zone.'
+            badge: 'Flexible'
+            is_on_website: true
 
 
 services:
@@ -107,6 +163,7 @@ services:
             $donationRules: '%app.donation_rules%'
             $taxBrackets: '%app.tax_brackets%'
             $simulationStatuses: '%app.simulation_statuses%'
+            $offers: '%app.offers%'
 
     App\:
         resource: '../src/'

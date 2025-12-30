@@ -1,0 +1,46 @@
+{# templates/notary/pending_verification.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Validation de votre compte - Lignée{% endblock %}
+
+{% block body %}
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="card border-0 shadow-lg rounded-4 p-5 animate__animated animate__fadeIn">
+            <div class="mb-4">
+                <div class="bg-primary-subtle rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                    <i class="fas fa-user-shield text-primary fa-3x"></i>
+                </div>
+            </div>
+
+            <h1 class="fw-black text-dark mb-3">Vérification en cours</h1>
+            
+            <p class="fs-5 text-secondary mb-4">
+                Merci Maître **{{ app.user.notary.name }}**. <br>
+                Pour garantir la sécurité de nos échanges et la qualité des dossiers transmis, nous vérifions manuellement chaque inscription de notaire.
+            </p>
+
+            <div class="bg-light p-4 rounded-4 text-start mb-4 border-start border-primary border-4">
+                <h6 class="fw-bold mb-2">Prochaines étapes :</h6>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2 small"><i class="fas fa-check-circle text-success me-2"></i>Vérification de votre SIRET et de l'annuaire officiel.</li>
+                    <li class="mb-2 small"><i class="fas fa-check-circle text-success me-2"></i>Activation de votre accès aux simulations sous 24h.</li>
+                    <li class="small text-muted"><i class="fas fa-envelope me-2"></i>Vous recevrez un email dès que votre compte sera activé.</li>
+                </ul>
+            </div>
+
+            <div class="d-grid">
+                <a href="{{ path('app_logout') }}" class="btn btn-outline-secondary rounded-pill fw-bold py-2">
+                    <i class="fas fa-sign-out-alt me-2"></i>Se déconnecter
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-subtle { background-color: #eff6ff !important; }
+    .text-primary { color: #2563eb !important; }
+    .fw-black { font-weight: 900; }
+</style>
+{% endblock %}

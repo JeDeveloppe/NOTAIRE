@@ -1,0 +1,83 @@
+{# templates/notary/_onboarding_wizard.html.twig #}
+
+{% set step1_ok = notary.isConfirmed %}
+{% set step2_ok = hasActiveOffer %}
+{% set step3_ok = stats.usedSlots > 0 %}
+
+{# On affiche l'assistant tant que les 3 étapes ne sont pas validées #}
+{% if not (step1_ok and step2_ok and step3_ok) %}
+	<div class="onboarding-progress-wrapper mb-5 p-4 rounded-5 shadow-smooth bg-white border border-indigo-light animate__animated animate__fadeInDown">
+
+		<div class="d-flex align-items-center justify-content-between mb-3">
+			<div class="onboarding-badge text-indigo fw-bold" style="color: #6366f1;">
+				<i class="fas fa-magic me-2"></i>Configuration de votre étude
+			</div>
+			<div class="progress-stats">
+				<span class="badge {% if step1_ok %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} rounded-pill px-3">
+					{% if step1_ok %}
+						<i class="fas fa-check me-1"></i>
+					{% endif %}
+					1. Validation
+				</span>
+				<span class="badge {% if step2_ok %}bg-success-subtle text-success{% else %}bg-light text-muted{% endif %} rounded-pill px-3 ms-2">
+					{% if step2_ok %}
+						<i class="fas fa-check me-1"></i>
+					{% endif %}
+					2. Offre
+				</span>
+				<span class="badge {% if step3_ok %}bg-success-subtle text-success{% else %}bg-light text-muted{% endif %} rounded-pill px-3 ms-2">
+					{% if step3_ok %}
+						<i class="fas fa-check me-1"></i>
+					{% endif %}
+					3. Secteurs
+				</span>
+			</div>
+		</div>
+
+		<div class="row align-items-center">
+			<div class="col-md-8">
+				{% if not step1_ok %}
+					<h5 class="fw-black mb-1 text-dark">Dossier en cours d'examen</h5>
+					<p class="text-muted small mb-0">
+						Votre compte est en attente de validation par nos services. Cette étape est nécessaire pour garantir l'exclusivité des dossiers aux notaires certifiés.
+					</p>
+				{% elseif not step2_ok %}
+					<h5 class="fw-black mb-1 text-warning">Compte validé !</h5>
+					<p class="text-muted small mb-0">
+						Votre étude est prête. Il ne vous reste plus qu'à choisir un
+						<span class="fw-bold">forfait</span>
+						pour activer la réception de dossiers.
+					</p>
+				{% elseif not step3_ok %}
+					<h5 class="fw-black mb-1 text-indigo" style="color: #6366f1;">Activez votre visibilité</h5>
+					<p class="text-muted small mb-0">
+						Votre offre est active. Ajoutez vos premiers
+						<span class="fw-bold">codes postaux</span>
+						pour apparaître sur les simulations de votre zone.
+					</p>
+				{% endif %}
+			</div>
+
+			<div class="col-md-4 mt-3 mt-md-0 text-md-end">
+				<div class="d-flex flex-column flex-sm-row justify-content-md-end gap-2 align-items-center">
+
+					{% if not step1_ok %}
+						{# État d'attente : simple barre de progression grise #}
+						<div class="progress rounded-pill w-100" style="height: 10px; background-color: #f1f5f9; min-width: 150px;">
+							<div class="progress-bar bg-secondary" role="progressbar" style="width: 33%"></div>
+						</div>
+					{% elseif not step2_ok %}
+						{# Lien vers les offres (bouton mort pour l'instant) #}
+						<a href="{{ path('app_notary_pricing') }}" class="btn btn-warning btn-sm px-4 rounded-pill fw-bold shadow-sm py-2 animate__animated animate__pulse animate__infinite"> <i class="fas fa-shopping-cart me-2"></i>Choisir un forfait</a>
+					{% elseif not step3_ok %}
+						{# Lien vers les codes postaux (bouton mort pour l'instant) #}
+						<button class="btn btn-indigo btn-sm px-4 rounded-pill fw-bold shadow-sm py-2 text-white" style="background-color: #6366f1;">
+							<i class="fas fa-map-marker-alt me-2"></i>Mes secteurs
+						</button>
+					{% endif %}
+
+				</div>
+			</div>
+		</div>
+	</div>
+{% endif %}

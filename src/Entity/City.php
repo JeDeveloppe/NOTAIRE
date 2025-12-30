@@ -47,9 +47,23 @@ class City
     #[ORM\Column]
     private ?int $postalCode = null;
 
+    /**
+     * @var Collection<int, SelectedZipCode>
+     */
+    #[ORM\OneToMany(targetEntity: SelectedZipCode::class, mappedBy: 'city')]
+    private Collection $selectedZipCodes;
+
+    /**
+     * @var Collection<int, Notary>
+     */
+    #[ORM\OneToMany(targetEntity: Notary::class, mappedBy: 'city')]
+    private Collection $notaries;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->selectedZipCodes = new ArrayCollection();
+        $this->notaries = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -181,5 +195,70 @@ class City
         $this->postalCode = $postalCode;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, SelectedZipCode>
+     */
+    public function getSelectedZipCodes(): Collection
+    {
+        return $this->selectedZipCodes;
+    }
+
+    public function addSelectedZipCode(SelectedZipCode $selectedZipCode): static
+    {
+        if (!$this->selectedZipCodes->contains($selectedZipCode)) {
+            $this->selectedZipCodes->add($selectedZipCode);
+            $selectedZipCode->setCity($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSelectedZipCode(SelectedZipCode $selectedZipCode): static
+    {
+        if ($this->selectedZipCodes->removeElement($selectedZipCode)) {
+            // set the owning side to null (unless already changed)
+            if ($selectedZipCode->getCity() === $this) {
+                $selectedZipCode->setCity(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notary>
+     */
+    public function getNotaries(): Collection
+    {
+        return $this->notaries;
+    }
+
+    public function addNotary(Notary $notary): static
+    {
+        if (!$this->notaries->contains($notary)) {
+            $this->notaries->add($notary);
+            $notary->setCity($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotary(Notary $notary): static
+    {
+        if ($this->notaries->removeElement($notary)) {
+            // set the owning side to null (unless already changed)
+            if ($notary->getCity() === $this) {
+                $notary->setCity(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->name. ' (' . $this->postalCode . ')';
     }
 }

@@ -42,7 +42,10 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/profile, roles: ROLE_USER }
+        # 1. On autorise d'abord la présentation en public
+        - { path: ^/notaire/presentation, roles: PUBLIC_ACCESS }
+        - { path: ^/notaire, roles: ROLE_NOTARY }
 
 when@test:
     security:

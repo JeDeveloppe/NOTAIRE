@@ -1,312 +1,332 @@
 <nav class="navbar">
-    <div class="nav-container">
-        {# SECTION LOGO #}
-        <a href="{{ path('app_home') }}" class="brand d-flex align-items-center text-decoration-none">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" width="35" height="35" class="me-2">
-            <span class="logo-text">
-                <span class="text-white fw-bold">Lignée</span>
-            </span>
-        </a>
+	<div
+		class="nav-container">
+		{# SECTION LOGO #}
+		<a href="{{ path('app_home') }}" class="brand d-flex align-items-center text-decoration-none">
+			<img src="{{ asset('images/logo.png') }}" alt="Logo" width="35" height="35" class="me-2">
+			<span class="logo-text">
+				<span class="text-white fw-bold">Lignée</span>
+			</span>
+		</a>
 
-        <ul class="nav-links">
-            <li>
-                <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
-                    Accueil
-                </a>
-            </li>
-            
-            <li class="nav-item-dropdown">
-                <a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_site_' ? 'active' : ''}}">
-                    Guides
-                    <i class="fas fa-chevron-down ms-1 small op-50"></i>
-                </a>
-                <ul class="dropdown-menu shadow-lg">
-                    <li>
-                        <a href="{{ path('app_site_donation_rules') }}">
-                            <div class="icon-circle bg-indigo-subtle">
-                                <i class="fas fa-balance-scale text-indigo"></i>
-                            </div>
-                            <div>
-                                <span class="d-block fw-bold">Règles Fiscales</span>
-                                <small class="text-muted">Abattements & 15 ans</small>
-                            </div>
-                        </a>
-                    </li>
-                    <li class="dropdown-divider"></li>
-                    <li>
-                        <a href="#" class="opacity-75 cursor-not-allowed">
-                            <div class="icon-circle bg-light">
-                                <i class="fas fa-file-invoice-dollar text-muted"></i>
-                            </div>
-                            <div>
-                                <span class="d-block fw-bold">Succession</span>
-                                <small class="text-muted">Barèmes de calcul (Bientôt)</small>
-                            </div>
-                        </a>
-                    </li>
-                </ul>
-            </li>
+		<ul class="nav-links">
+			<li>
+				<a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
+					Accueil
+				</a>
+			</li>
+			{# SECTION NOTAIRE #}
+			{% if is_granted('ROLE_NOTARY') %}
+				{% set notary = app.user.notary %}
+				<li>
+					{% if notary and notary.isConfirmed %}
+						<a href="{{ path('app_notary_dashboard') }}" class="{{ app.request.attributes.get('_route') starts with 'app_notary' ? 'active' : '' }}">
+							<i class="fas fa-briefcase me-1 text-warning"></i>
+							Mon Étude
+						</a>
+					{% else %}
+						{# Lien vers la page d'attente s'il clique, avec un style un peu différent #}
+						<a href="{{ path('app_site_notary_pending_verification') }}" class="opacity-75">
+							<i class="fas fa-clock me-1 text-info"></i>
+							Accès Pro
+							<span class="badge bg-info ms-1" style="font-size: 0.6rem;">En vérification</span>
+						</a>
+					{% endif %}
+				</li>
+			{% endif %}
 
-            {% if is_granted('ROLE_USER') %}
-                <li>
-                    <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
-                        <i class="fas fa-users me-1"></i>
-                        Ma Famille
-                    </a>
-                </li>
+			<li class="nav-item-dropdown">
+				<a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_site_' ? 'active' : ''}}">
+					Guides
+					<i class="fas fa-chevron-down ms-1 small op-50"></i>
+				</a>
+				<ul class="dropdown-menu shadow-lg">
+					<li>
+						<a href="{{ path('app_site_donation_rules') }}">
+							<div class="icon-circle bg-indigo-subtle">
+								<i class="fas fa-balance-scale text-indigo"></i>
+							</div>
+							<div>
+								<span class="d-block fw-bold">Règles Fiscales</span>
+								<small class="text-muted">Abattements & 15 ans</small>
+							</div>
+						</a>
+					</li>
+					<li class="dropdown-divider"></li>
+					<li>
+						<a href="#" class="opacity-75 cursor-not-allowed">
+							<div class="icon-circle bg-light">
+								<i class="fas fa-file-invoice-dollar text-muted"></i>
+							</div>
+							<div>
+								<span class="d-block fw-bold">Succession</span>
+								<small class="text-muted">Barèmes de calcul (Bientôt)</small>
+							</div>
+						</a>
+					</li>
+				</ul>
+			</li>
 
-                <li class="nav-item-dropdown">
-                    <a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_optimization' ? 'active' : ''}}">
-                        <i class="fas fa-chart-pie me-1"></i>
-                        Optimisation
-                        <i class="fas fa-chevron-down ms-1 small op-50"></i>
-                    </a>
-                    <ul class="dropdown-menu shadow-lg">
-                        <li>
-                            <a href="{{ path('app_optimization_dashboard') }}">
-                                <div class="icon-circle bg-primary-light">
-                                    <i class="fas fa-magic text-primary"></i>
-                                </div>
-                                <div>
-                                    <span class="d-block fw-bold">Opportunités</span>
-                                    <small class="text-muted">Simulations & abattements</small>
-                                </div>
-                            </a>
-                        </li>
-                        <li class="dropdown-divider"></li>
-                        <li>
-                            <a href="{{ path('app_optimization_missed') }}">
-                                <div class="icon-circle bg-danger-light">
-                                    <i class="fas fa-history text-danger"></i>
-                                </div>
-                                <div>
-                                    <span class="d-block fw-bold">Opportunités perdues</span>
-                                    <small class="text-muted">Analyse du passé</small>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-            {% endif %}
-        </ul>
+			{% if is_granted('ROLE_USER') %}
+				<li>
+					<a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
+						<i class="fas fa-users me-1"></i>
+						Ma Famille
+					</a>
+				</li>
 
-        <div class="nav-auth">
-            {% if app.user %}
-                <div class="user-info d-none d-md-flex">
-                    <span class="user-email">{{ app.user.email }}</span>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <span class="badge-admin">Admin</span>
-                    {% endif %}
-                </div>
-                <a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
-                    <i class="fas fa-power-off"></i>
-                </a>
-            {% else %}
-                <a href="{{ path('app_login') }}" class="btn-login">Connexion</a>
-                <a href="{{ path('app_register') }}" class="btn-register">S'inscrire</a>
-            {% endif %}
-        </div>
-    </div>
+				<li class="nav-item-dropdown">
+					<a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_optimization' ? 'active' : ''}}">
+						<i class="fas fa-chart-pie me-1"></i>
+						Optimisation
+						<i class="fas fa-chevron-down ms-1 small op-50"></i>
+					</a>
+					<ul class="dropdown-menu shadow-lg">
+						<li>
+							<a href="{{ path('app_optimization_dashboard') }}">
+								<div class="icon-circle bg-primary-light">
+									<i class="fas fa-magic text-primary"></i>
+								</div>
+								<div>
+									<span class="d-block fw-bold">Opportunités</span>
+									<small class="text-muted">Simulations & abattements</small>
+								</div>
+							</a>
+						</li>
+						<li class="dropdown-divider"></li>
+						<li>
+							<a href="{{ path('app_optimization_missed') }}">
+								<div class="icon-circle bg-danger-light">
+									<i class="fas fa-history text-danger"></i>
+								</div>
+								<div>
+									<span class="d-block fw-bold">Opportunités perdues</span>
+									<small class="text-muted">Analyse du passé</small>
+								</div>
+							</a>
+						</li>
+					</ul>
+				</li>
+			{% endif %}
+		</ul>
+
+		<div class="nav-auth">
+			{% if app.user %}
+				<div class="user-info d-none d-md-flex">
+					<span class="user-email">{{ app.user.email }}</span>
+					{% if is_granted('ROLE_ADMIN') %}
+						<span class="badge-admin">Admin</span>
+					{% endif %}
+				</div>
+				<a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
+					<i class="fas fa-power-off"></i>
+				</a>
+			{% else %}
+				<a href="{{ path('app_login') }}" class="btn-login">Connexion</a>
+				<a href="{{ path('app_register') }}" class="btn-register">S'inscrire</a>
+			{% endif %}
+		</div>
+	</div>
 </nav>
 
-<style>
-:root {
-    --nav-bg: #1e293b;
-    --nav-active: #4f46e5;
-    --indigo-subtle: #e0e7ff;
-    --slate-700: #334155;
-    --slate-400: #94a3b8;
-    --slate-200: #e2e8f0;
+<style>:root
+{
+	--nav-bg: #1e293b;
+	--nav-active: #4f46e5;
+	--indigo-subtle: #e0e7ff;
+	--slate-700: #334155;
+	--slate-400: #94a3b8;
+	--slate-200: #e2e8f0;
 }
 
 .navbar {
-    display: flex;
-    justify-content: center;
-    padding: 0;
-    background: var(--nav-bg);
-    color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1050;
+	display: flex;
+	justify-content: center;
+	padding: 0;
+	background: var(--nav-bg);
+	color: white;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	position: sticky;
+	top: 0;
+	z-index: 1050;
 }
 
 .nav-container {
-    width: 100%;
-    max-width: 1400px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 2rem;
+	width: 100%;
+	max-width: 1400px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.75rem 2rem;
 }
 
 .brand {
-    font-size: 1.25rem;
-    color: white;
-    text-decoration: none;
-    font-weight: 700;
+	font-size: 1.25rem;
+	color: white;
+	text-decoration: none;
+	font-weight: 700;
 }
 .brand strong {
-    color: #818cf8;
+	color: #818cf8;
 }
 
 .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    align-items: center;
+	list-style: none;
+	display: flex;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	align-items: center;
 }
 
 .nav-links a {
-    color: var(--slate-400);
-    text-decoration: none;
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.25s ease;
-    display: flex;
-    align-items: center;
+	color: var(--slate-400);
+	text-decoration: none;
+	padding: 10px 16px;
+	border-radius: 10px;
+	font-size: 0.9rem;
+	font-weight: 600;
+	transition: all 0.25s ease;
+	display: flex;
+	align-items: center;
 }
 
 .nav-links a:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.08);
+	color: white;
+	background: rgba(255, 255, 255, 0.08);
 }
 .nav-links a.active {
-    color: white;
-    background: var(--nav-active);
-    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+	color: white;
+	background: var(--nav-active);
+	box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
 }
 
 /* --- DROPDOWNS --- */
 .nav-item-dropdown {
-    position: relative;
-    padding-bottom: 10px;
-    margin-bottom: -10px;
+	position: relative;
 }
 
 .nav-item-dropdown:hover .dropdown-menu {
-    display: block;
-    opacity: 1;
-    transform: translateX(-50%) translateY(5px);
+	display: block;
+	opacity: 1;
+	/* On réduit un peu le décalage pour qu'il soit plus proche */
+	transform: translateX(-50%) translateY(0px);
 }
 
 .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(10px);
-    min-width: 280px;
-    background: white;
-    border-radius: 16px;
-    list-style: none;
-    padding: 12px;
-    display: none;
-    opacity: 0;
-    transition: all 0.2s ease-out;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
-    z-index: 1000;
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	/* On démarre un peu plus haut pour réduire le gap */
+	transform: translateX(-50%) translateY(10px);
+	min-width: 280px;
+	background: white;
+	border-radius: 16px;
+	list-style: none;
+	padding: 12px;
+	display: none;
+	opacity: 0;
+	transition: all 0.2s ease-out;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+	z-index: 1000;
+	margin-top: 10px; /* Espace visuel */
 }
 
-.dropdown-menu li a {
-    color: var(--slate-700) !important;
-    padding: 12px !important;
-    border-radius: 12px !important;
-    gap: 12px;
-}
-
-.dropdown-menu li a:hover {
-    background: #f1f5f9 !important;
-    color: var(--nav-active) !important;
-    transform: translateX(5px);
+/* LE PONT INVISIBLE : empêche la fermeture au survol du vide */
+.dropdown-menu::before {
+	content: "";
+	position: absolute;
+	top: -15px; /* Couvre l'espace vide entre le lien et le menu */
+	left: 0;
+	right: 0;
+	height: 15px;
+	background: transparent;
 }
 
 /* --- AUTH SECTION --- */
 .nav-auth {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
 }
 
 .btn-login {
-    color: var(--slate-400);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: color 0.2s;
+	color: var(--slate-400);
+	text-decoration: none;
+	font-size: 0.9rem;
+	font-weight: 600;
+	transition: color 0.2s;
 }
 .btn-login:hover {
-    color: white;
+	color: white;
 }
 
 .btn-register {
-    background: var(--nav-active);
-    color: white !important;
-    text-decoration: none;
-    padding: 10px 22px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: 700;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+	background: var(--nav-active);
+	color: white !important;
+	text-decoration: none;
+	padding: 10px 22px;
+	border-radius: 12px;
+	font-size: 0.9rem;
+	font-weight: 700;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 .btn-register:hover {
-    background: #4338ca;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
+	background: #4338ca;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
 }
 
 .user-info {
-    flex-direction: column;
-    align-items: flex-end;
-    line-height: 1.2;
+	flex-direction: column;
+	align-items: flex-end;
+	line-height: 1.2;
 }
 .user-email {
-    font-size: 0.75rem;
-    color: var(--slate-400);
-    font-weight: 500;
+	font-size: 0.75rem;
+	color: var(--slate-400);
+	font-weight: 500;
 }
 
 .btn-logout {
-    color: #f1f5f9;
-    background: rgba(239, 68, 68, 0.1);
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    transition: all 0.2s;
+	color: #f1f5f9;
+	background: rgba(239, 68, 68, 0.1);
+	width: 38px;
+	height: 38px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	transition: all 0.2s;
 }
 .btn-logout:hover {
-    background: #ef4444;
-    color: white;
-    transform: rotate(90deg);
+	background: #ef4444;
+	color: white;
+	transform: rotate(90deg);
 }
 
 .icon-circle {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
 }
 
 .badge-admin {
-    background: #fbbf24;
-    color: #78350f;
-    padding: 2px 6px;
-    font-size: 0.6rem;
-    border-radius: 5px;
-    font-weight: 800;
-    margin-top: 2px;
+	background: #fbbf24;
+	color: #78350f;
+	padding: 2px 6px;
+	font-size: 0.6rem;
+	border-radius: 5px;
+	font-weight: 800;
+	margin-top: 2px;
 }
 
-.op-50 { opacity: 0.5; }
-</style>
+.op-50 {
+	opacity: 0.5;
+}</style>

@@ -35,19 +35,27 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
             new UserBadge($email),
             new PasswordCredentials($request->getPayload()->getString('password')),
             [
-                new CsrfTokenBadge('authenticate', $request->getPayload()->getString('_csrf_token')),            ]
+                new CsrfTokenBadge('authenticate', $request->getPayload()->getString('_csrf_token')),
+            ]
         );
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        $user = $token->getUser();
+
+        // Redirection spécifique pour les Notaires
+        if (in_array('ROLE_NOTARY', $user->getRoles())) {
+            return new RedirectResponse($this->urlGenerator->generate('app_notary_dashboard'));
+        }
+
+        // Redirection vers la page demandée avant le login (si elle existe)
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
 
-        // For example:
+        // Redirection par défaut pour les particuliers
         return new RedirectResponse($this->urlGenerator->generate('app_family_dashboard'));
-        throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
     }
 
     protected function getLoginUrl(Request $request): string

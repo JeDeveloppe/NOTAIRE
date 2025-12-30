@@ -27,6 +27,18 @@ class SimulationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countByCities(array $cityIds): int
+    {
+        if (empty($cityIds)) return 0;
+
+        return $this->createQueryBuilder('s')
+            ->select('count(s.id)')
+            ->innerJoin('s.user', 'u')
+            ->where('u.city IN (:cityIds)')
+            ->setParameter('cityIds', $cityIds)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
     //    /**
     //     * @return Simulation[] Returns an array of Simulation objects
     //     */

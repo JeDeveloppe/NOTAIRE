@@ -17,9 +17,7 @@
                     <h6 class="footer-heading">Particuliers</h6>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
-                            <a href="{{ app.user ? path('app_simulation') : path('app_register') }}" class="footer-link">
-                                Simuler ma donation
-                            </a>
+                            Simuler une donation //TODO
                         </li>
                         <li class="mb-2">
                             <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
@@ -34,7 +32,7 @@
                 </div>
             </div>
 
-            {# Pitch Central & Preuve Sociale #}
+            {# Pitch Central #}
             <div class="col-lg-4 col-md-12 order-lg-2 order-1 text-center">
                 <div class="mt-4 mt-lg-5">
                     <h2 class="h4 fw-bolder text-white mb-2">Lignée</h2>
@@ -44,7 +42,7 @@
 
                     {% if total_simulations is defined and total_simulations > 0 %}
                         <div class="simulation-counter mt-3">
-                            <span class="badge rounded-pill bg-white-translucent">
+                            <span class="badge rounded-pill bg-white-translucent border-primary-subtle">
                                 <i class="fas fa-shield-check me-1 text-indigo"></i>
                                 Déjà <strong>+{{ total_simulations }}</strong> simulations sécurisées.
                             </span>
@@ -53,14 +51,15 @@
                 </div>
             </div>
 
-            {# Navigation Droite : Professionnels #}
+            {# Navigation Droite : Espace Notaire #}
             <div class="col-lg-4 col-md-6 order-lg-3 order-3 text-center text-lg-end">
                 <div class="pe-lg-4">
                     <h6 class="footer-heading">Espace Notaire</h6>
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
-                            <a href="{{ path('app_site_legal_cgv_pro') }}" class="footer-link-pro">
-                                <i class="fas fa-briefcase me-1"></i> Devenir Partenaire
+                            {# CTA Plus direct et métier #}
+                            <a href="{{ path('app_site_notary_presentation') }}" class="footer-link-pro">
+                                <i class="fas fa-plus-circle me-1"></i> Inscrire mon étude
                             </a>
                         </li>
                         <li class="mb-2">
@@ -74,27 +73,29 @@
             </div>
         </div>
 
-        {# Ligne de séparation élégante #}
         <div class="footer-divider-elegant mt-5 mb-4"></div>
 
         {# Barre Légale Basse #}
         <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start">
+            <div class="col-md-5 text-center text-md-start">
                 <p class="footer-copyright small mb-md-0 mb-3">
                     © {{ "now"|date("Y") }} <span class="text-white fw-bold">Lignée</span>. 
                     <span class="opacity-50">Tous droits réservés.</span>
                 </p>
             </div>
-            <div class="col-md-6 text-center text-md-end">
+            <div class="col-md-7 text-center text-md-end">
                 <ul class="list-inline mb-0 legal-nav">
-                    <li class="list-inline-item">
+                    <li class="list-inline-item mx-2">
                         <a href="{{ path('app_site_legal_cgu') }}">CGU</a>
                     </li>
-                    <li class="list-inline-item">
+                    <li class="list-inline-item mx-2">
+                        <a href="{{ path('app_site_legal_cgv_pro') }}">CGV Pro</a>
+                    </li>
+                    <li class="list-inline-item mx-2">
                         <a href="{{ path('app_site_legal_cgu') }}#mentions">Mentions Légales</a>
                     </li>
-                    <li class="list-inline-item">
-                        <a href="{{ path('app_site_legal_rgpd') }}">Confidentialité</a>
+                    <li class="list-inline-item mx-2">
+                        <a href="{{ path('app_site_legal_rgpd') }}">Protection des données</a>
                     </li>
                 </ul>
             </div>
@@ -114,7 +115,6 @@
         border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    /* LOGO ESCAPE */
     .footer-logo-container {
         position: absolute;
         top: 0;
@@ -134,12 +134,11 @@
 
     .logo-escape-box:hover {
         transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
 
     .footer-main-logo { height: 140px; width: auto; }
 
-    /* TYPOGRAPHIE */
     .footer-heading {
         color: #ffffff;
         font-size: 0.75rem;
@@ -147,7 +146,7 @@
         letter-spacing: 2.5px;
         font-weight: 800;
         margin-bottom: 1.25rem;
-        opacity: 0.8;
+        opacity: 0.7;
     }
 
     .footer-description {
@@ -169,10 +168,13 @@
         color: var(--indigo-brand) !important;
         font-weight: 700;
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        transition: transform 0.2s;
+        display: inline-block;
     }
 
-    /* BADGE BIENTÔT */
+    .footer-link-pro:hover { transform: scale(1.05); color: #a5b4fc !important; }
+
     .badge-coming-soon {
         font-size: 0.6rem;
         background-color: rgba(129, 140, 248, 0.1);
@@ -184,30 +186,29 @@
         text-transform: uppercase;
     }
 
-    /* BARRE LÉGALE BASSE */
     .footer-divider-elegant {
         height: 1px;
-        background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.1) 50%, rgba(255,255,255,0));
+        background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.08) 50%, rgba(255,255,255,0));
     }
 
     .legal-nav a {
-        color: rgba(255, 255, 255, 0.5);
+        color: rgba(255, 255, 255, 0.45);
         text-decoration: none;
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 500;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
         transition: 0.3s;
     }
 
     .legal-nav a:hover { color: #ffffff; }
 
-    .footer-copyright { color: rgba(255, 255, 255, 0.4); }
+    .footer-copyright { color: rgba(255, 255, 255, 0.35); }
 
     .bg-white-translucent {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.03);
         color: #cbd5e1;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         padding: 8px 16px;
     }
 

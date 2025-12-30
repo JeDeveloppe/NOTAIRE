@@ -3,9 +3,11 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Entity\Offer;
 use App\Entity\Notary;
 use App\Entity\Person;
 use App\Entity\Donation;
+use App\Entity\OfferPrice;
 use App\Entity\DonationRule;
 use App\Entity\Relationship;
 use App\Service\CityService;
@@ -34,7 +36,8 @@ class AppInitCommand extends Command
         private array $donationRules,
         private string $adminEmail,
         private string $adminPassword,
-        private array $simulationStatuses
+        private array $simulationStatuses,
+        private array $offers
     ) {
         parent::__construct();
     }
@@ -166,16 +169,49 @@ class AppInitCommand extends Command
         $notaryUser->setRoles(['ROLE_NOTARY']);
         $notaryUser->setPassword($this->hasher->hashPassword($notaryUser, 'notaire123'));
         $notaryUser->setCity($this->cityRepository->findOneBy(['name' => 'Paris']));
+        
         $this->em->persist($notaryUser);
 
         // On crée l'entité métier liée
         $notaryProfile = new Notary();
         $notaryProfile->setName('Étude de Maître Durand');
-        $notaryProfile->setUser($notaryUser); 
+        $notaryProfile->setUser($notaryUser);
+        $notaryProfile->setAddress('1 rue de la Paix');
+        $notaryProfile->setCity($this->cityRepository->findOneBy(['name' => 'Paris']));
+        $notaryProfile->setPhone('01 23 45 67 89');
+        $notaryProfile->setSiret('12345678901234');
+        $notaryProfile->setWebsite('https://exemple.com');
+
         $this->em->persist($notaryProfile);
 
         $io->text("-> Notaire créé : notaire@exemple.com");
 
+        // --- ÉTAPE : IMPORT DES OFFRES ET TARIFS ---
+        $io->section('Importation du catalogue des offres');
+
+        foreach ($this->offers as $code => $data) {
+            $offer = new Offer();
+            $offer->setCode($code);
+            $offer->setName($data['name']);
+            $offer->setBaseSectorsCount($data['base_sectors']);
+            $offer->setMaxNotariesPerSector($data['max_notaries_per_sector']);
+            $offer->setIsAddon($data['is_addon']);
+            $offer->setDescription($data['description']);
+            $offer->setBadge($data['badge']);
+            $offer->setIsOnWebSite($data['is_on_website']);
+
+            $this->em->persist($offer);
+
+            // On crée immédiatement le prix associé
+            $price = new OfferPrice();
+            $price->setOffer($offer);
+            $price->setAmountHt($data['price_ht']);
+            $price->setStartAt(new \DateTimeImmutable()); // Actif dès maintenant
+
+            $this->em->persist($price);
+
+            $io->text("-> Offre ajoutée : <info>" . $data['name'] . "</info> (" . ($data['price_ht'] / 100) . "€ HT)");
+        }
 
         $this->em->flush();
 

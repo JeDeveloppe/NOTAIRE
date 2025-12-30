@@ -1,0 +1,200 @@
+{# templates/notary/dashboard.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Notaire -
+	{{ notary.name }}
+{% endblock %}
+
+{% block body %}
+	<div
+		class="container py-5">
+
+		{# On insère l'assistant ici #}
+		{{ include('notary/_onboarding_notary.html.twig') }}
+        
+		{# En-tête #}
+		<div class="d-flex justify-content-between align-items-center mb-5">
+			<div>
+				<h1 class="h2 mb-1">Tableau de bord</h1>
+				<p class="text-muted mb-0">Maître
+					{{ notary.name }}
+					| Étude notariale</p>
+			</div>
+			<div>
+				{% if notary.isConfirmed %}
+					<span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+						<i class="bi bi-check-circle-fill me-1"></i>
+						Compte Professionnel Validé
+					</span>
+				{% else %}
+					<span class="badge bg-warning-subtle text-warning border border-warning px-3 py-2">
+						<i class="bi bi-hourglass-split me-1"></i>
+						Validation en cours
+					</span>
+				{% endif %}
+			</div>
+		</div>
+
+		{# Ligne de KPI #}
+		<div
+			class="row g-4 mb-5">
+			{# Dossiers Disponibles sur la zone #}
+			<div class="col-md-4">
+				<div class="card shadow-sm border-0 h-100">
+					<div class="card-body">
+						<h6 class="text-uppercase text-muted small fw-bold mb-3">Potentiel Secteur</h6>
+						<div class="d-flex align-items-center">
+							<div class="flex-shrink-0 bg-primary-subtle text-primary p-3 rounded-3">
+								<i class="bi bi-geo-fill fs-3"></i>
+							</div>
+							<div class="flex-grow-1 ms-3">
+								<h3 class="mb-0 fw-bold">{{ stats.leadsInZone }}</h3>
+								<p class="text-muted small mb-0">Dossiers en attente sur vos zones</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{# Dossiers Sélectionnés #}
+			<div class="col-md-4">
+				<div class="card shadow-sm border-0 h-100">
+					<div class="card-body">
+						<h6 class="text-uppercase text-muted small fw-bold mb-3">Mon Portefeuille</h6>
+						<div class="d-flex align-items-center">
+							<div class="flex-shrink-0 bg-success-subtle text-success p-3 rounded-3">
+								<i class="bi bi-folder-check fs-3"></i>
+							</div>
+							<div class="flex-grow-1 ms-3">
+								<h3 class="mb-0 fw-bold">{{ stats.selectedLeads }}</h3>
+								<p class="text-muted small mb-0">Dossiers réservés par votre étude</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{# Score / Confiance #}
+			<div class="col-md-4">
+				<div class="card shadow-sm border-0 h-100">
+					<div class="card-body">
+						<h6 class="text-uppercase text-muted small fw-bold mb-3">Indice de Performance</h6>
+						<div class="d-flex align-items-center">
+							<div class="flex-shrink-0 bg-info-subtle text-info p-3 rounded-3">
+								<i class="bi bi-star-fill fs-3"></i>
+							</div>
+							<div class="flex-grow-1 ms-3">
+								<h3 class="mb-0 fw-bold">{{ notary.score }}</h3>
+								<p class="text-muted small mb-0">Score de réactivité notaire</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div
+			class="row g-4">
+			{# Colonne Gauche : Quota Géographique #}
+			<div class="col-lg-4">
+				<div class="card shadow-sm border-0 mb-4">
+					<div class="card-body">
+						<h5 class="card-title fw-bold mb-4">Ma couverture</h5>
+
+						<div class="d-flex justify-content-between small mb-2">
+							<span class="text-muted">Utilisation du quota</span>
+							<span class="fw-bold">{{ stats.usedSlots }}
+								/
+								{{ stats.totalSlots }}
+								codes postaux</span>
+						</div>
+
+						<div class="progress mb-4" style="height: 10px;">
+							<div class="progress-bar {% if stats.percentage >= 100 %}bg-danger{% elseif stats.percentage > 80 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ stats.percentage }}%"></div>
+						</div>
+
+						<p class="text-muted small mb-4">
+							Vous recevez des alertes pour les dossiers situés dans vos secteurs activés.
+						</p>
+
+						<div class="list-group list-group-flush border-top">
+							{% for zip in notary.selectedZipCodes|slice(0, 5) %}
+								<div class="list-group-item px-0 d-flex justify-content-between align-items-center border-bottom-0">
+									<div>
+										<i class="bi bi-pin-map text-primary me-2"></i>
+										<span class="small fw-medium">{{ zip.city.name }}</span>
+									</div>
+									<span class="badge bg-light text-dark fw-normal">{{ zip.city.postalCode }}</span>
+								</div>
+							{% else %}
+								<p class="text-muted small text-center py-3">Aucun secteur configuré.</p>
+							{% endfor %}
+						</div>
+
+						<div class="mt-4">
+							<button class="btn btn-primary w-100">Gérer mes secteurs</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{# Colonne Droite : Liste des Dossiers Réservés #}
+			<div class="col-lg-8">
+				<div class="card shadow-sm border-0">
+					<div class="card-header bg-white border-0 py-3">
+						<h5 class="card-title fw-bold mb-0">Mes dossiers réservés</h5>
+					</div>
+					<div class="table-responsive">
+						<table class="table table-hover align-middle mb-0">
+							<thead class="bg-light">
+								<tr>
+									<th class="ps-4 small text-muted border-0">Date</th>
+									<th class="small text-muted border-0">Référence</th>
+									<th class="small text-muted border-0">Localisation client</th>
+									<th class="small text-muted border-0">Statut</th>
+									<th class="small text-muted border-0"></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for lead in notary.simulations|slice(0, 8) %}
+									<tr>
+										<td class="ps-4 small text-muted">
+											{{ lead.createdAt|date('d/m/Y') }}
+										</td>
+										<td class="small fw-bold">{{ lead.reference }}</td>
+										<td class="small">
+											<span class="text-dark">{{ lead.user.city.name }}</span>
+											<span class="text-muted">({{ lead.user.city.postalCode }})</span>
+										</td>
+										<td>
+											<span class="badge bg-light text-dark fw-normal border">
+												{{ lead.status.name }}
+											</span>
+										</td>
+										<td class="text-end pe-4">
+											<button class="btn btn-sm btn-outline-secondary">Détails</button>
+										</td>
+									</tr>
+								{% else %}
+									<tr>
+										<td colspan="5" class="text-center py-5">
+											<div class="text-muted">
+												<i class="bi bi-file-earmark-lock fs-1 d-block mb-3"></i>
+												Vous n'avez pas encore réservé de dossier.
+											</div>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+					{% if notary.simulations|length > 8 %}
+						<div class="card-footer bg-white border-0 text-center py-3">
+							<button class="btn btn-link btn-sm text-decoration-none">Voir tous mes dossiers</button>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

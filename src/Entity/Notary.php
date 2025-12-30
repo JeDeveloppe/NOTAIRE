@@ -31,9 +31,45 @@ class Notary
     #[ORM\Column]
     private ?int $score = 100;
 
+    /**
+     * @var Collection<int, Subscription>
+     */
+    #[ORM\OneToMany(targetEntity: Subscription::class, mappedBy: 'notary')]
+    private Collection $subscriptions;
+
+    /**
+     * @var Collection<int, SelectedZipCode>
+     */
+    #[ORM\OneToMany(targetEntity: SelectedZipCode::class, mappedBy: 'notary')]
+    private Collection $selectedZipCodes;
+
+    #[ORM\Column(length: 255)]
+    private ?string $address = null;
+
+    #[ORM\ManyToOne(inversedBy: 'notaries')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?City $city = null;
+
+    #[ORM\Column(length: 20)]
+    private ?string $phone = null;
+
+    #[ORM\Column(length: 14)]
+    private ?string $siret = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $website = null;
+
+    #[ORM\Column]
+    private ?bool $isConfirmed = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $confirmedAt = null;
+
     public function __construct()
     {
         $this->simulations = new ArrayCollection();
+        $this->subscriptions = new ArrayCollection();
+        $this->selectedZipCodes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -105,5 +141,159 @@ class Notary
         $this->score = $score;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscription>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): static
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setNotary($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): static
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            // set the owning side to null (unless already changed)
+            if ($subscription->getNotary() === $this) {
+                $subscription->setNotary(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SelectedZipCode>
+     */
+    public function getSelectedZipCodes(): Collection
+    {
+        return $this->selectedZipCodes;
+    }
+
+    public function addSelectedZipCode(SelectedZipCode $selectedZipCode): static
+    {
+        if (!$this->selectedZipCodes->contains($selectedZipCode)) {
+            $this->selectedZipCodes->add($selectedZipCode);
+            $selectedZipCode->setNotary($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSelectedZipCode(SelectedZipCode $selectedZipCode): static
+    {
+        if ($this->selectedZipCodes->removeElement($selectedZipCode)) {
+            // set the owning side to null (unless already changed)
+            if ($selectedZipCode->getNotary() === $this) {
+                $selectedZipCode->setNotary(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(string $address): static
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getCity(): ?City
+    {
+        return $this->city;
+    }
+
+    public function setCity(?City $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(string $phone): static
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getSiret(): ?string
+    {
+        return $this->siret;
+    }
+
+    public function setSiret(string $siret): static
+    {
+        $this->siret = $siret;
+
+        return $this;
+    }
+
+    public function getWebsite(): ?string
+    {
+        return $this->website;
+    }
+
+    public function setWebsite(string $website): static
+    {
+        $this->website = $website;
+
+        return $this;
+    }
+
+    public function isConfirmed(): ?bool
+    {
+        return $this->isConfirmed;
+    }
+
+    public function setIsConfirmed(bool $isConfirmed): static
+    {
+        $this->isConfirmed = $isConfirmed;
+
+        return $this;
+    }
+
+    public function getConfirmedAt(): ?\DateTimeImmutable
+    {
+        return $this->confirmedAt;
+    }
+
+    public function setConfirmedAt(\DateTimeImmutable $confirmedAt): static
+    {
+        $this->confirmedAt = $confirmedAt;
+
+        return $this;
+    }
+
+    public function getActiveSubscription(): ?Subscription
+    {
+        foreach ($this->subscriptions as $subscription) {
+            if ($subscription->isActive()) {
+                return $subscription;
+            }
+        }
+        return null;
     }
 }

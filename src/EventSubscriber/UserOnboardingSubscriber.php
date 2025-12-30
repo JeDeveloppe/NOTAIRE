@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\RouterInterface;
 
-class FirstPersonRedirectSubscriber implements EventSubscriberInterface
+class UserOnboardingSubscriber implements EventSubscriberInterface
 {
     // Liste des routes qui sont AUTORISÉES même sans famille
     private const ALLOWED_ROUTES = [
@@ -49,6 +49,10 @@ class FirstPersonRedirectSubscriber implements EventSubscriberInterface
         $user = $this->security->getUser();
         if (!$user instanceof User) {
             return;
+        }
+
+        if (in_array('ROLE_NOTARY', $user->getRoles())) {
+            return; // On laisse le notaire circuler librement
         }
 
         // 3. LOGIQUE DE BLOCAGE
