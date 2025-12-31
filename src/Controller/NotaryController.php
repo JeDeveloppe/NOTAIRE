@@ -47,8 +47,12 @@ class NotaryController extends AbstractController
     #[Route('/notaire/presentation', name: 'app_site_notary_presentation')]
     public function presentation(OfferRepository $offerRepository): Response
     {
+        $mainOffers = $offerRepository->findBy(['isAddon' => false, 'isOnWebSite' => true]);
+        $addons = $offerRepository->findBy(['isAddon' => true, 'isOnWebSite' => true]);
+
         return $this->render('site/notary/presentation.html.twig', [
-            'offers' => $offerRepository->findBy(['isOnWebSite' => true]),
+            'mainOffers' => $mainOffers,
+            'addons' => $addons,
             'active_offices' => 120,
             'leads_generated' => 1500,
         ]);
@@ -109,40 +113,6 @@ class NotaryController extends AbstractController
         return $this->render('notary/complete_profile.html.twig');
     }
 
-    #[Route('/api/check-zip/{zipCode}', name: 'api_check_zip', methods: ['GET'])]
-    public function checkZip(
-        string $zipCode,
-        CityRepository $cityRepository,
-        SelectedZipCodeRepository $zipRepo
-    ): JsonResponse {
-        $cities = $cityRepository->findBy(
-            ['postalCode' => $zipCode],
-            ['name' => 'ASC']
-        );
-
-        if (empty($cities)) {
-            return new JsonResponse(['status' => 'not_found'], 404);
-        }
-
-        $existingReservations = $zipRepo->createQueryBuilder('s')
-            ->select('count(s.id)')
-            ->where('s.city IN (:cities)')
-            ->setParameter('cities', $cities)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        $limit = 2;
-        $cityNames = array_map(fn($c) => $c->getName(), $cities);
-
-        return new JsonResponse([
-            'status' => 'ok',
-            'postalCode' => $zipCode,
-            'allCities' => $cityNames,
-            'available' => $existingReservations < $limit,
-            'remaining' => $limit - $existingReservations,
-        ]);
-    }
-
     #[Route('/notaire/offres', name: 'app_notary_pricing')]
     public function pricing(OfferRepository $offerRepository): Response
     {
@@ -154,7 +124,7 @@ class NotaryController extends AbstractController
             'offers' => $offerRepository->findBy([
                 'isAddon' => false,
                 'isOnWebSite' => true
-            ], ['baseSectorsCount' => 'ASC']),
+            ], ['baseNotariesCount' => 'ASC']),
         ]);
     }
 

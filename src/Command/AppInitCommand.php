@@ -193,8 +193,7 @@ class AppInitCommand extends Command
             $offer = new Offer();
             $offer->setCode($code);
             $offer->setName($data['name']);
-            $offer->setBaseSectorsCount($data['base_sectors']);
-            $offer->setMaxNotariesPerSector($data['max_notaries_per_sector']);
+            $offer->setBaseNotariesCount($data['base_notaries_count']);
             $offer->setIsAddon($data['is_addon']);
             $offer->setDescription($data['description']);
             $offer->setBadge($data['badge']);

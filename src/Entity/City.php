@@ -59,6 +59,9 @@ class City
     #[ORM\OneToMany(targetEntity: Notary::class, mappedBy: 'city')]
     private Collection $notaries;
 
+    #[ORM\Column]
+    private ?int $maxNotariesCount = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -260,5 +263,17 @@ class City
     public function __toString(): string
     {
         return $this->name. ' (' . $this->postalCode . ')';
+    }
+
+    public function getMaxNotariesCount(): ?int
+    {
+        return $this->maxNotariesCount;
+    }
+
+    public function setMaxNotariesCount(int $maxNotariesCount): static
+    {
+        $this->maxNotariesCount = $maxNotariesCount;
+
+        return $this;
     }
 }

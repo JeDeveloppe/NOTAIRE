@@ -23,10 +23,7 @@ class Offer
     private ?string $description = null;
 
     #[ORM\Column]
-    private ?int $baseSectorsCount = null;
-
-    #[ORM\Column]
-    private ?int $maxNotariesPerSector = null;
+    private ?int $baseNotariesCount = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -91,26 +88,14 @@ class Offer
         return $this;
     }
 
-    public function getBaseSectorsCount(): ?int
+    public function getBaseNotariesCount(): ?int
     {
-        return $this->baseSectorsCount;
+        return $this->baseNotariesCount;
     }
 
-    public function setBaseSectorsCount(int $baseSectorsCount): static
+    public function setBaseNotariesCount(int $baseNotariesCount): static
     {
-        $this->baseSectorsCount = $baseSectorsCount;
-
-        return $this;
-    }
-
-    public function getMaxNotariesPerSector(): ?int
-    {
-        return $this->maxNotariesPerSector;
-    }
-
-    public function setMaxNotariesPerSector(int $maxNotariesPerSector): static
-    {
-        $this->maxNotariesPerSector = $maxNotariesPerSector;
+        $this->baseNotariesCount = $baseNotariesCount;
 
         return $this;
     }

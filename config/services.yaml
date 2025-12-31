@@ -98,8 +98,7 @@ parameters:
         PACK_LAUNCH:
             name: 'Pack de lancement'
             code: 'PACK_LAUNCH'
-            base_sectors: 5
-            max_notaries_per_sector: 2
+            base_notaries_count: 5
             is_addon: false
             price_ht: 0
             description: 'Offre exclusive pour les premiers notaires.'
@@ -109,8 +108,7 @@ parameters:
         PACK_STANDARD:
             name: 'Pack standard'
             code: 'PACK_STANDARD'
-            base_sectors: 5
-            max_notaries_per_sector: 2
+            base_notaries_count: 5
             is_addon: false
             price_ht: 19999
             description: 'Accès complet aux outils Lignée.'
@@ -120,8 +118,7 @@ parameters:
         ADDON_POSTAL_CODE_1:
             name: 'Code postal supplémentaire (+1)'
             code: 'ADDON_POSTAL_CODE_1'
-            base_sectors: 1
-            max_notaries_per_sector: 2
+            base_notaries_count: 1
             is_addon: true
             price_ht: 4999
             description: 'Ajoutez un code postal à votre zone.'
@@ -131,8 +128,7 @@ parameters:
         ADDON_POSTAL_CODE_3:
             name: 'Codes postaux supplémentaire (+3)'
             code: 'ADDON_POSTAL_CODE_3'
-            base_sectors: 3
-            max_notaries_per_sector: 2
+            base_notaries_count: 3
             is_addon: true
             price_ht: 12999
             description: 'Ajoutez 3 codes postaux à votre zone.'
@@ -142,8 +138,7 @@ parameters:
         ADDON_POSTAL_CODE_5:
             name: 'Codes postaux supplémentaire (+5)'
             code: 'ADDON_POSTAL_CODE_5'
-            base_sectors: 5
-            max_notaries_per_sector: 2
+            base_notaries_count: 5
             is_addon: true
             price_ht: 19999
             description: 'Ajoutez 5 codes postaux à votre zone.'

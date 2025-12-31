@@ -1,273 +1,248 @@
-{# templates/notary/presentation.html.twig #}
+{# templates/site/notary/presentation.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Devenir Notaire Référent - Lignée{% endblock %}
 
 {% block body %}
-<div class="notary-ux-page bg-white min-vh-100 pb-5">
+    {% set titreOffre = mainOffers|length > 1 ? "Offres de souscription" : "Offre de souscription" %}
 
-    {# --- HEADER FLOTTANT --- #}
-    <div class="container pt-4 mb-5">
-        <div class="d-flex justify-content-between align-items-center bg-white border rounded-pill px-4 py-2 shadow-sm">
-            <div class="d-flex align-items-center">
-                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                    <i class="fas fa-balance-scale text-white fs-6"></i>
-                </div>
-                <span class="fw-bold text-dark small tracking-wider">LIGNÉE <span class="text-muted fw-normal">| SERVICES NOTAIRES</span></span>
-            </div>
-            <div class="d-flex align-items-center">
-                <a href="{{ path('app_login') }}" class="text-decoration-none text-muted small fw-bold me-3 d-none d-sm-inline">Espace Étude</a>
-                <a href="#plans" class="btn btn-sm btn-dark fw-bold rounded-pill px-3">Voir les tarifs</a>
-            </div>
-        </div>
-    </div>
+    <div class="notary-ux-page bg-white min-vh-100 pb-5">
 
-    {# --- HERO SECTION --- #}
-    <section class="py-4">
-        <div class="container">
-            <div class="row align-items-center g-5">
-                <div class="col-lg-7 text-center text-lg-start">
-                    <div class="badge rounded-pill bg-primary-subtle text-primary mb-3 px-3 py-2 fw-bold animate__animated animate__fadeIn" style="font-size: 0.75rem;">
-                        DISPOSITIF EXCLUSIF DONATIONS 2025
+        {# --- HEADER --- #}
+        <div class="container pt-4 mb-5">
+            <div class="d-flex justify-content-between align-items-center bg-white border rounded-pill px-4 py-2 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                        <i class="fas fa-balance-scale text-white fs-6"></i>
                     </div>
-                    <h1 class="display-3 fw-black text-dark mb-4" style="letter-spacing: -2px; line-height: 1.1;">
-                        Devenez le <span class="text-primary">notaire référent</span> de votre secteur.
-                    </h1>
-                    <p class="fs-5 text-secondary mb-5 pe-lg-5">
-                        Lignée connecte votre étude aux familles qui simulent leurs abattements fiscaux. Captez les projets de donation dès leur phase de réflexion.
-                    </p>
-
-                    {# MODULE DE VÉRIFICATION #}
-                    <div class="mx-auto mx-lg-0" style="max-width: 500px; position: relative; z-index: 10;">
-                        <div class="p-2 bg-light rounded-4 border shadow-sm">
-                            <div class="input-group input-group-lg overflow-hidden">
-                                <span class="input-group-text bg-white border-0 text-muted"><i class="fas fa-search-location"></i></span>
-                                <input type="text" id="zipCodeInput" class="form-control border-0 bg-white shadow-none" placeholder="Saisissez votre code postal..." maxlength="5" autocomplete="off">
-                                <button class="btn btn-primary fw-bold px-4 rounded-3" type="button" id="btnCheckZip">Vérifier</button>
-                            </div>
-                        </div>
-                        
-                        {# RÉPONSE DYNAMIQUE #}
-                        <div id="zipResponse" class="mt-3 d-none animate__animated animate__fadeInUp">
-                            <div id="zipResponseContainer" class="p-4 rounded-4 border-2 shadow-sm bg-white border">
-                                <div class="d-flex align-items-start mb-3">
-                                    <div id="statusIconContainer" class="rounded-circle p-3 me-3">
-                                        <i id="zipIcon" class="fas fa-2xl"></i>
-                                    </div>
-                                    <div class="text-start text-dark">
-                                        <strong id="zipTitle" class="d-block h5 mb-1 text-primary"></strong>
-                                        <div id="availabilityBadge" class="badge rounded-pill mb-2"></div>
-                                        <p id="zipText" class="mb-0 small text-secondary"></p>
-                                    </div>
-                                </div>
-                                <div id="citiesWrapper" class="d-flex flex-wrap gap-2 pt-3 border-top d-none">
-                                    </div>
-                            </div>
-
-                            <a href="{{ path('app_register') }}" id="btnContinueRegister" class="btn btn-primary pulse-primary mt-3 fw-bold w-100 py-3 rounded-4 shadow-sm fs-5">
-                                Devenir le notaire référent du secteur
-                            </a>
-                            <div id="quotaWarning" class="text-center mt-2 smaller text-muted">
-                                <i class="fas fa-info-circle me-1"></i> Limitation stricte à 2 offices partenaires par zone.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {# VISUEL DASHBOARD #}
-                <div class="col-lg-5 d-none d-lg-block">
-                    <div class="card border-0 shadow-2xl rounded-4 overflow-hidden animate__animated animate__fadeInRight">
-                        <div class="bg-dark p-3 d-flex justify-content-between align-items-center text-white">
-                            <span class="small fw-bold tracking-widest uppercase" style="font-size: 0.7rem;">INTENTIONS DÉTECTÉES EN TEMPS RÉEL</span>
-                            <span class="badge bg-success pulse">LIVE</span>
-                        </div>
-                        <div class="p-4 bg-light">
-                            <div class="bg-white p-3 rounded-3 shadow-sm mb-3 border-start border-primary border-4">
-                                <div class="d-flex justify-content-between mb-1 text-muted fw-bold" style="font-size: 0.65rem;">
-                                    <span>DOSSIER #2441</span>
-                                    <span>RÉCENT</span>
-                                </div>
-                                <div class="text-dark fw-bold">Donation numéraire : 100 000 €</div>
-                                <div class="text-secondary" style="font-size: 0.75rem;">Optimisation d'abattements parents-enfants</div>
-                            </div>
-                            <div class="bg-white p-3 rounded-3 shadow-sm border-start border-secondary border-4 opacity-75">
-                                <div class="text-muted fw-bold mb-1" style="font-size: 0.65rem;">SECTEUR 33000</div>
-                                <div class="text-dark fw-bold">Donation-Partage immobilière</div>
-                                <div class="text-secondary" style="font-size: 0.75rem;">Démembrement visé • Résidence secondaire</div>
-                            </div>
-                        </div>
-                    </div>
+                    <span class="fw-bold text-dark small tracking-wider">LIGNÉE | SERVICES NOTAIRES</span>
                 </div>
             </div>
         </div>
-    </section>
 
-    {# --- ARGUMENTAIRE --- #}
-    <section class="py-5 bg-light border-top border-bottom">
-        <div class="container py-4">
-            <div class="row g-4 text-center">
-                <div class="col-md-4">
-                    <i class="fas fa-calculator text-primary h2 mb-3"></i>
-                    <h6 class="fw-bold">Outils fiscaux</h6>
-                    <p class="text-muted small px-lg-3">Nous captons l'usager lorsqu'il simule ses droits de donation sur nos outils.</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="fas fa-map-marked-alt text-primary h2 mb-3"></i>
-                    <h6 class="fw-bold">Maillage local</h6>
-                    <p class="text-muted small px-lg-3">Votre étude devient le point de contact privilégié pour toutes les communes de votre code postal.</p>
-                </div>
-                <div class="col-md-4">
-                    <i class="fas fa-user-check text-primary h2 mb-3"></i>
-                    <h6 class="fw-bold">Dossiers qualifiés</h6>
-                    <p class="text-muted small px-lg-3">Recevez des fiches détaillées : liens de parenté, actifs et montants des projets.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+        {# --- HERO --- #}
+        <section class="py-4 container">
+            <h1 class="display-3 fw-black text-dark mb-4">
+                Captez les projets de donation <span class="text-primary">dès leur réflexion.</span>
+            </h1>
+            <p class="fs-5 text-secondary mb-5 fw-medium">
+                Lignée connecte votre étude aux familles qui simulent leurs abattements fiscaux.
+            </p>
+        </section>
 
-    {# --- SECTION DES PLANS --- #}
-    <section id="plans" class="py-5">
-        <div class="container py-5 text-center">
-            <h2 class="fw-black h1 mb-5">Plans de souscription</h2>
-            <div class="row g-4 justify-content-center">
-                {% for offer in offers %}
-                    {% if offer.isOnWebSite and not offer.isAddon %}
-                        {% set activePrice = offer.currentPrice %}
-                        {% set isFree = (activePrice and activePrice.amountHt == 0) %}
-                        <div class="col-lg-4 text-start">
-                            <div class="card h-100 border rounded-4 p-5 shadow-sm transition-hover bg-white {{ isFree ? 'border-primary border-2' : '' }}">
-                                {% if offer.badge %}
-                                    <span class="badge bg-primary rounded-pill mb-3" style="width: fit-content;">{{ offer.badge }}</span>
-                                {% endif %}
-                                <h3 class="h4 fw-bold text-dark mb-1">{{ offer.name }}</h3>
-                                <p class="text-muted small mb-4">{{ offer.description }}</p>
-                                <div class="h2 fw-black text-dark mb-4">
-                                    {{ activePrice ? (activePrice.amountHt / 100)|number_format(0, ',', ' ') : '--' }}€
-                                    <small class="fs-6 fw-normal text-muted">/mois HT</small>
-                                </div>
-                                <ul class="list-unstyled mb-5 flex-grow-1">
-                                    <li class="mb-3 small"><i class="fas fa-check text-success me-2"></i><strong>{{ offer.baseSectorsCount }} secteurs</strong> inclus</li>
-                                    <li class="mb-3 small"><i class="fas fa-check text-success me-2"></i>Accès illimité aux dossiers</li>
-                                    <li class="mb-3 small"><i class="fas fa-check text-success me-2"></i>Max {{ offer.maxNotariesPerSector }} études par zone</li>
-                                </ul>
-                                <a href="{{ path('app_register', {plan: offer.code}) }}" class="btn {{ isFree ? 'btn-primary shadow-primary' : 'btn-outline-dark' }} w-100 fw-bold py-3 rounded-3">Sélectionner</a>
+        {# --- OFFRES & ADDONS --- #}
+        <section class="container py-5 text-center">
+            <h2 class="fw-black h1 mb-4">Nos {{ titreOffre }}</h2>
+
+            <div class="row g-4 justify-content-center mb-5">
+                {% for offer in mainOffers %}
+                    <div class="col-lg-4 text-start">
+                        <div class="card h-100 border rounded-4 p-4 shadow-sm bg-white offer-card">
+                            <h3 class="h4 fw-bold text-dark">{{ offer.name }}</h3>
+                            <div class="h2 fw-black my-3">
+                                {{ (offer.currentPrice.amountHt / 100)|number_format(0, ',', ' ') }}€
+                                <small class="fs-6 text-muted">/m HT</small>
                             </div>
+                            <ul class="list-unstyled mb-4 flex-grow-1 small">
+                                <li><i class="fas fa-check text-success me-2"></i><strong>{{ offer.baseNotariesCount }} secteur(s)</strong> inclus</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Co-exclusivité limitée</li>
+                            </ul>
+                            <a href="#check-zone" class="btn btn-outline-primary w-100 rounded-pill fw-bold">Vérifier</a>
                         </div>
-                    {% endif %}
+                    </div>
                 {% endfor %}
             </div>
-        </div>
-    </section>
-</div>
 
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-    .notary-ux-page { font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
-    .fw-black { font-weight: 900; }
-    .text-primary { color: #2563eb !important; }
-    .bg-primary-subtle { background-color: #eff6ff !important; }
-    .btn-primary { background-color: #2563eb; border-color: #2563eb; }
-    .city-badge { font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 50px; background: #f8f9fa; border: 1px solid #eee; color: #666; text-transform: uppercase; }
-    .pulse { animation: pulse-green 2s infinite; }
-    @keyframes pulse-green { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    .pulse-primary { animation: shadow-pulse 2s infinite; }
-    @keyframes shadow-pulse { 0% { box-shadow: 0 0 0 0px rgba(37, 99, 235, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); } 100% { box-shadow: 0 0 0 0px rgba(37, 99, 235, 0); } }
-    .transition-hover { transition: all 0.3s ease; }
-    .transition-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1) !important; }
-    .bg-success-subtle { background-color: #d1fae5 !important; }
-    .text-success { color: #059669 !important; }
-</style>
+            {% if addons|length > 0 %}
+                <div class="p-4 bg-light rounded-4 border-dashed">
+                    <h4 class="fw-bold mb-3 small text-uppercase text-muted">Extensions de zone</h4>
+                    <div class="row g-3 justify-content-center">
+                        {% for addon in addons %}
+                            <div class="col-md-3">
+                                <div class="bg-white p-3 border rounded-3 text-start">
+                                    <div class="fw-bold text-primary">+{{ addon.baseNotariesCount }} secteur(s)</div>
+                                    <div class="fw-bold">+{{ (addon.currentPrice.amountHt / 100)|number_format(0, ',', ' ') }}€ HT</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </section>
 
-<script>
-const initCheckZip = () => {
-    const input = document.getElementById('zipCodeInput');
-    const btn = document.getElementById('btnCheckZip');
-    const responseDiv = document.getElementById('zipResponse');
-    
-    if (!input || !btn) return;
+        {# --- RECHERCHE ZIP --- #}
+        <section id="check-zone" class="py-5 bg-light border-top">
+            <div class="container py-5 text-center">
+                <h2 class="fw-black mb-4">Disponibilité par secteur</h2>
 
-    const citiesWrapper = document.getElementById('citiesWrapper');
-    const icon = document.getElementById('zipIcon');
-    const title = document.getElementById('zipTitle');
-    const text = document.getElementById('zipText');
-    const btnRegister = document.getElementById('btnContinueRegister');
-    const iconContainer = document.getElementById('statusIconContainer');
-    const availabilityBadge = document.getElementById('availabilityBadge');
+                <div class="mx-auto shadow-sm bg-white p-2 rounded-pill border d-flex mb-5 search-bar" style="max-width: 500px;">
+                    <input type="text" id="zipCodeInput" class="form-control border-0 shadow-none ps-4" placeholder="Code postal (ex: 14540)" maxlength="5">
+                    <button class="btn btn-primary rounded-pill px-4 fw-bold" id="btnCheckZip">Vérifier</button>
+                </div>
 
-    const handleSearch = () => {
-        const zip = input.value.replace(/[^0-9]/g, '');
-        input.value = zip;
+                <div id="zipError" class="text-danger fw-bold d-none mb-3">Veuillez entrer un code postal valide.</div>
 
-        if (zip.length < 5) {
-            responseDiv.classList.add('d-none');
-            return;
+                <div id="zipResponse" class="d-none mx-auto text-start fade-in" style="max-width: 700px;">
+                    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div id="statusStripe" style="height: 6px;"></div>
+
+                        <div class="p-4 p-md-5 bg-white">
+                            <div class="d-flex align-items-center mb-4 pb-4 border-bottom">
+                                <div id="statusIconContainer" class="rounded-circle d-flex align-items-center justify-content-center me-4" style="width: 60px; height: 60px;">
+                                    <i id="zipIcon" class="fas fa-2x"></i>
+                                </div>
+                                <div>
+                                    <div id="availabilityBadge" class="badge rounded-pill mb-1"></div>
+                                    <h3 id="zipTitle" class="fw-black mb-0 h3"></h3>
+                                </div>
+                            </div>
+
+                            <p id="zipText" class="fw-bold mb-4"></p>
+
+                            <div id="citiesWrapper" class="row g-2 mb-4"></div>
+
+                            <a href="#" id="btnContinueRegister" class="btn btn-primary btn-lg w-100 fw-black rounded-pill py-3">CONTINUER</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <style>
+        .fw-black { font-weight: 900; }
+        .bg-success-subtle { background-color: #d1fae5 !important; color: #065f46; }
+        .bg-warning-subtle { background-color: #fef3c7 !important; color: #92400e; }
+        .border-dashed { border: 2px dashed #dee2e6 !important; }
+
+        .offer-card {
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .offer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
 
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        .city-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        fetch(`/api/check-zip/${zip}`)
-            .then(res => res.json())
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = 'Vérifier';
-                responseDiv.classList.remove('d-none');
-                citiesWrapper.innerHTML = ''; 
+        .fade-in {
+            animation: fadeIn .3s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-                if (data.status === 'ok' && data.available) {
-                    const isLastPlace = data.remaining === 1;
-                    
-                    icon.className = "fas fa-award text-success";
-                    iconContainer.className = "bg-success-subtle p-3 rounded-circle me-3";
-                    title.innerText = `Secteur ${data.postalCode}`;
-                    
-                    availabilityBadge.className = isLastPlace ? "badge bg-warning text-dark mb-2" : "badge bg-success-subtle text-success mb-2";
-                    availabilityBadge.innerText = isLastPlace ? "Dernière place disponible" : "Opportunité disponible";
+        .btn-loading {
+            pointer-events: none;
+            opacity: .7;
+        }
+    </style>
 
-                    text.innerText = isLastPlace 
-                        ? "Un confrère est déjà présent. Saisissez la dernière exclusivité pour votre étude."
-                        : "Soyez le premier office de ce secteur à activer ce service de proximité.";
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('zipCodeInput');
+        const btn = document.getElementById('btnCheckZip');
+        const responseDiv = document.getElementById('zipResponse');
+        const errorDiv = document.getElementById('zipError');
+        const citiesWrapper = document.getElementById('citiesWrapper');
+        const iconContainer = document.getElementById('statusIconContainer');
+        const icon = document.getElementById('zipIcon');
+        const title = document.getElementById('zipTitle');
+        const badge = document.getElementById('availabilityBadge');
+        const text = document.getElementById('zipText');
+        const btnRegister = document.getElementById('btnContinueRegister');
+        const stripe = document.getElementById('statusStripe');
 
-                    btnRegister.innerHTML = '<i class="fas fa-check-circle me-2"></i>Devenir le notaire référent du secteur';
-                    btnRegister.classList.remove('d-none');
-                    citiesWrapper.classList.remove('d-none');
-                    
-                    data.allCities.forEach(city => {
-                        const span = document.createElement('span');
-                        span.className = 'city-badge';
-                        span.innerText = city;
-                        citiesWrapper.appendChild(span);
-                    });
-                } else if (data.status === 'ok' && !data.available) {
-                    icon.className = "fas fa-lock text-muted";
-                    iconContainer.className = "bg-light p-3 rounded-circle me-3";
-                    title.innerText = `Secteur ${data.postalCode} complet`;
-                    availabilityBadge.className = "badge bg-secondary mb-2";
-                    availabilityBadge.innerText = "Quota atteint";
-                    text.innerText = "Deux offices sont déjà référencés sur ce secteur. Les inscriptions sont closes.";
-                    btnRegister.classList.add('d-none');
-                    citiesWrapper.classList.add('d-none');
-                } else {
-                    icon.className = "fas fa-info-circle text-muted";
-                    iconContainer.className = "bg-light p-3 rounded-circle me-3";
-                    title.innerText = "Zone non couverte";
-                    availabilityBadge.className = "d-none";
-                    text.innerText = "Lignée n'est pas encore actif sur ce secteur.";
-                    btnRegister.classList.add('d-none');
-                    citiesWrapper.classList.add('d-none');
-                }
-            })
-            .catch(() => {
-                btn.disabled = false;
-                btn.innerHTML = 'Vérifier';
-            });
-    };
+        const showLoading = () => {
+            btn.classList.add('btn-loading');
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        };
 
-    btn.addEventListener('click', handleSearch);
-    input.addEventListener('input', () => { if (input.value.length === 5) handleSearch(); });
-};
+        const hideLoading = () => {
+            btn.classList.remove('btn-loading');
+            btn.innerHTML = 'Vérifier';
+        };
 
-document.addEventListener('DOMContentLoaded', initCheckZip);
-document.addEventListener('turbo:load', initCheckZip);
-</script>
+        const search = () => {
+            const zip = input.value.trim();
+
+            if (zip.length !== 5 || isNaN(zip)) {
+                errorDiv.classList.remove('d-none');
+                return;
+            }
+
+            errorDiv.classList.add('d-none');
+            showLoading();
+
+            fetch('/api/check-zip/' + zip)
+                .then(r => r.json())
+                .then(data => {
+                    hideLoading();
+
+                    if (data.status !== 'ok') {
+                        alert("Erreur lors de la vérification.");
+                        return;
+                    }
+
+                    responseDiv.classList.remove('d-none');
+                    responseDiv.classList.add('fade-in');
+                    citiesWrapper.innerHTML = '';
+
+                    if (data.available) {
+                        icon.className = "fas fa-check text-success";
+                        iconContainer.className = "bg-success-subtle d-flex align-items-center justify-content-center rounded-circle me-4";
+                        stripe.className = "bg-success";
+                        title.innerText = "Secteur " + data.postalCode;
+                        badge.className = "badge bg-success mb-2 px-3 py-2";
+                        badge.innerText = "DISPONIBLE";
+                        text.innerText = "Voici les communes avec des places libres :";
+                        btnRegister.innerHTML = "S'INSCRIRE SUR CE SECTEUR";
+                        btnRegister.href = "{{ path('app_register') }}?zip=" + data.postalCode;
+                        btnRegister.className = "btn btn-primary btn-lg w-100 fw-black rounded-pill py-3";
+                    } else {
+                        icon.className = "fas fa-lock text-warning";
+                        iconContainer.className = "bg-warning-subtle d-flex align-items-center justify-content-center rounded-circle me-4";
+                        stripe.className = "bg-warning";
+                        title.innerText = "Secteur " + data.postalCode;
+                        badge.className = "badge bg-warning text-dark mb-2 px-3 py-2";
+                        badge.innerText = "COMPLET";
+                        text.innerText = "Ce secteur est complet.";
+                        btnRegister.innerHTML = "ÊTRE PRÉVENU";
+                        btnRegister.href = "mailto:pro@lignee.fr";
+                        btnRegister.className = "btn btn-dark btn-lg w-100 fw-black rounded-pill py-3";
+                    }
+
+                    if (data.cities) {
+                        data.cities.forEach(c => {
+                            const col = document.createElement('div');
+                            col.className = 'col-md-6';
+                            const label = c.isFull
+                                ? '<span class="text-muted small">Complet</span>'
+                                : '<span class="text-success small fw-bold">' + c.remaining + ' place(s)</span>';
+                            col.innerHTML = `<div class="city-item"><span class="small fw-bold">${c.name}</span>${label}</div>`;
+                            citiesWrapper.appendChild(col);
+                        });
+                    }
+
+                    responseDiv.scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(() => {
+                    hideLoading();
+                    alert("Impossible de contacter le serveur.");
+                });
+        };
+
+        btn.onclick = search;
+        input.oninput = () => { if (input.value.length === 5) search(); };
+    });
+    </script>
 {% endblock %}

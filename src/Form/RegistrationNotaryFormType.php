@@ -4,15 +4,17 @@ namespace App\Form;
 
 use App\Entity\Notary;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\TelType;
-use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 
 class RegistrationNotaryFormType extends AbstractType
 {
@@ -34,6 +36,7 @@ class RegistrationNotaryFormType extends AbstractType
             ->add('address', TextType::class, [
                 'label' => 'Adresse du siège',
             ])
+            ->add('city', CityAutocompleteField::class)
             ->add('website', UrlType::class, [
                 'label' => 'Site internet (Optionnel)',
                 'required' => false,
@@ -47,12 +50,28 @@ class RegistrationNotaryFormType extends AbstractType
                 'constraints' => [new NotBlank(), new \Symfony\Component\Validator\Constraints\Email()]
             ])
             ->add('plainPassword', PasswordType::class, [
-                'label' => 'Mot de passe',
                 'mapped' => false,
-                'attr' => ['autocomplete' => 'new-password'],
+                'attr' => [
+                    'autocomplete' => 'new-password',
+                    'class' => 'form-control border-0 bg-light rounded-4 px-4',
+                    'placeholder' => 'Mot de passe'
+                ],
+                'label' => 'Mot de passe',
                 'constraints' => [
-                    new NotBlank(['message' => 'Entrez un mot de passe']),
-                    new Length(['min' => 8, 'minMessage' => '8 caractères minimum'])
+                    new NotBlank(message: 'Veuillez entrer un mot de passe'),
+                    new Length(
+                        min: 6,
+                        minMessage: 'Votre mot de passe doit faire au moins {{ limit }} caractères',
+                        max: 4096,
+                    ),
+                ],
+            ])
+                        ->add('agreeTerms', CheckboxType::class, [
+                'mapped' => false,
+                'label' => false, // Désactive le label automatique pour éviter le doublon
+                'attr' => ['class' => 'form-check-input me-2'],
+                'constraints' => [
+                    new IsTrue(message: 'Vous devez accepter nos conditions pour continuer.'),
                 ],
             ])
         ;

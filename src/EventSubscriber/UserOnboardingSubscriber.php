@@ -18,6 +18,7 @@ class UserOnboardingSubscriber implements EventSubscriberInterface
         'app_logout', // Deconnexion
         'app_login', // Connexion
         'app_register', // Inscription
+        'app_register_notary', // Inscription notaire
         'app_home', // Accueil
     ];
 

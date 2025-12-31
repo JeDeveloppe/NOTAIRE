@@ -45,7 +45,7 @@ class OfferCrudController extends AbstractCrudController
         yield TextEditorField::new('description', 'Description détaillée')
             ->hideOnIndex();
 
-        yield IntegerField::new('baseSectorsCount', 'Nombre de secteurs inclus')
+        yield IntegerField::new('baseNotariesCount', 'Nombre de secteurs inclus')
             ->setHelp('Nombre de codes postaux que le notaire peut réserver avec ce plan.');
 
         yield IntegerField::new('maxNotariesPerSector', 'Notaires max / secteur')

@@ -1,0 +1,231 @@
+{# templates/notary/registration.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Devenir Notaire Partenaire — Lignée{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-9">
+
+            {# En-tête : Duo Navy & Gold #}
+            <div class="text-center mb-5">
+                <span class="badge badge-gold-soft mb-3 px-3 py-2 rounded-pill fw-bold">RÉSEAU PROFESSIONNEL</span>
+                <h1 class="fw-bold h2 text-navy">Développez votre activité avec Lignée</h1>
+                <p class="text-muted mx-auto" style="max-width: 600px;">
+                    Rejoignez notre réseau de notaires partenaires et recevez des dossiers qualifiés issus de nos simulations.
+                </p>
+            </div>
+
+            {{ form_start(registrationForm, {'attr': {'id': 'subscribe-form', 'class': 'needs-validation'}}) }}
+            
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        
+                        {# Colonne 1 : L'Étude (Navy) #}
+                        <div class="col-lg-6 p-4 p-md-5 border-end border-light">
+                            <h5 class="fw-bold mb-4 text-navy d-flex align-items-center">
+                                <span class="step-badge-gold me-3">1</span>
+                                Votre Étude
+                            </h5>
+                            
+                            <div class="mb-4">
+                                {{ form_label(registrationForm.name, "Raison sociale", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.name, {'attr': {'class': 'form-control custom-input', 'placeholder': 'Office Notarial...'}}) }}
+                                {{ form_errors(registrationForm.name) }}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form_label(registrationForm.siret, "SIRET", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.siret, {'attr': {'class': 'form-control custom-input', 'placeholder': '14 chiffres'}}) }}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form_label(registrationForm.phone, "Téléphone", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.phone, {'attr': {
+                                    'class': 'form-control custom-input', 
+                                    'placeholder': '0123456789',
+                                    'maxlength': '10',
+                                    'inputmode': 'numeric'
+                                }}) }}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form_label(registrationForm.address, "Adresse", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.address, {'attr': {'class': 'form-control custom-input'}}) }}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form_label(registrationForm.city, "Ville", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.city) }} 
+                            </div>
+
+                            <div class="mb-0">
+                                {{ form_label(registrationForm.website, "Site internet (Optionnel)", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.website, {'attr': {'class': 'form-control custom-input', 'placeholder': 'https://...'}}) }}
+                            </div>
+                        </div>
+
+                        {# Colonne 2 : Accès (Soft Light) #}
+                        <div class="col-lg-6 bg-soft-light p-4 p-md-5">
+                            <h5 class="fw-bold mb-4 text-navy d-flex align-items-center">
+                                <span class="step-badge-gold me-3">2</span>
+                                Accès Partenaire
+                            </h5>
+
+                            <div class="mb-4">
+                                {{ form_label(registrationForm.email, "Email professionnel", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.email, {'attr': {'class': 'form-control custom-input', 'placeholder': 'contact@etude.fr'}}) }}
+                                {{ form_errors(registrationForm.email) }}
+                            </div>
+
+                            <div class="mb-5">
+                                {{ form_label(registrationForm.plainPassword, "Mot de passe", {'label_attr': {'class': 'form-label-custom'}}) }}
+                                {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form-control custom-input'}}) }}
+                                {{ form_errors(registrationForm.plainPassword) }}
+                            </div>
+
+                            <div class="legal-box p-4 rounded-3 bg-white border border-light-subtle shadow-sm">
+                                <div class="form-check d-flex align-items-start mb-0">
+                                    {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input flex-shrink-0 mt-1'}}) }}
+                                    <label class="form-check-label small text-muted ms-3" for="{{ registrationForm.agreeTerms.vars.id }}">
+                                        J'accepte les <a href="{{ path('app_site_legal_cgu') }}" target="_blank" class="text-gold fw-bold text-decoration-none border-bottom border-gold">CGU</a>,
+                                        les <a href="{{ path('app_site_legal_cgv_pro') }}" target="_blank" class="text-gold fw-bold text-decoration-none border-bottom border-gold">CGV</a>
+                                        et la <a href="{{ path('app_site_legal_rgpd') }}" target="_blank" class="text-gold fw-bold text-decoration-none border-bottom border-gold">politique RGPD</a>.
+                                    </label>
+                                </div>
+                                {{ form_errors(registrationForm.agreeTerms) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Footer Professionnel avec Action en Doré #}
+                <div class="card-footer bg-navy p-4 p-md-5 border-0">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-7 text-white">
+                            <div class="d-flex flex-wrap gap-4 align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle-white me-3 text-navy">
+                                        <i class="fas fa-handshake"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold small">Dossiers Qualifiés</div>
+                                        <div class="text-white-50 x-small">Mise en relation directe</div>
+                                    </div>
+                                </div>
+                                <div class="vr d-none d-md-block opacity-25"></div>
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-circle-white me-3 text-navy">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold small">Sécurité Totale</div>
+                                        <div class="text-white-50 x-small">Données ISO 27001 France</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5 text-md-end text-center">
+                            <button type="submit" class="btn btn-gold-action btn-lg rounded-pill px-5 py-3 fw-bold shadow-sm w-100 w-md-auto">
+                                Rejoindre le réseau
+                                <i class="fas fa-chevron-right ms-2 small"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{ form_rest(registrationForm) }}
+            {{ form_end(registrationForm) }}
+
+            <div class="text-center mt-4">
+                <p class="text-muted x-small opacity-75">
+                    Lignée &middot; Le trait d'union entre les particuliers et le notariat &middot; &copy; {{ "now"|date("Y") }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const phoneInput = document.getElementById('{{ registrationForm.phone.vars.id }}');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
+        }
+    });
+</script>
+
+<style>
+    :root { 
+        --navy: #1a2b4b; 
+        --gold: #c5a059;
+        --gold-hover: #b38f4d;
+        --gold-soft: rgba(197, 160, 89, 0.1);
+    }
+    
+    .text-navy { color: var(--navy); }
+    .bg-navy { background-color: var(--navy); }
+    .text-gold { color: var(--gold); }
+    .border-gold { border-color: var(--gold) !important; }
+
+    .badge-gold-soft { background-color: var(--gold-soft); color: var(--gold); }
+    
+    .icon-circle-white {
+        width: 42px; height: 42px; background: white;
+        border-radius: 12px; display: flex; align-items: center;
+        justify-content: center; font-size: 1.1rem;
+    }
+
+    .step-badge-gold {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; background-color: var(--gold);
+        color: white; border-radius: 8px; font-size: 0.85rem; font-weight: 800;
+    }
+
+    .form-label-custom {
+        font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.08em; color: #64748b; margin-bottom: 0.5rem; display: block;
+    }
+
+    .custom-input {
+        background-color: #fff !important; border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important; padding: 0.8rem 1rem !important; 
+        font-size: 0.95rem; transition: all 0.2s ease;
+    }
+
+    .custom-input:focus {
+        border-color: var(--gold) !important;
+        box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1) !important;
+    }
+
+    /* Bouton Or / Bronze Premium */
+    .btn-gold-action {
+        background-color: var(--gold);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-gold-action:hover {
+        background-color: var(--gold-hover);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(197, 160, 89, 0.3) !important;
+    }
+
+    .bg-soft-light { background-color: #f8fafc; }
+    .x-small { font-size: 0.72rem; }
+
+    /* Custom Checkbox Or */
+    .form-check-input:checked {
+        background-color: var(--gold);
+        border-color: var(--gold);
+    }
+</style>
+{% endblock %}

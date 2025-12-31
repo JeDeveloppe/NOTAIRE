@@ -14,7 +14,7 @@ class OfferService
         $total = 0;
         foreach ($notary->getSubscriptions() as $subscription) {
             if ($subscription->isActive() && $subscription->getStatus() === 'active') {
-                $total += $subscription->getOffer()->getBaseSectorsCount();
+                $total += $subscription->getOffer()->getbaseNotariesCount();
             }
         }
         return $total;
