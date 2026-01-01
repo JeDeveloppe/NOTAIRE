@@ -1,0 +1,83 @@
+<div class="modal fade" id="confirmSelectionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-5 shadow-lg overflow-hidden bg-white">
+            
+            {# HEADER : Fond légèrement grisé pour décoller du reste #}
+            <div class="modal-header border-0 p-4 bg-light align-items-center">
+                <div class="bg-primary rounded-4 p-2 me-3 shadow-sm">
+                    <i class="bi bi- briefcase-fill text-white fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="modal-title fw-black text-dark mb-0">Prendre la main sur ce dossier ?</h5>
+                    <p class="text-muted small mb-0">REF: #{{ simulation.reference }}</p>
+                </div>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                {# GRID UX : Fonds teintés pour éviter le blanc sur blanc #}
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        {# Carte Bleue très pâle #}
+                        <div class="p-3 rounded-4 h-100 border-0 shadow-sm" style="background-color: #f0f7ff;">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-shield-check-fill text-primary me-2"></i>
+                                <span class="fw-bold smaller text-primary-emphasis">Exclusivité</span>
+                            </div>
+                            <div class="h2 fw-black text-primary mb-1">100%</div>
+                            <div class="text-muted" style="font-size: 0.65rem; line-height: 1.2;">Seul votre office pourra traiter ce client.</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        {# Carte Indigo/Violette très pâle #}
+                        <div class="p-3 rounded-4 h-100 border-0 shadow-sm" style="background-color: #f5f3ff;">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-stopwatch-fill text-indigo me-2"></i>
+                                <span class="fw-bold smaller text-indigo-emphasis">Échéance</span>
+                            </div>
+                            <div class="h2 fw-black text-indigo mb-1">15j</div>
+                            <div class="text-muted" style="font-size: 0.65rem; line-height: 1.2;">Expire le {{ "now"|date_modify("+15 days")|date("d/m/Y") }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ZONE ENGAGEMENT : Fond "Menthe/Émeraude" très doux #}
+                <div class="rounded-4 p-4 mb-3 border-0 shadow-sm" style="background-color: #ecfdf5;">
+                    <div class="d-flex">
+                        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center me-3" style="min-width: 45px; height: 45px;">
+                            <i class="bi bi-telephone-fill text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-success-emphasis mb-1">Contrat de réactivité</h6>
+                            <p class="text-success-emphasis mb-0" style="font-size: 0.75rem; opacity: 0.8;">
+                                Vous vous engagez à contacter le client sous <strong>72h</strong>. Cet effort booste votre indice de performance.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-center text-muted italic mt-3" style="font-size: 0.65rem;">
+                    Conformément aux CGV, le verrou est levé automatiquement après 15 jours.
+                </p>
+            </div>
+
+            {# FOOTER #}
+            <div class="modal-footer border-0 p-4 pt-2 gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4 flex-grow-1 fw-bold text-muted border" data-bs-dismiss="modal">Annuler</button>
+                <a href="{{ path('app_notary_reserve_simulation', {'code': simulation.reference}) }}" 
+                   class="btn btn-primary rounded-pill px-4 flex-grow-1 fw-black shadow">
+                    Sélectionner le dossier
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-black { font-weight: 900; }
+    .text-indigo { color: #6366f1; }
+    .text-indigo-emphasis { color: #4338ca; }
+    .text-primary-emphasis { color: #1d4ed8; }
+    .text-success-emphasis { color: #065f46; }
+    .bg-light { background-color: #f8fafc !important; }
+</style>

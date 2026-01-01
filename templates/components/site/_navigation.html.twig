@@ -1,0 +1,208 @@
+{# templates/partials/_navbar.html.twig #}
+
+<nav class="navbar">
+    <div class="nav-container">
+        {# SECTION LOGO #}
+        <a href="{{ path('app_home') }}" class="brand d-flex align-items-center text-decoration-none">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo" width="35" height="35" class="me-2">
+            <span class="logo-text">
+                <span class="text-white fw-bold">Lignée</span>
+            </span>
+        </a>
+
+        <ul class="nav-links">
+            <li>
+                <a href="{{ path('app_home') }}" class="{{ app.request.attributes.get('_route') == 'app_home' ? 'active' : '' }}">
+                    Accueil
+                </a>
+            </li>
+
+            {# SECTION NOTAIRE #}
+            {% if is_granted('ROLE_NOTARY') %}
+                {% set notary = app.user.notary %}
+                <li>
+                    {% if notary and notary.isConfirmed %}
+                        <a href="{{ path('app_notary_dashboard') }}" class="{{ app.request.attributes.get('_route') starts with 'app_notary_' ? 'active' : '' }}">
+                            <i class="fas fa-briefcase me-2 text-warning"></i>
+                            Mon Étude
+                        </a>
+                    {% else %}
+                        <a href="#" class="opacity-75 text-info text-decoration-none smaller fw-bold px-3 d-flex align-items-center">
+                            <i class="fas fa-hourglass-half me-2"></i> En vérification
+                        </a>
+                    {% endif %}
+                </li>
+            {% endif %}
+
+            <li class="nav-item-dropdown">
+                <a href="#" class="dropdown-trigger {{ app.request.attributes.get('_route') starts with 'app_site_' ? 'active' : ''}}">
+                    Guides
+                    <i class="fas fa-chevron-down ms-1 small op-50"></i>
+                </a>
+                <ul class="dropdown-menu shadow-lg">
+                    <li>
+                        <a href="{{ path('app_site_donation_rules') }}">
+                            <div class="icon-circle bg-indigo-light">
+                                <i class="fas fa-scale-balanced text-indigo"></i>
+                            </div>
+                            <div class="ms-3">
+                                <span class="d-block fw-bold text-dark">Règles Fiscales</span>
+                                <small class="text-muted">Abattements & 15 ans</small>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            {% if is_granted('ROLE_USER') and not is_granted('ROLE_NOTARY') %}
+                <li>
+                    <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
+                        <i class="fas fa-users-rectangle me-2"></i> Ma Famille
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <div class="nav-auth">
+            {% if app.user %}
+                {# LIEN VERS MON COMPTE #}
+                <a href="{{ path('app_account') }}" class="user-profile-link d-flex align-items-center gap-3 text-decoration-none">
+                    <div class="user-info d-none d-md-flex text-end">
+                        <span class="user-email">{{ app.user.email }}</span>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <span class="badge-admin">Admin</span>
+                        {% endif %}
+                    </div>
+                    {# INITIALE UTILISATEUR #}
+                    <div class="avatar-nav fw-bold">
+                        {{ app.user.email|first|upper }}
+                    </div>
+                </a>
+
+                {# BOUTON LOGOUT FONTAWESOME #}
+                <a href="{{ path('app_logout') }}" class="btn-logout" title="Déconnexion">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn-login">Connexion</a>
+                <a href="{{ path('app_register') }}" class="btn-register">S'inscrire</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<style>
+:root {
+    --nav-bg: #0f172a;
+    --nav-active: #6366f1;
+    --indigo-light: rgba(99, 102, 241, 0.15);
+    --slate-400: #94a3b8;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    background: var(--nav-bg);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+}
+
+.nav-container {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+}
+
+.brand { font-size: 1.25rem; color: white; font-weight: 700; }
+
+.nav-links { list-style: none; display: flex; gap: 8px; margin: 0; padding: 0; align-items: center; }
+
+.nav-links a {
+    color: var(--slate-400);
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.nav-links a:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+.nav-links a.active { color: white; background: var(--nav-active); box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3); }
+
+/* DROPDOWN */
+.nav-item-dropdown { position: relative; }
+.nav-item-dropdown:hover .dropdown-menu { display: block; opacity: 1; transform: translateX(-50%) translateY(0px); }
+.dropdown-menu {
+    position: absolute; top: 100%; left: 50%; transform: translateX(-50%) translateY(10px);
+    min-width: 280px; background: white; border-radius: 16px; list-style: none; padding: 12px;
+    display: none; opacity: 0; transition: all 0.2s ease-out; border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important; z-index: 1000; margin-top: 10px;
+}
+.dropdown-menu::before { content: ""; position: absolute; top: -15px; left: 0; right: 0; height: 15px; }
+
+.dropdown-menu a {
+    display: flex !important; align-items: center; padding: 12px !important; 
+    border-radius: 12px !important; color: #475569 !important; transition: background 0.2s;
+}
+.dropdown-menu a:hover { background: var(--indigo-light) !important; color: var(--nav-active) !important; }
+
+/* AUTH & PROFILE */
+.nav-auth { display: flex; align-items: center; gap: 1rem; }
+
+.user-profile-link {
+    padding: 4px 4px 4px 12px;
+    border-radius: 50px;
+    transition: all 0.3s;
+}
+.user-profile-link:hover { background: rgba(255, 255, 255, 0.1); }
+
+.avatar-nav {
+    width: 36px; height: 36px; 
+    background: linear-gradient(135deg, var(--nav-active) 0%, #4338ca 100%);
+    color: white; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2);
+}
+
+.user-info { flex-direction: column; align-items: flex-end; line-height: 1.2; }
+.user-email { font-size: 0.75rem; color: var(--slate-400); font-weight: 500; }
+
+.btn-logout {
+    color: #f87171; 
+    background: rgba(239, 68, 68, 0.1);
+    width: 38px; height: 38px; 
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; 
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+}
+.btn-logout:hover { 
+    background: #ef4444; 
+    color: white; 
+    transform: rotate(90deg); 
+}
+
+.btn-register {
+    background: var(--nav-active); color: white !important; padding: 10px 22px;
+    border-radius: 12px; font-size: 0.9rem; font-weight: 700; text-decoration: none;
+}
+
+.icon-circle {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.badge-admin {
+    background: #fbbf24; color: #78350f; padding: 1px 6px;
+    font-size: 0.6rem; border-radius: 4px; font-weight: 800;
+}
+</style>

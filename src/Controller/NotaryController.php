@@ -3,13 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\Notary;
+use App\Entity\Simulation;
 use App\Entity\Subscription;
 use App\Service\OfferService;
-use App\Repository\OfferRepository;
-use App\Form\Notary\ZoneCoverageType;
 use App\Repository\CityRepository;
+use App\Repository\OfferRepository;
+use App\Service\OptimizationService;
+use App\Form\Notary\ZoneCoverageType;
 use App\Repository\SimulationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,7 +25,8 @@ class NotaryController extends AbstractController
         private SimulationRepository $simulationRepository,
         private OfferRepository $offerRepository,
         private CityRepository $cityRepository,
-        #[Autowire('%kernel.environment%')] private string $env // <-- N'oublie pas 'private' ici !
+        #[Autowire('%kernel.environment%')] private string $env, // <-- N'oublie pas 'private' ici !
+        private OptimizationService $optimizationService
     ) {}
 
     /**
@@ -64,6 +68,45 @@ class NotaryController extends AbstractController
             'addons' => $addons,
             'active_offices' => 120,
             'leads_generated' => 1500,
+        ]);
+    }
+
+    #[Route('/notaire/simulations/{page}', name: 'app_site_notary_all_simulations', defaults: ['page' => 1])]
+    public function simulations(int $page, PaginatorInterface $paginator, Request $request): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $notary = $user->getNotary();
+        // On récupère les entités de codes postaux sélectionnés
+        $selectedZipEntities = $notary->getSelectedZipCodes();
+
+        $zipCodes = [];
+        foreach ($selectedZipEntities as $sz) {
+            // On extrait la chaîne de caractères du code postal comme dans ton dashboard
+            $zipCodes[] = $sz->getCity()->getPostalCode();
+        }
+
+        // 1. On récupère la Query (et non le résultat) pour que le paginateur puisse ajouter le LIMIT/OFFSET
+        $query = $this->simulationRepository->getQueryByZipCodes($zipCodes, $notary);
+
+        $pagination = $paginator->paginate(
+            $query, /* query NOT result */
+            $page,  /* numéro de page */
+            20,      /* limite par page (Ton livre de 20 pages) */
+            ['distinct' => true]
+        );
+        // 2. On injecte les datas d'optimisation (Potentiel fiscal) dans les résultats de la page actuelle
+        foreach ($pagination->getItems() as $sim) {
+            $optimizationDatas = $this->optimizationService->getSimulationDatas(null, $sim->getUser());
+            $sim->totalAvailable = $optimizationDatas['totalAvailable'];
+            $sim->totalSaving = $optimizationDatas['totalSaving'];
+        }
+
+        $testResults = $query->setMaxResults(10)->getResult();
+
+        return $this->render('notary/all_simulations.html.twig', [
+            'pagination' => $pagination,
+            'notary' => $notary
         ]);
     }
 
@@ -120,11 +163,27 @@ class NotaryController extends AbstractController
                     );
                 }
             }
-            $availableSimulations = $simulationRepository->findByZipCodes($zipCodes);
+            $availableSimulations = $simulationRepository->findByZipCodes($zipCodes, $notary, 10); //limite de 10 sur le dashboard
         } else {
             $availableSimulations = $simulationRepository->findLastInCountry(10, $notary);
         }
         ksort($groupedSectors);
+
+        foreach ($availableSimulations as $sim) {
+            // On récupère les données d'optimisation pour l'utilisateur de la simulation
+            $optimizationDatas = $this->optimizationService->getSimulationDatas(null, $sim->getUser());
+
+            // On injecte dynamiquement les totaux dans l'objet simulation pour Twig
+            $sim->totalAvailable = $optimizationDatas['totalAvailable'];
+            $sim->totalSaving = $optimizationDatas['totalSaving'];
+        }
+
+        // Si plus de 10, on affiche le bouton sur le dashboard
+        if (count($availableSimulations) > 10) {
+            $viewAllSimulations = true;
+        } else {
+            $viewAllSimulations = false;
+        }
 
         // 3. Statistiques
         $totalSlots = $offerService->getTotalAllowedSectors($notary, $activeSub);
@@ -142,7 +201,8 @@ class NotaryController extends AbstractController
                 'percentage' => ($totalSlots > 0) ? min(100, ($usedSlots / $totalSlots) * 100) : 0,
                 'leadsInZone' => count($availableSimulations),
                 'selectedLeads' => $notary->getSimulations()->count(),
-            ]
+            ],
+            'viewAllSimulations' => $viewAllSimulations
         ]);
     }
 
@@ -304,4 +364,97 @@ class NotaryController extends AbstractController
 
         return $activeSub;
     }
+
+    #[Route('/notaire/simulation/{reference}', name: 'app_notary_simulation_view')]
+public function viewSimulationByNotary(
+    OptimizationService $optimizationService, 
+    string $reference
+): Response {
+    /** @var User $user */
+    $user = $this->getUser();
+    $notary = $user->getNotary();
+
+    if (!$notary) {
+        throw $this->createNotFoundException("Profil notaire introuvable.");
+    }
+
+    // 1. Recherche de la simulation par son code (référence)
+    $simulation = $this->simulationRepository->findOneBy(['reference' => $reference]);
+
+    if (!$simulation) {
+        throw $this->createNotFoundException("Dossier introuvable.");
+    }
+
+    // 2. SÉCURITÉ : Vérifier si le notaire a le droit de voir ce dossier
+    $client = $simulation->getUser();
+    $clientZip = $client->getCity()->getPostalCode();
+    
+    // Récupération des codes postaux du notaire pour vérification
+    $notaryZips = array_map(fn($z) => $z->getCity()->getPostalCode(), $notary->getSelectedZipCodes()->toArray());
+
+    // Le notaire accède au dossier si : il l'a déjà réservé OU si le dossier est OPEN dans sa zone
+    $isOwner = ($simulation->getReservedBy() === $notary);
+    $isInZone = in_array($clientZip, $notaryZips) && $simulation->getReservedBy() === null;
+
+    if (!$isOwner && !$isInZone) {
+        throw $this->createAccessDeniedException("Ce dossier n'est pas dans votre zone de couverture.");
+    }
+
+    // 3. Génération des analyses via ton OptimizationService
+    $analysis = $optimizationService->getDonationAnalyses($client);
+    $familyPlan = $optimizationService->getGlobalFamilyPlan($client);
+
+    return $this->render('notary/simulation_view.html.twig', [
+        'simulation' => $simulation,
+        'client' => $client,
+        'analysis' => $analysis,
+        'familyPlan' => $familyPlan,
+        'isOwner' => $isOwner,
+        'notary' => $notary
+    ]);
+}
+
+#[Route('/notaire/simulation/reserve/{code}', name: 'app_notary_reserve_simulation')]
+public function reserve(string $code, EntityManagerInterface $em): Response
+{
+    /** @var User $user */
+    $user = $this->getUser();
+    $notary = $user->getNotary();
+
+    if (!$notary) {
+        throw $this->createNotFoundException("Profil notaire introuvable.");
+    }
+
+    // 1. On récupère la simulation par son code
+    $simulation = $this->simulationRepository->findOneBy(['reference' => $code]);
+
+    if (!$simulation) {
+        throw $this->createNotFoundException("Dossier introuvable.");
+    }
+
+    // 2. Vérification : est-il déjà réservé ?
+    if ($simulation->getReservedBy() !== null) {
+        $this->addFlash('danger', 'Ce dossier a déjà été sélectionné par un autre office.');
+        return $this->redirectToRoute('app_site_notary_all_simulations');
+    }
+
+    dd('STOP POUR CE SOIR: faire aussi l\'attribution des points au notaire');
+
+    // 3. Attribution et Changement de Statut
+    // On récupère le statut "RESERVED" ou "COLLECTED" (adapte selon tes codes de statut)
+    $statusReserved = $em->getRepository(SimulationStatus::class)->findOneBy(['code' => 'RESERVED']);
+
+    $simulation->setReservedBy($notary);
+    $simulation->setReservedAt(new \DateTime()); // Optionnel : si tu as ce champ pour calculer les 15 jours
+    if ($statusReserved) {
+        $simulation->setStatus($statusReserved);
+    }
+
+    $em->flush();
+
+    // 4. Message de succès et redirection
+    $this->addFlash('success', 'Dossier récupéré avec succès ! Vous avez 15 jours pour contacter le client.');
+
+    return $this->redirectToRoute('app_notary_simulation_view', ['code' => $code]);
+}
 }

@@ -1,0 +1,201 @@
+{# templates/notary/simulation_view.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Dossier #{{ simulation.reference }}
+{% endblock %}
+
+{% block body %}
+	<style>
+		.fw-black {
+			font-weight: 900;
+		}
+		.bg-indigo-light {
+			background-color: rgba(99, 102, 241, 0.1);
+		}
+		.text-indigo {
+			color: #6366f1;
+		}
+		.border-indigo {
+			border-color: #6366f1 !important;
+		}
+		.legal-disclaimer {
+			font-size: 0.7rem;
+			line-height: 1.4;
+			color: #64748b;
+		}
+		.source-badge {
+			font-size: 0.65rem;
+			letter-spacing: 0.03rem;
+		}
+        .bg-primary-light { background-color: rgba(79, 70, 229, 0.1); }
+.italic { font-style: italic; }
+.modal-content { overflow: hidden; }
+	</style>
+
+	<div
+		class="container py-5">
+		{# HEADER : Fil d'ariane et Actions #}
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<a href="{{ path('app_site_notary_all_simulations') }}" class="text-decoration-none text-muted smaller">
+				<i class="bi bi-chevron-left"></i>
+				Retour au registre
+			</a>
+			<div class="d-flex gap-2">
+				<button onclick="window.print();" class="btn btn-outline-dark rounded-pill px-4 fw-bold shadow-sm">
+					<i class="bi bi-printer me-2"></i>Imprimer
+				</button>
+				{% if not simulation.reservedBy %}
+					<button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#confirmSelectionModal">
+						<i class="bi bi-check-circle me-2"></i>Sélectionner le dossier
+					</button>
+				{% endif %}
+			</div>
+		</div>
+
+		{# BANDEAU D'INFORMATION SOURCE (Protection Juridique) #}
+		<div class="alert bg-white border rounded-4 p-3 mb-4 d-flex align-items-start shadow-sm">
+			<i class="bi bi-shield-lock-fill text-indigo fs-4 me-3 mt-1"></i>
+			<div>
+				<span class="badge bg-indigo-light text-indigo source-badge text-uppercase mb-1">Données Déclaratives</span>
+				<div class="smaller text-muted">
+					Les informations ci-dessous proviennent exclusivement de la saisie effectuée par l'utilisateur (trice). 
+					                L'exactitude du plan d'optimisation dépend de la sincérité des donations antérieures renseignées. 
+					                Ce document est une
+					<strong>aide à la prospection</strong>
+					et ne remplace pas votre audit notarial habituel.
+				</div>
+			</div>
+		</div>
+
+		<div
+			class="row g-4">
+			{# COLONNE GAUCHE : INFOS CLIENT #}
+			<div class="col-lg-4">
+				<div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+					<h5 class="fw-black mb-3">Le client</h5>
+					<div class="smaller">
+						<div class="d-flex justify-content-between mb-2">
+							<span class="text-muted">Référence dossier</span>
+							<span class="fw-bold">#{{ simulation.reference }}</span>
+						</div>
+						<div class="d-flex justify-content-between mb-2">
+							<span class="text-muted">Localisation</span>
+							<span class="fw-bold">{{ client.city.name }}
+								({{ client.city.postalCode }})</span>
+						</div>
+						<div class="d-flex justify-content-between mb-2">
+							<span class="text-muted">Statut</span>
+							<span class="badge bg-success-light text-success smaller px-2">{{ simulation.status }}</span>
+						</div>
+					</div>
+				</div>
+
+				{# ALERTE : OPPORTUNITÉS MANQUÉES #}
+				<div class="card border-0 bg-danger bg-opacity-10 rounded-4 p-4 shadow-sm">
+					<h6 class="text-danger fw-bold">
+						<i class="bi bi-exclamation-triangle-fill me-2"></i>Analyse de perte de chance</h6>
+					<p class="smaller text-danger mb-0" style="text-align: justify;">
+						D'après les cycles fiscaux de 15 ans, ce foyer n'a pas utilisé
+						<strong>{{ analysis.total_missed|number_format(0, ',', ' ') }}
+							€</strong>
+						d'abattements légaux. 
+						                    Une régularisation stratégique est recommandée pour éviter une taxation subie.
+					</p>
+				</div>
+			</div>
+
+			{# COLONNE DROITE : STRATÉGIE #}
+			<div
+				class="col-lg-8">
+				{# SECTION 1 : PLAN DE FAMILLE #}
+				<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+					<div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+						<h5 class="fw-black mb-0">Plan d'optimisation recommandé</h5>
+						<i class="bi bi-magic text-indigo" title="Calculé par algorithme"></i>
+					</div>
+					<div class="table-responsive">
+						<table class="table align-middle mb-0">
+							<thead class="bg-light smaller">
+								<tr>
+									<th class="ps-4">Donateur</th>
+									<th>Bénéficiaire</th>
+									<th>Type de droit</th>
+									<th class="text-end pe-4">Disponible immédiat</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for item in familyPlan %}
+									<tr>
+										<td class="ps-4 fw-bold">{{ item.donor.firstname }}</td>
+										<td>{{ item.beneficiary.firstname }}</td>
+										<td>
+											<span class="badge rounded-pill {% if item.priority == 1 %}bg-success{% else %}bg-info{% endif %} smaller">
+												{{ item.label }}
+											</span>
+										</td>
+										<td class="text-end pe-4 fw-black text-indigo">{{ item.available|number_format(0, ',', ' ') }}
+											€</td>
+									</tr>
+								{% else %}
+									<tr>
+										<td colspan="4" class="text-center py-4 text-muted">Aucun plan d'action généré.</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				{# SECTION 2 : HISTORIQUE DES CYCLES #}
+				<div class="card border-0 shadow-sm rounded-4 p-4">
+					<h5 class="fw-black mb-4">Analyse des cycles fiscaux (15 ans)</h5>
+
+					{% if analysis.active_periods is not empty %}
+						<h6 class="smaller fw-bold text-muted text-uppercase mb-3">Cycles en cours (reliquats)</h6>
+						{% for period in analysis.active_periods %}
+							<div class="d-flex align-items-center border-start border-indigo border-3 ps-3 mb-4">
+								<div class="flex-grow-1">
+									<div class="fw-bold">{{ period.donor }}
+										vers
+										{{ period.beneficiary }}</div>
+									<div class="smaller text-muted">Date de purge du cycle :
+										<strong>{{ period.endDate|date('d/m/Y') }}</strong>
+									</div>
+								</div>
+								<div class="text-end">
+									<div class="smaller text-muted text-uppercase" style="font-size: 0.6rem;">Potentiel restant</div>
+									<div class="fw-bold text-dark">{{ period.unoptimized|number_format(0, ',', ' ') }}
+										€</div>
+								</div>
+							</div>
+						{% endfor %}
+					{% else %}
+						<p class="text-muted smaller italic">Aucun cycle actif déclaré par l'utilisateur.</p>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		{# FOOTER JURIDIQUE #}
+		<div class="mt-5 pt-4 border-top">
+			<div class="card bg-light border-0 rounded-4 p-4">
+				<div class="row align-items-center">
+					<div class="col-md-1 text-center d-none d-md-block">
+						<i class="bi bi-bank text-secondary fs-2"></i>
+					</div>
+					<div class="col-md-11">
+						<h6 class="fw-bold text-dark mb-2">Avertissement au Notaire conseil</h6>
+						<p class="legal-disclaimer mb-0 text-justify">
+							Ce rapport est généré automatiquement par la plateforme sur la base des déclarations de l'utilisateur. 
+							                        Il ne constitue en aucun cas un acte authentique ou un avis juridique définitif.
+							<strong>{{ notary.name }}</strong>
+							est invité à vérifier la matérialité des donations passées et l'exactitude des liens de parenté avant d'engager toute procédure de rédaction d'acte. 
+							                        La responsabilité de la plateforme ne saurait être engagée en cas de déclaration inexacte ou incomplète de la part du demandeur.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+    {% include "notary/modal/_confirm_dossier.html.twig" %}
+{% endblock %}

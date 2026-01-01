@@ -1,3 +1,4 @@
+{# templates/pages/rgpd.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Protection des Données (RGPD) - Lignée{% endblock %}
@@ -22,41 +23,61 @@
                 {# SECTION 1 #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-dark mb-3">1. Responsable du traitement</h2>
-                    <p>Le responsable de la collecte et du traitement des données est la plateforme <strong>Lignée</strong>, représentée par [Ton Nom/Société].</p>
+                    <p>Le responsable de la collecte et du traitement des données est la plateforme <strong>Lignée</strong>, représentée par [Ton Nom/Société]. Le traitement est fondé sur l'exécution des services de simulation et l'intérêt légitime d'assurer une mise en relation de qualité.</p>
                 </section>
 
                 {# SECTION 2 #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-dark mb-3">2. Données collectées</h2>
-                    <p>Nous collectons les informations nécessaires à la constitution de votre <strong>dossier d'analyse patrimoniale</strong> (Identité, email, composition du patrimoine, liens de parenté).</p>
+                    <p>Nous collectons les informations nécessaires à la constitution de votre <strong>dossier d'analyse patrimoniale</strong> :</p>
+                    <ul class="small text-muted">
+                        <li>Identité (nom, prénom) et coordonnées (email).</li>
+                        <li>Données de patrimoine et liens de parenté saisies.</li>
+                        <li>Données de journalisation (logs) et <strong>suivi d'activité</strong> (dates de consultation et de verrouillage par un Office) pour assurer le suivi du dossier.</li>
+                    </ul>
                 </section>
 
-                {# SECTION 3 - LA LOGIQUE DE VERROUILLAGE #}
+                {# SECTION 3 #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-dark mb-3">3. Accès au dossier par les Offices Notariaux</h2>
                     <p>Pour vous permettre d'obtenir un conseil, votre dossier est rendu accessible aux <strong>Offices Notariaux partenaires</strong> opérant dans votre secteur géographique.</p>
                     
                     <div class="alert alert-info border-0 rounded-4 p-4 shadow-sm mb-3">
-                        <h4 class="h6 fw-bold"><i class="fas fa-lock me-2"></i>Exclusivité de traitement</h4>
+                        <h4 class="h6 fw-bold"><i class="fas fa-lock me-2"></i>Exclusivité de traitement et Sécurisation</h4>
+                        <p class="small mb-2">
+                            Dès qu'une Étude Notariale procède au <strong>verrouillage de votre dossier</strong> pour le prendre en charge, vos données personnelles ne sont plus accessibles aux autres Offices. Cette action débloque les détails du dossier et l'<strong>archivage sécurisé</strong> au sein de l'interface du professionnel.
+                        </p>
                         <p class="small mb-0">
-                            Dès qu'une Étude Notariale procède au <strong>verrouillage de votre dossier</strong> pour le prendre en charge, vos données personnelles ne sont plus accessibles aux autres Offices. 
-                            <br><br>
                             <strong>Remise en ligne :</strong> Si l'Étude ayant verrouillé le dossier ne procède à aucune prise de contact dans les délais impartis, le verrou est levé et le dossier est <strong>remis à disposition</strong> des autres Offices partenaires du secteur afin de vous garantir une réponse.
                         </p>
                     </div>
-                    <p class="small text-muted italic">Ce système garantit que vos données ne sont traitées que par un seul interlocuteur à la fois.</p>
+                    <p class="small text-muted italic">Ce système garantit que vos données ne sont traitées que par un seul interlocuteur à la fois. Lorsqu'un Office verrouille un dossier, il devient Responsable de Traitement indépendant pour la gestion de votre conseil juridique.</p>
                 </section>
 
-                {# SECTION 4 #}
+                {# SECTION 4 - AJOUTÉE : FINALITÉS ET RÉACTIVITÉ #}
                 <section class="mb-5">
-                    <h2 class="h5 fw-bold text-dark mb-3">4. Conservation</h2>
-                    <p>Vos données sont supprimées de la plateforme après 1 an d'inactivité de votre compte. L'Office Notarial ayant traité votre dossier conserve les informations selon ses propres obligations légales d'archivage professionnel.</p>
+                    <h2 class="h5 fw-bold text-dark mb-3">4. Finalités et Indice de Réactivité</h2>
+                    <p>Vos données sont traitées pour les finalités suivantes :</p>
+                    <ul class="small text-muted">
+                        <li>Génération de simulations patrimoniales basées sur vos déclarations.</li>
+                        <li>Mise en relation avec un professionnel de proximité.</li>
+                        <li>Évaluation de la <strong>réactivité des offices</strong> via un indice de scoring interne, garantissant que votre demande est traitée dans les meilleurs délais.</li>
+                    </ul>
                 </section>
 
                 {# SECTION 5 #}
                 <section class="mb-5">
-                    <h2 class="h5 fw-bold text-success mb-3">5. Vos droits</h2>
-                    <p>Vous disposez d'un droit d'accès, de rectification et de suppression (droit à l'oubli) en écrivant à : <strong>rgpd@lignee.fr</strong>.</p>
+                    <h2 class="h5 fw-bold text-dark mb-3">5. Conservation et Archivage</h2>
+                    <p>En cas de verrouillage, vos données sont conservées de manière sécurisée le temps de la mise en relation. Les dossiers non sélectionnés par un office sont supprimés après 1 an d'inactivité de votre compte. L'Office Notarial ayant traité votre dossier conserve les informations selon ses propres obligations légales d'archivage professionnel liées au notariat.</p>
+                </section>
+
+                {# SECTION 6 #}
+                <section class="mb-5">
+                    <h2 class="h5 fw-bold text-success mb-3">6. Vos droits</h2>
+                    <p>Vous disposez d'un droit d'accès, de rectification et de suppression (droit à l'oubli). Vous pouvez également vous opposer au traitement de vos données pour des motifs légitimes en écrivant à : <strong>rgpd@lignee.fr</strong>.</p>
+                    <p class="small text-muted border-top pt-3">
+                        En cas de réponse insatisfaisante, vous avez le droit d'introduire une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL).
+                    </p>
                 </section>
             </div>
         </div>
@@ -70,5 +91,6 @@
     .text-primary { color: #4f46e5 !important; }
     .alert-info { background-color: #f0f7ff; color: #075985; border: 1px solid #e0f2fe !important; }
     h2 { border-left: 4px solid #4f46e5; padding-left: 15px; }
+    ul li { margin-bottom: 8px; }
 </style>
 {% endblock %}

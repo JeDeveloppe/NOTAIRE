@@ -1,3 +1,4 @@
+{# templates/pages/cgu.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Conditions Générales d'Utilisation - Lignée{% endblock %}
@@ -21,20 +22,31 @@
                     {# SECTION 1 #}
                     <section class="mb-5">
                         <h2 class="h4 fw-bold text-dark mb-3">1. Objet du Service</h2>
-                        <p>La plateforme <strong>Lignée</strong> propose un outil de simulation patrimoniale permettant d'estimer les droits de mutation et d'optimiser la transmission d'actifs. Le service repose sur les données déclaratives de l'Utilisateur.</p>
+                        <p>La plateforme <strong>Lignée</strong> propose un outil de simulation patrimoniale permettant d'estimer les droits de mutation et d'optimiser la transmission d'actifs. Le service repose sur les données déclaratives de l'Utilisateur et a pour but de faciliter la mise en relation avec un office notarial de proximité.</p>
                     </section>
 
-                    {# SECTION 2 #}
+                    {# SECTION 2 : LA PROTECTION JURIDIQUE (Ton blindage) #}
                     <section class="mb-5">
                         <h2 class="h4 fw-bold text-danger mb-3">2. Clause de Non-Conseil et Responsabilité</h2>
                         <div class="alert alert-warning border-0 rounded-4 p-4 shadow-sm mb-3">
-                            <p class="mb-0">
+                            <p class="mb-2">
                                 <strong>Avertissement :</strong> Les simulations fournies par Lignée sont purement indicatives et ne constituent pas un conseil juridique ou fiscal officiel.
                             </p>
+                            <p class="small mb-0">
+                                L'algorithme de calcul se base sur la législation en vigueur à la date de simulation. Lignée ne peut garantir l'absence d'erreurs d'interprétation des textes fiscaux complexes ou l'impact de réformes législatives rétroactives.
+                            </p>
                         </div>
-                        <p class="text-muted italic">
+                        
+                        <div class="card bg-light border-0 rounded-4 p-3 mb-3">
+                            <h3 class="h6 fw-bold mb-2">Sincérité des données déclarées :</h3>
+                            <p class="small text-muted mb-0">
+                                L'Utilisateur est seul responsable de l'exactitude des données saisies (historique des donations, composition familiale, valeur des actifs). En cas d'omission ou de fausse déclaration, les résultats de la simulation seront erronés. Lignée décline toute responsabilité quant aux conséquences d'une analyse basée sur des informations incomplètes.
+                            </p>
+                        </div>
+
+                        <p class="text-muted italic small">
                             <i class="fas fa-info-circle me-1"></i>
-                            Lignée s'efforce de vous mettre en relation avec un professionnel réactif. Toutefois, l'Éditeur ne peut être tenu responsable des délais de réponse ou de la qualité du conseil propre à chaque office notarial.
+                            Lignée s'efforce de vous mettre en relation avec un professionnel réactif. Toutefois, l'Éditeur ne peut être tenu responsable des délais de réponse, de l'indisponibilité d'un office ou de la teneur du conseil propre à chaque office notarial.
                         </p>
                     </section>
 
@@ -48,16 +60,17 @@
                             <ul class="mb-0 small text-muted">
                                 <li><strong>Identité :</strong> Nom, prénom et adresse email.</li>
                                 <li><strong>Localisation :</strong> Ville et Code Postal pour l'affectation territoriale.</li>
-                                <li><strong>Patrimoine :</strong> Composition simplifiée et valeurs estimées.</li>
+                                <li><strong>Patrimoine :</strong> Composition simplifiée et valeurs estimées par l'Utilisateur.</li>
+                                <li><strong>Historique Fiscal :</strong> Liste des donations passées déclarées par l'Utilisateur.</li>
                             </ul>
                         </div>
 
                         <div class="card bg-success-subtle border-0 rounded-4 p-4 shadow-sm">
                             <h3 class="h6 fw-bold mb-2 text-success"><i class="fas fa-lock me-2"></i>Verrouillage Exclusif</h3>
                             <p class="small mb-0 text-dark">
-                                Afin de vous garantir un interlocuteur unique, le premier office notarial qui sélectionne votre dossier déclenche un <strong>verrouillage exclusif</strong>. Vos données ne sont alors plus accessibles aux autres offices. 
+                                Afin de vous garantir un interlocuteur unique et éviter les sollicitations multiples, le premier office notarial qui sélectionne votre dossier déclenche un <strong>verrouillage exclusif</strong>. Vos données ne sont alors plus accessibles aux autres offices. 
                                 <br><br>
-                                <strong>Réaffectation :</strong> Si l'office ayant verrouillé le dossier ne procède à aucune prise de contact sous 15 jours, le verrou est automatiquement levé et le dossier est remis à disposition des autres professionnels de votre secteur.
+                                <strong>Réaffectation :</strong> Si l'office ayant verrouillé le dossier ne procède à aucune prise de contact sous 15 jours, le verrou est automatiquement levé et le dossier est remis à disposition des autres professionnels de votre secteur pour garantir la continuité de votre accompagnement.
                             </p>
                         </div>
                     </section>
@@ -65,13 +78,13 @@
                     {# SECTION 4 #}
                     <section class="mb-5">
                         <h2 class="h4 fw-bold text-dark mb-3">4. Indice de Réactivité et Qualité</h2>
-                        <p>Pour garantir un service optimal, Lignée évalue la réactivité des offices via un système de scoring interne. Le non-respect des délais de prise de contact entraîne des pénalités pour le professionnel et la libération de votre dossier pour une nouvelle prise en charge.</p>
+                        <p>Pour garantir un service optimal, Lignée évalue la réactivité des offices via un système de scoring interne (Indice de Réactivité). Le non-respect systématique des délais de prise de contact peut entraîner la suspension des accès pour le professionnel et la libération de votre dossier.</p>
                     </section>
 
                     {# SECTION 5 #}
                     <section class="mb-5">
                         <h2 class="h4 fw-bold text-dark mb-3">5. Vos Droits (RGPD)</h2>
-                        <p>Conformément à la réglementation, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. La suppression de votre compte entraîne l'anonymisation immédiate de vos données de simulation auprès de nos partenaires.</p>
+                        <p>Conformément au Règlement Général sur la Protection des Données, vous disposez d'un droit d'accès, de rectification et de suppression de vos données. La suppression de votre compte entraîne l'anonymisation immédiate de vos données de simulation auprès de nos partenaires, sauf si un acte notarié a déjà été engagé.</p>
                     </section>
 
                     {# SECTION 6 - MENTIONS LÉGALES #}
@@ -112,7 +125,7 @@
         .bg-primary-light { background-color: #eef2ff; }
         .bg-success-subtle { background-color: #ecfdf5 !important; border: 1px solid #d1fae5 !important; }
         .text-success { color: #10b981 !important; }
-        .alert-warning { background-color: #fffbeb; color: #92400e; }
+        .alert-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a !important; }
         .icon-circle { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
         .italic { font-style: italic; }
     </style>

@@ -1,0 +1,197 @@
+{# templates/account/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Compte - {{ user.email }}{% endblock %}
+
+{% block body %}
+<style>
+    :root {
+        --indigo-brand: #6366f1;
+        --indigo-soft: #f4f7ff;
+        --indigo-light: rgba(99, 102, 241, 0.1);
+        --slate-800: #1e293b;
+    }
+
+    /* Header UX */
+    .profile-hero {
+        background: white;
+        border-bottom: 1px solid #eef2f6;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+    }
+
+    .avatar-circle {
+        width: 70px; height: 70px;
+        background: linear-gradient(135deg, var(--indigo-brand) 0%, #4338ca 100%);
+        color: white; display: flex; align-items: center; justify-content: center;
+        border-radius: 20px; font-size: 1.8rem; font-weight: 800;
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+    }
+
+    .info-label {
+        font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.25rem;
+    }
+
+    /* Cartes */
+    .account-card {
+        border: 1px solid #f1f5f9 !important;
+        border-radius: 1.25rem !important;
+        transition: all 0.3s ease;
+    }
+    .account-card:hover {
+        border-color: var(--indigo-brand) !important;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .btn-edit-pill {
+        background: var(--indigo-soft); color: var(--indigo-brand);
+        border: none; padding: 0.5rem 1.25rem; border-radius: 50px;
+        font-weight: 700; font-size: 0.85rem; transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-edit-pill:hover { background: var(--indigo-brand); color: white; }
+
+    /* Nettoyage TomSelect (Autocomplete) */
+    .custom-autocomplete .ts-control {
+        border: 1px solid #e2e8f0 !important;
+        background-color: #f8fafc !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        box-shadow: none !important;
+    }
+    .custom-autocomplete .ts-wrapper::after {
+        display: none !important; /* Supprime la flèche en double */
+    }
+    .custom-autocomplete .ts-dropdown {
+        border: none !important; border-radius: 12px !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        margin-top: 8px !important; padding: 8px !important;
+    }
+</style>
+
+<div class="profile-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="avatar-circle">{{ user.email|first|upper }}</div>
+            </div>
+            <div class="col">
+                <h1 class="fw-black text-dark mb-1" style="font-size: 1.75rem;">Mon Profil</h1>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small"><i class="fas fa-envelope me-1"></i> {{ user.email }}</span>
+                    <span class="badge bg-indigo-soft text-indigo rounded-pill px-3">
+                        {{ is_granted('ROLE_NOTARY') ? 'Compte Professionnel' : 'Compte Particulier' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} rounded-4 border-0 shadow-sm mb-4">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-4 justify-content-center">
+        {# ACCÈS #}
+        <div class="col-md-6 col-lg-5">
+            <div class="card account-card border-0 h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h5 class="fw-bold m-0">Accès & Sécurité</h5>
+                        <i class="fas fa-shield-halved text-indigo opacity-50"></i>
+                    </div>
+                    <div class="mb-4">
+                        <div class="info-label">Email</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">{{ user.email }}</span>
+                            <a href="#" class="btn-edit-pill">Modifier</a>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="info-label">Mot de passe</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">••••••••••••</span>
+                            <a href="#" class="btn-edit-pill">Changer</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# PRÉFÉRENCES #}
+        <div class="col-md-6 col-lg-5">
+            <div class="card account-card border-0 h-100 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <h5 class="fw-bold m-0">Préférences</h5>
+                        <i class="fas fa-map-location-dot text-indigo opacity-50"></i>
+                    </div>
+                    <div class="mb-4">
+                        <div class="info-label">Ville de référence</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">
+                                {{ user.city ? user.city.name ~ ' (' ~ user.city.postalCode ~ ')' : 'Non définie' }}
+                            </span>
+                            <button type="button" class="btn-edit-pill" data-bs-toggle="modal" data-bs-target="#editCityModal">Éditer</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-label">Rôles</div>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            {% for role in user.roles %}
+                                {% if role != 'ROLE_USER' %}
+                                    <span class="badge bg-light text-muted border fw-medium small">{{ role|replace({'ROLE_': ''}) }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# FOOTER ACTIONS #}
+        <div class="col-lg-10 mt-5">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center p-4 bg-light rounded-4 gap-3">
+                <div class="smaller text-muted"><i class="fas fa-info-circle me-1 text-indigo"></i> RGPD : Vos données sont protégées.</div>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-white bg-white btn-sm rounded-pill px-3 border shadow-sm fw-bold">Exporter</a>
+                    <a href="{{ path('app_logout') }}" class="btn btn-link text-danger fw-bold text-decoration-none">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+
+        {# DELETE ZONE #}
+        <div class="col-lg-10 mt-4">
+            <div class="card border-danger border-opacity-10 rounded-4 bg-danger bg-opacity-10">
+                <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                    <div><h6 class="fw-bold text-danger mb-0">Zone de danger</h6><p class="smaller text-muted mb-0">Suppression définitive du compte.</p></div>
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ include('user/_city_modal.html.twig') }}
+
+{# Modal Suppression #}
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg p-4 text-center">
+            <i class="fas fa-exclamation-triangle text-danger fs-1 mb-3"></i>
+            <h4 class="fw-bold">Supprimer le compte ?</h4>
+            <p class="text-muted">Cette action effacera toutes vos simulations.</p>
+            <form action="{{ path('app_account_delete') }}" method="POST" class="d-grid gap-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete-account') }}">
+                <button type="submit" class="btn btn-danger rounded-pill fw-bold">Confirmer</button>
+                <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal">Annuler</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

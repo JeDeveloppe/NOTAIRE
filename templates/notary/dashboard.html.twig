@@ -41,30 +41,16 @@
     .btn-help-ux .icon-wrapper {
         background: var(--indigo-brand);
         color: white;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        font-size: 0.9rem;
+        width: 28px; height: 28px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; font-size: 0.9rem;
     }
     .btn-help-ux .text-help {
-        font-size: 0.65rem;
-        letter-spacing: 0.05rem;
-        color: var(--slate-600);
+        font-size: 0.65rem; letter-spacing: 0.05rem; color: var(--slate-600);
     }
     .btn-help-ux:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.15) !important;
-        background: #fdfdff;
-    }
-    .btn-help-ux:hover .icon-wrapper {
-        background: #4f46e5;
-        transform: rotate(15deg);
-    }
-    .btn-help-ux:hover .text-help {
-        color: var(--indigo-brand);
     }
 
     /* --- ACCORDÉON --- */
@@ -101,6 +87,14 @@
         70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
         100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
+    
+    .btn-edit-pill {
+        background: var(--indigo-light); color: var(--indigo-brand);
+        border: none; padding: 0.4rem 1rem; border-radius: 50px;
+        font-weight: 700; font-size: 0.75rem; text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-edit-pill:hover { background: var(--indigo-brand); color: white; }
 </style>
 
 <div class="container py-5">
@@ -114,16 +108,11 @@
                     <div class="vr opacity-25" style="height: 15px;"></div>
                     
                     <div class="d-flex align-items-center gap-2">
-                        {# Badge Offre #}
                         <a href="#" class="text-decoration-none smaller text-indigo fw-bold bg-white border px-3 py-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSubscriptionDetail">
                             <i class="bi bi-credit-card-2-front me-1"></i> Offre : {{ activeSubscription.offer.name|default('Aucune') }}
                         </a>
-
-                        {# Bouton Aide UX #}
                         <button type="button" class="btn btn-help-ux d-flex align-items-center gap-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#faqModal">
-                            <span class="icon-wrapper">
-                                <i class="bi bi-patch-question-fill"></i>
-                            </span>
+                            <span class="icon-wrapper"><i class="bi bi-patch-question-fill"></i></span>
                             <span class="text-help fw-bold text-uppercase">Besoin d'aide ?</span>
                         </button>
                     </div>
@@ -190,8 +179,9 @@
             </div>
         </div>
 
-        {# --- COLONNE DROITE : OPPORTUNITÉS --- #}
+        {# --- COLONNE DROITE : OPPORTUNITÉS & SUIVI --- #}
         <div class="col-lg-8">
+            {# 1. Opportunités détectées #}
             <div class="card shadow-sm border-0 mb-4 border-start border-primary border-5 rounded-4 overflow-hidden">
                 <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -219,45 +209,81 @@
                             <thead class="bg-light smaller text-muted">
                                 <tr>
                                     <th class="ps-4 border-0">Secteur</th>
-                                    <th class="border-0">Dossier</th>
-                                    <th class="text-end pe-4 border-0">Action</th>
+                                    <th class="border-0">Type / Réf</th>
+                                    <th class="border-0">Potentiel Fiscal</th>
+                                    <th class="border-0 text-end pe-4">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for sim in availableSimulations %}
                                     <tr>
-                                        <td class="ps-4 fw-bold text-primary">{{ sim.zipCode }}</td>
-                                        <td class="smaller fw-medium">Simulation #{{ sim.id }}</td>
+                                        <td class="ps-4">
+                                            <div class="fw-bold text-dark">{{ sim.user.city.postalCode }}</div>
+                                            <div class="smaller text-muted">{{ sim.user.city.name|upper }}</div>
+                                        </td>
+                                        <td>
+                                            {% set type = sim.reference|split('-')|last %}
+                                            <span class="badge {% if type == 'DON' %}bg-info{% else %}bg-primary{% endif %} rounded-pill mb-1" style="font-size: 0.6rem;">
+                                                {{ type == 'DON' ? 'DONATION' : 'SUCCESSION' }}
+                                            </span>
+                                            <div class="smaller fw-bold text-muted" style="font-size: 0.6rem;">{{ sim.reference }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold text-success">
+                                                <i class="bi bi-piggy-bank-fill me-1"></i>
+                                                {{ sim.totalSaving|default(0)|number_format(0, ',', ' ') }} € économisables
+                                            </div>
+                                            <div class="smaller text-muted">
+                                                Sur {{ sim.totalAvailable|default(0)|number_format(0, ',', ' ') }} € d'abattements
+                                            </div>
+                                        </td>
                                         <td class="text-end pe-4">
-                                            <button class="btn btn-sm btn-primary rounded-pill px-4 fw-bold shadow-sm">Consulter</button>
+                                            {# <a href="{{ path('notary_simulation_view', {id: sim.id}) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
+                                                Récupérer
+                                            </a> #}
                                         </td>
                                     </tr>
                                 {% else %}
-                                    <tr><td colspan="3" class="text-center py-5 text-muted">Aucune opportunité disponible actuellement.</td></tr>
+                                    <tr><td colspan="4" class="text-center py-5 text-muted smaller">Aucune opportunité dans votre secteur actuellement.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+
+                    {% if viewAllSimulations is true %}
+                        <div class="text-center py-3 border-top bg-light">
+                            <a href="{{ path('app_site_notary_all_simulations') }}" class="btn btn-link text-indigo fw-bold text-decoration-none smaller">
+                                <i class="bi bi-book-half me-2"></i> 
+                                Voir tous les autres dossiers dans votre zone
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
+            {# 2. Mes dossiers suivis #}
             <div class="card shadow-sm border-0 rounded-4">
                 <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold mb-0 text-dark">Mes dossiers suivis</h5>
+                    <h5 class="fw-bold mb-0 text-dark">Mes dossiers suivis (Réservés)</h5>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <tbody>
                             {% for lead in notary.simulations %}
                                 <tr>
-                                    <td class="ps-4 fw-bold smaller text-indigo">REF-{{ lead.id }}</td>
-                                    <td class="smaller fw-medium">{{ lead.firstName|default('Dossier Client') }}</td>
+                                    <td class="ps-4">
+                                        <span class="fw-bold smaller text-indigo">{{ lead.reference }}</span>
+                                    </td>
+                                    <td class="smaller">
+                                        <div class="fw-medium">{{ lead.user.email }}</div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">Réservé le {{ lead.reservedAt|date('d/m/Y') }}</div>
+                                    </td>
                                     <td class="text-end pe-4">
-                                        <a href="#" class="btn btn-sm btn-light border rounded-pill px-3 fw-bold">Ouvrir</a>
+                                        <a href="{{ path('notary_simulation_view', {id: lead.id}) }}" class="btn-edit-pill">Ouvrir</a>
                                     </td>
                                 </tr>
                             {% else %}
-                                <tr><td colspan="3" class="text-center py-5 text-muted smaller">Aucun dossier en cours.</td></tr>
+                                <tr><td colspan="3" class="text-center py-5 text-muted smaller">Aucun dossier en cours de suivi.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>

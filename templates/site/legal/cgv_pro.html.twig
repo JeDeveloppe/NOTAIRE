@@ -1,3 +1,4 @@
+{# templates/pages/cgv.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}CGV Professionnels - Lignée Pro{% endblock %}
@@ -22,30 +23,30 @@
                 {# SECTION 1 : ACCÈS AUX DOSSIERS #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-dark mb-3">1. Accès aux Dossiers et Zone de Couverture</h2>
-                    <p>L'Office Notarial accède aux <strong>Dossiers d'analyse</strong> correspondant aux codes postaux renseignés lors de son inscription ou dans ses paramètres de secteur, définissant sa "Zone de Couverture". L'accès aux données est partagé entre les offices d'un même secteur jusqu'au verrouillage effectif d'un dossier.</p>
+                    <p>L'Office Notarial accède aux <strong>Dossiers d'analyse</strong> correspondant aux codes postaux renseignés lors de son inscription. L'accès aux données est partagé entre les offices d'un même secteur jusqu'au verrouillage effectif. Le nombre de codes postaux activables est limité par le forfait souscrit par l'Office.</p>
                 </section>
 
                 {# SECTION 2 : LE SYSTÈME DE VERROUILLAGE #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-primary mb-4">2. Verrouillage Exclusif et Délais</h2>
                     <div class="alert alert-info border-0 rounded-4 p-4 shadow-sm mb-4">
-                        <p class="mb-2"><strong>Principe de priorité :</strong> Le premier Office Notarial qui active l'action "Contacter" procède au <strong>verrouillage exclusif</strong> du dossier.</p>
+                        <p class="mb-2"><strong>Principe de priorité :</strong> Le premier Office Notarial qui active l'action "Sélectionner" ou "Récupérer" procède au <strong>verrouillage exclusif</strong> du dossier.</p>
                         <ul class="small mb-0">
-                            <li>Le dossier devient immédiatement invisible pour les autres offices du secteur.</li>
+                            <li>Le dossier devient invisible pour les autres offices.</li>
                             <li>L'Office dispose d'une exclusivité de <strong>15 jours</strong> pour traiter la demande.</li>
-                            <li>Une première prise de contact (téléphone ou email) est impérative sous <strong>72h ouvrées</strong>.</li>
+                            <li>Une première prise de contact est préconisée sous <strong>72h ouvrées</strong> pour maintenir l'Indice de Performance.</li>
                         </ul>
                     </div>
-                    <p class="small text-muted italic">
+                    <p class="small text-muted italic text-justify">
                         <i class="fas fa-exclamation-triangle me-1"></i>
-                        Si aucun avancement n'est enregistré sur la plateforme sous 15 jours, le verrou est automatiquement levé et le dossier est remis à disposition des autres offices du secteur.
+                        Si aucune activité n'est enregistrée sur la plateforme (changement de statut du dossier) sous 15 jours, le verrou est automatiquement levé. Le dossier est remis à disposition des autres offices et l'Indice de Performance de l'étude défaillante est impacté.
                     </p>
                 </section>
 
-                {# SECTION 3 : LE BARÈME (DYNAMIQUE) #}
+                {# SECTION 3 : LE BARÈME (IPE) #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-dark mb-4">3. Indice de Performance de l'Étude (IPE)</h2>
-                    <p>Le maintien du droit de verrouillage est conditionné par la réactivité de l'Étude. Chaque action génère des points crédités ou débités selon le barème suivant :</p>
+                    <p>Le maintien du droit de verrouillage est conditionné par la réactivité de l'Étude. L'IPE est calculé selon la célérité de récupération des dossiers et la régularité de l'activité sur la zone.</p>
 
                     <div class="card border-0 bg-light rounded-4 overflow-hidden">
                         <table class="table table-hover mb-0">
@@ -53,14 +54,15 @@
                                 <tr class="small text-muted">
                                     <th class="ps-4">Statut de l'action</th>
                                     <th class="text-center">Points</th>
-                                    <th class="pe-4">Impact</th>
+                                    <th class="pe-4">Impact sur l'IPE</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {# Les variables proviennent de ton controller #}
                                 {% for status in available_statuses %}
                                     <tr>
                                         <td class="ps-4">
-                                            <span class="badge bg-{{ status.color }}">{{ status.label }}</span>
+                                            <span class="badge bg-{{ status.color|default('secondary') }}">{{ status.label }}</span>
                                         </td>
                                         <td class="text-center fw-bold {{ status.points >= 0 ? 'text-success' : 'text-danger' }}">
                                             {{ status.points > 0 ? '+' : '' }}{{ status.points }}
@@ -73,21 +75,34 @@
                     </div>
                 </section>
 
-                {# SECTION 4 : ABONNEMENT ET GARANTIE DE FLUX #}
+                {# SECTION 4 : FINANCES #}
                 <section class="mb-5">
                     <h2 class="h5 fw-bold text-dark mb-3">4. Conditions Financières</h2>
-                    <p>L'accès à la plateforme fait l'objet d'un abonnement mensuel. Les tarifs sont révisables annuellement. Tout mois entamé est dû dans son intégralité. La résiliation s'effectue avec un préavis de 15 jours avant la date de renouvellement.</p>
+                    <p>L'accès à la plateforme fait l'objet d'un abonnement mensuel. Tout mois entamé est dû. La résiliation s'effectue avec un préavis de 15 jours.</p>
                     
                     <div class="mt-4 p-4 rounded-4 bg-light border-start border-4 border-success">
                         <h6 class="fw-bold text-success"><i class="fas fa-shield-alt me-2"></i>Engagement "Flux Garanti"</h6>
-                        <p class="small mb-0">Lignée garantit un volume minimal d'activité sur la Zone de Couverture de l'Office. Si moins de <strong>5 simulations brutes</strong> sont générées sur l'ensemble des codes postaux sélectionnés par l'Office durant son mois d'abonnement, Lignée s'engage à rembourser <strong>80% de la somme HT</strong> perçue au titre du forfait mensuel, sur demande de l'Office Notarial effectuée dans les 7 jours suivant la date de facturation du mois suivant.</p>
+                        <p class="small mb-0">Si moins de <strong>5 simulations brutes</strong> sont générées sur la Zone de Couverture de l'Office durant son mois d'abonnement, Lignée s'engage à rembourser <strong>80% du forfait mensuel HT</strong>, sur demande effectuée sous 7 jours après facturation.</p>
                     </div>
                 </section>
 
-                {# SECTION 5 : RESPONSABILITÉ #}
+                {# SECTION 5 : RESPONSABILITÉ (BLINDAGE JURIDIQUE) #}
                 <section class="mb-5">
-                    <h2 class="h5 fw-bold text-dark mb-3">5. Déontologie et Responsabilité</h2>
-                    <p>L'Office Notarial s'engage à respecter les règles déontologiques de la profession dans le cadre de la prise de contact. Lignée n'intervient pas dans la relation juridique entre l'Office et le Client et ne saurait être tenue responsable des conseils prodigués.</p>
+                    <h2 class="h5 fw-bold text-danger mb-3">5. Nature des Données et Responsabilité</h2>
+                    <div class="bg-danger bg-opacity-10 border-start border-4 border-danger p-4 rounded-4 mb-4">
+                        <h6 class="fw-bold text-danger">Clause de données déclaratives :</h6>
+                        <p class="small text-dark mb-0 text-justify">
+                            L'Office Notarial reconnaît expressément que les Dossiers d'analyse sont générés à partir de <strong>données purement déclaratives</strong> saisies par les utilisateurs. Lignée agit en tant que simple prestataire technique de mise en relation et ne procède à aucune vérification des titres de propriété, de l'état civil ou de la véracité des donations antérieures. 
+                            <br><br>
+                            En conséquence, la responsabilité de Lignée ne saurait être engagée en cas d'erreur de calcul induite par une saisie erronée ou incomplète de l'utilisateur.
+                        </p>
+                    </div>
+                    <p class="small text-muted mb-3 text-justify">
+                        <strong>Devoir de conseil :</strong> L'Office Notarial reste seul responsable de son devoir de conseil. L'outil de simulation "Lignée" est une aide à la prospection et au diagnostic préliminaire ; il ne dispense en aucun cas l'Office de réaliser son propre audit juridique et fiscal avant toute rédaction d'acte authentique.
+                    </p>
+                    <p class="small text-muted text-justify">
+                        <strong>RGPD :</strong> L'Office Notarial devient Responsable de Traitement des données dès lors qu'il procède au verrouillage d'un dossier. Il s'engage à traiter les données personnelles des utilisateurs conformément à la réglementation en vigueur.
+                    </p>
                 </section>
 
                 <div class="text-center mt-5">
@@ -109,5 +124,7 @@
     h2 { border-left: 4px solid #4f46e5; padding-left: 15px; }
     .table td { padding: 1.25rem 1rem; border-color: #e5e7eb; }
     .btn-primary { background-color: #4f46e5; border: none; }
+    .italic { font-style: italic; }
+    .badge { font-weight: 600; padding: 0.5em 0.8em; }
 </style>
 {% endblock %}
