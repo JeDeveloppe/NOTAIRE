@@ -75,8 +75,9 @@ class SimulationRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('s')
             ->join('s.user', 'u')
+            ->join('u.city', 'c')
             ->where('s.status = :status')
-            ->andWhere('u.zipCode IN (:zips)') // Filtre sur la liste des codes postaux choisis
+            ->andWhere('c.postalCode IN (:zips)') // Filtre sur la liste des codes postaux choisis
             ->andWhere('s.reservedBy IS NULL')
             ->setParameter('status', 'OPEN') //! doit etre comme service.yaml
             ->setParameter('zips', $zipCodes)

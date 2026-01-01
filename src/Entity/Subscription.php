@@ -36,6 +36,10 @@ class Subscription
     #[ORM\Column(length: 50)]
     private ?string $status = null;
 
+    #[ORM\ManyToOne(inversedBy: 'subscription_addons')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Offer $addon = null;
+
     public function __construct()
     {
         $this->startedAt = new \DateTimeImmutable();
@@ -127,6 +131,18 @@ class Subscription
     public function setStatus(string $status): static
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getAddon(): ?Offer
+    {
+        return $this->addon;
+    }
+
+    public function setAddon(?Offer $addon): static
+    {
+        $this->addon = $addon;
 
         return $this;
     }

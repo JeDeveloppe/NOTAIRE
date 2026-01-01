@@ -36,6 +36,10 @@ class UserOnboardingSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
         $routeName = $request->attributes->get('_route');
 
+        if ($routeName && str_starts_with($routeName, 'ux_entity_autocomplete')) {
+            return;
+        }
+
         // 1. On ignore si ce n'est pas une route (ex: assets) ou si c'est une route autorisée
         if (
             !$routeName ||
