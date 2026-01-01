@@ -1,16 +1,20 @@
 {# templates/notary/subscribe_choice.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Votre Configuration{% endblock %}
+{% block title %}Configuration de votre étude - Lignée{% endblock %}
 
 {% block body %}
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-xl-10">
 
+                {# HEADER TITRE #}
                 <div class="text-center mb-5">
-                    <h1 class="fw-black h2">Configuration de votre étude</h1>
-                    <p class="text-muted">Personnalisez votre visibilité sur la plateforme Lignée</p>
+                    <span class="badge bg-indigo-brand-subtle text-indigo-brand rounded-pill px-3 py-2 mb-3 fw-bold">Étape finale</span>
+                    <h1 class="fw-black h2 text-dark">Configuration de votre étude</h1>
+                    <p class="text-muted mx-auto" style="max-width: 600px;">
+                        Personnalisez votre périmètre d'intervention et activez la réception de vos dossiers en temps réel.
+                    </p>
                 </div>
 
                 <form action="" method="POST" id="subscribe-form">
@@ -18,12 +22,13 @@
                     <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
                         <div class="card-body p-0">
 
-                            {# 1. HEADER / FORFAITS #}
-                            <div class="p-4 p-md-5 bg-light-subtle border-bottom">
-                                <h5 class="fw-bold mb-4 d-flex align-items-center">
-                                    <span class="badge bg-indigo-brand me-2">1</span>
-                                    Choisissez votre forfait
-                                </h5>
+                            {# 1. CHOIX DU FORFAIT PRINCIPAL #}
+                            <div class="p-4 p-md-5 bg-white border-bottom">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="step-number me-3">1</div>
+                                    <h5 class="fw-bold mb-0 text-dark">Choisissez votre forfait de base</h5>
+                                </div>
+                                
                                 <div class="row g-3">
                                     {% for offer in mainOffers %}
                                         <div class="col-md-4">
@@ -31,58 +36,113 @@
                                                    data-price="{{ offer.currentPrice.amountHt|default(0) }}" 
                                                    class="btn-check plan-input" 
                                                    {% if preselectedId == offer.id %} checked {% endif %} required>
-                                            <label class="card h-100 border-2 rounded-3 p-3 selection-card" for="offer_{{ offer.id }}">
-                                                <span class="fw-bold d-block mb-1">{{ offer.name }}</span>
-                                                <span class="h4 fw-black text-indigo-brand mb-0">
-                                                    {{ (offer.currentPrice.amountHt / 100)|number_format(2, ',', ' ') }}€
-                                                </span>
-                                                <span class="text-muted d-block small mt-2">
-                                                    {{ offer.baseNotariesCount }} codes postaux
-                                                </span>
+                                            <label class="card h-100 border-2 rounded-4 p-4 selection-card position-relative" for="offer_{{ offer.id }}">
+                                                <div class="check-icon position-absolute top-0 end-0 m-2 opacity-0 text-indigo-brand">
+                                                    <i class="bi bi-check-circle-fill fs-5"></i>
+                                                </div>
+                                                <span class="text-uppercase text-muted smaller fw-bold tracking-widest d-block mb-2">{{ offer.name }}</span>
+                                                <div class="d-flex align-items-baseline mb-3">
+                                                    <span class="h2 fw-black text-dark mb-0">
+                                                        {{ (offer.currentPrice.amountHt / 100)|number_format(0, ',', ' ') }}€
+                                                    </span>
+                                                    <span class="text-muted ms-1 small">HT/mois</span>
+                                                </div>
+                                                <div class="mt-auto pt-3 border-top">
+                                                    <i class="bi bi-geo-alt-fill text-indigo-brand me-1"></i>
+                                                    <span class="fw-bold text-dark">{{ offer.baseNotariesCount }}</span> 
+                                                    <span class="text-muted small">
+                                                        {% if offer.baseNotariesCount > 1 %}
+                                                            codes postaux inclus
+                                                        {% else %}
+                                                            code postal inclus
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
                                             </label>
                                         </div>
                                     {% endfor %}
                                 </div>
                             </div>
 
-                            {# 2. OPTIONS / ADD-ONS #}
-                            <div class="p-4 p-md-5">
-                                <h5 class="fw-bold mb-4 d-flex align-items-center">
-                                    <span class="badge bg-indigo-brand me-2">2</span>
-                                    Codes postaux additionnels
-                                </h5>
-                                <div class="addon-grid">
-                                    <div class="addon-item">
+                            {# 2. EXTENSIONS TERRITORIALES (ADD-ONS) #}
+                            <div class="p-4 p-md-5 bg-light-subtle border-bottom">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="step-number me-3">2</div>
+                                    <h5 class="fw-bold mb-0 text-dark">Extension de votre périmètre <small class="text-muted fw-normal ms-2">(Optionnel)</small></h5>
+                                </div>
+                                
+                                <div class="row g-3">
+                                    <div class="col-md-3">
                                         <input type="radio" name="addon_selection" value="none" data-price="0" id="addon_none" class="btn-check addon-input" checked>
-                                        <label class="addon-box" for="addon_none">
-                                            <span class="fw-bold">Forfait standard</span>
-                                            <small class="d-block text-muted">Aucun ajout</small>
+                                        <label class="addon-box d-flex flex-column h-100 p-3" for="addon_none">
+                                            <span class="fw-bold text-dark mb-1 small">Périmètre initial</span>
+                                            <p class="smaller text-muted mb-3 flex-grow-1">Rayonnement limité aux codes postaux de votre forfait.</p>
+                                            <div class="mt-auto pt-2 border-top fw-bold smaller text-muted">Inclus</div>
                                         </label>
                                     </div>
+
                                     {% for addon in addons %}
-                                        <div class="addon-item">
+                                        {% set nb = addon.baseNotariesCount %}
+                                        <div class="col-md-3">
                                             <input type="radio" name="addon_selection" value="{{ addon.id }}" 
                                                    data-price="{{ addon.currentPrice.amountHt|default(0) }}" 
                                                    id="addon_{{ addon.id }}" class="btn-check addon-input">
-                                            <label class="addon-box" for="addon_{{ addon.id }}">
-                                                {% set codes = (addon.baseNotariesCount > 1) ? "codes" : "code" %}
-                                                <span class="fw-bold">+{{ addon.baseNotariesCount }} {{ codes }}</span>
-                                                <small class="d-block text-indigo-brand">+{{ (addon.currentPrice.amountHt / 100)|number_format(2, ',', ' ') }}€</small>
+                                            <label class="addon-box d-flex flex-column h-100 p-3" for="addon_{{ addon.id }}">
+                                                <span class="fw-bold text-dark mb-1 small">
+                                                    {% if nb == 1 %}
+                                                        Extension Ponctuelle
+                                                    {% elseif nb <= 3 %}
+                                                        Amplitude Territoriale
+                                                    {% elseif nb <= 6 %}
+                                                        Rayonnement Étendu
+                                                    {% else %}
+                                                        Envergure Régionale
+                                                    {% endif %}
+                                                </span>
+                                                <p class="smaller text-muted mb-3 flex-grow-1">
+                                                    Ajoutez <strong>+{{ nb }} 
+                                                    {% if nb > 1 %}
+                                                        codes postaux supplémentaires
+                                                    {% else %}
+                                                        code postal supplémentaire
+                                                    {% endif %}
+                                                    </strong>.
+                                                </p>
+                                                <div class="mt-auto pt-2 border-top fw-bold text-indigo-brand small">
+                                                    +{{ (addon.currentPrice.amountHt / 100)|number_format(2, ',', ' ') }}€ <small class="fw-normal">HT</small>
+                                                </div>
                                             </label>
                                         </div>
                                     {% endfor %}
                                 </div>
                             </div>
 
-                            {# 3. FOOTER DE LA CARTE (TOTAL & PAIEMENT) #}
+                            {# NOUVEAU : BLOC GARANTIE 80% #}
+                            <div class="p-4 p-md-5 bg-white border-bottom">
+                                <div class="row align-items-center g-4">
+                                    <div class="col-md-2 text-center">
+                                        <div class="position-relative d-inline-block">
+                                            <i class="bi bi-shield-check text-success" style="font-size: 3.5rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-10 border-start-md ps-md-4">
+                                        <h6 class="fw-bold text-dark mb-2">Engagement "Flux Garanti" Lignée</h6>
+                                        <p class="text-muted small mb-0">
+                                            Si votre zone de couverture génère moins de <strong>5 simulations</strong> sur le mois, nous créditons votre compte de <strong>80% du montant de votre forfait</strong>. 
+                                            <br>
+                                            <span class="fw-medium text-indigo-brand">C'est l'assurance d'une présence digitale sans risque financier pour votre étude.</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# 3. FOOTER : TOTAL & ACTION #}
                             <div class="bg-dark p-4 p-md-5">
                                 <div class="row align-items-center">
                                     <div class="col-md-7 mb-4 mb-md-0">
                                         <div class="d-flex align-items-center mb-1">
-                                            <span class="text-white-50 small text-uppercase fw-bold tracking-wider">Votre investissement mensuel</span>
-                                            <span class="ms-3 badge bg-success-subtle text-success border border-success-subtle rounded-pill x-small">
-                                                <i class="fas fa-unlock me-1"></i> Liberté totale
-                                            </span>
+                                            <span class="text-white-50 small text-uppercase fw-bold tracking-widest">Votre investissement mensuel</span>
+                                            <span class="ms-3 badge bg-success text-uppercase smaller px-2 py-1" style="font-size: 0.6rem;">Sans engagement</span>
                                         </div>
 
                                         <div class="h1 fw-black text-white mb-0">
@@ -91,25 +151,22 @@
                                         </div>
 
                                         <div class="mt-3 d-flex flex-wrap gap-3">
-                                            <div class="text-white-50 x-small">
-                                                <i class="fas fa-check text-indigo-brand me-1"></i>
-                                                <strong>Zéro engagement :</strong> Arrêtez quand vous voulez.
+                                            <div class="text-white-50 smaller">
+                                                <i class="bi bi-check2 text-indigo-brand me-1"></i> Activation immédiate
                                             </div>
-                                            <div class="text-white-50 x-small">
-                                                <i class="fas fa-check text-indigo-brand me-1"></i>
-                                                <strong>Évolutif :</strong> Changez de zone chaque mois.
+                                            <div class="text-white-50 smaller">
+                                                <i class="bi bi-check2 text-indigo-brand me-1"></i> Facturation automatisée
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="col-md-5 text-md-end">
-                                        <button type="submit" class="btn btn-indigo-brand btn-lg rounded-pill px-5 py-3 fw-bold shadow-lg w-100 w-md-auto">
+                                        <button type="submit" class="btn btn-indigo-brand btn-lg rounded-pill px-5 py-3 fw-bold shadow-lg w-100">
                                             Procéder au paiement
-                                            <i class="fas fa-lock ms-2"></i>
+                                            <i class="bi bi-shield-lock ms-2"></i>
                                         </button>
-                                        <div class="text-white-50 x-small mt-3">
-                                            <i class="fab fa-stripe me-1"></i>
-                                            Paiement sécurisé et facturation automatisée
+                                        <div class="text-white-50 smaller mt-3">
+                                            <i class="bi bi-stripe me-1"></i> Transaction sécurisée par Stripe
                                         </div>
                                     </div>
                                 </div>
@@ -119,9 +176,9 @@
                     </div>
                 </form>
 
-                <p class="text-center text-muted mt-4 small">
-                    <i class="fas fa-shield-check me-1"></i>
-                    Transaction sécurisée par Stripe. Vos données sont protégées par le RGPD.
+                <p class="text-center text-muted mt-4 smaller">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Abonnement flexible : modifiez votre zone de couverture ou votre forfait à tout moment depuis votre espace.
                 </p>
             </div>
         </div>
@@ -130,51 +187,58 @@
     <style>
         :root {
             --indigo-brand: #6366f1;
-            --indigo-hover: #4f46e5;
+            --indigo-brand-subtle: rgba(99, 102, 241, 0.1);
         }
+        
         .fw-black { font-weight: 900; }
-        .text-indigo-brand { color: var(--indigo-brand); }
-        .bg-indigo-brand { background-color: var(--indigo-brand); }
-        .btn-indigo-brand { background-color: var(--indigo-brand); color: white; border: none; }
-        .btn-indigo-brand:hover { background-color: var(--indigo-hover); color: white; transform: translateY(-2px); }
-        .x-small { font-size: 0.75rem; }
-        .selection-card { cursor: pointer; transition: all 0.2s ease; border: 2px solid #edf2f7; background: #fff; }
-        .btn-check:checked + .selection-card { border-color: var(--indigo-brand) !important; background-color: #f8faff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); }
-        .addon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-        .addon-box { display: block; padding: 15px; border: 2px solid #edf2f7; border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: center; background: #fff; }
-        .btn-check:checked + .addon-box { border-color: var(--indigo-brand); background-color: #f8faff; }
-        .card { border: none; }
+        .text-indigo-brand { color: var(--indigo-brand) !important; }
+        
+        .step-number {
+            width: 28px; height: 28px; background: var(--indigo-brand); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.8rem;
+        }
+        .btn-indigo-brand { background-color: var(--indigo-brand); color: white; border: none; transition: 0.3s; }
+        .btn-indigo-brand:hover { background-color: #4f46e5; transform: translateY(-3px); color: white; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
+
+        .selection-card { cursor: pointer; border: 2px solid #f1f5f9; transition: all 0.3s ease; background: white; }
+        .selection-card:hover { border-color: #e2e8f0; transform: translateY(-3px); }
+        .btn-check:checked + .selection-card { border-color: var(--indigo-brand); background: #fcfcff; }
+        .btn-check:checked + .selection-card .check-icon { opacity: 1; }
+
+        .addon-box { border: 2px solid #f1f5f9; border-radius: 16px; transition: 0.2s; background: white; cursor: pointer; min-height: 140px; }
+        .btn-check:checked + .addon-box { border-color: var(--indigo-brand); background-color: #fcfcff; }
+        
+        .smaller { font-size: 0.75rem; }
+        .tracking-widest { letter-spacing: 0.1em; }
+
+        @media (min-width: 768px) {
+            .border-start-md { border-left: 1px solid #dee2e6 !important; }
+        }
     </style>
 
     <script>
-        /**
-         * Utilisation de 'turbo:load' au lieu de 'DOMContentLoaded' pour supporter 
-         * la navigation fluide de Symfony (Hotwire/Turbo).
-         */
         document.addEventListener('turbo:load', function () {
             const inputs = document.querySelectorAll('.plan-input, .addon-input');
             const totalDisplay = document.getElementById('total-price');
-
-            // On ne continue que si on est sur la bonne page
+            
             if (!totalDisplay) return;
 
             function calculate() {
                 let totalCents = 0;
                 inputs.forEach(i => {
                     if (i.checked) {
-                        // Utilisation de Number() et gestion du cas undefined
                         totalCents += Number(i.dataset.price || 0);
                     }
                 });
 
-                const totalEuro = (totalCents / 100).toFixed(2);
-                totalDisplay.innerText = totalEuro.replace('.', ',');
+                totalDisplay.innerText = (totalCents / 100).toLocaleString('fr-FR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             }
 
-            // Écoute des changements sur chaque bouton radio
             inputs.forEach(i => i.addEventListener('change', calculate));
-
-            // Calcul immédiat au chargement de la page
             calculate();
         });
     </script>

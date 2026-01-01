@@ -52,11 +52,18 @@ class Offer
     #[ORM\Column]
     private ?bool $isOnWebSite = null;
 
+    /**
+     * @var Collection<int, Subscription>
+     */
+    #[ORM\OneToMany(targetEntity: Subscription::class, mappedBy: 'addon')]
+    private Collection $subscription_addons;
+
     public function __construct()
     {
         $this->offerPrices = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->subscriptions = new ArrayCollection();
+        $this->subscription_addons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -229,6 +236,36 @@ class Offer
     public function setIsOnWebSite(bool $isOnWebSite): static
     {
         $this->isOnWebSite = $isOnWebSite;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscription>
+     */
+    public function getSubscriptionAddons(): Collection
+    {
+        return $this->subscription_addons;
+    }
+
+    public function addSubscriptionAddon(Subscription $subscriptionAddon): static
+    {
+        if (!$this->subscription_addons->contains($subscriptionAddon)) {
+            $this->subscription_addons->add($subscriptionAddon);
+            $subscriptionAddon->setAddon($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscriptionAddon(Subscription $subscriptionAddon): static
+    {
+        if ($this->subscription_addons->removeElement($subscriptionAddon)) {
+            // set the owning side to null (unless already changed)
+            if ($subscriptionAddon->getAddon() === $this) {
+                $subscriptionAddon->setAddon(null);
+            }
+        }
 
         return $this;
     }
