@@ -415,7 +415,7 @@ public function viewSimulationByNotary(
 }
 
 #[Route('/notaire/simulation/reserve/{code}', name: 'app_notary_reserve_simulation')]
-public function reserve(string $code, EntityManagerInterface $em): Response
+public function reserve(string $code, EntityManagerInterface $em, Request $request): Response
 {
     /** @var User $user */
     $user = $this->getUser();
@@ -453,8 +453,19 @@ public function reserve(string $code, EntityManagerInterface $em): Response
     $em->flush();
 
     // 4. Message de succès et redirection
-    $this->addFlash('success', 'Dossier récupéré avec succès ! Vous avez 15 jours pour contacter le client.');
+    $this->addFlash('success', 'Dossier récupéré avec succès !');
 
-    return $this->redirectToRoute('app_notary_simulation_view', ['code' => $code]);
+    // 1. On identifie la provenance (par défaut 'registre')
+    $from = $request->query->get('from');
+    
+    // 2. On prépare la route de retour
+    $targetRoute = ($from === 'dashboard') 
+        ? 'app_site_notary_dashboard' 
+        : 'app_site_notary_all_simulations';
+
+    $this->addFlash('success', 'Dossier #'.$code.' ajouté avec succès à votre étude.');
+
+    // 3. On redirige vers l'origine
+    return $this->redirectToRoute($targetRoute);
 }
 }

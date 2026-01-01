@@ -1,3 +1,4 @@
+{# templates/notary/registre.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Registre des simulations de votre zone - {{ notary.name }}{% endblock %}
@@ -47,7 +48,9 @@
                         <span class="smaller fw-bold text-muted">
                             <i class="bi bi-journal-text me-1"></i> {{ type == 'DON' ? 'DONATION' : 'SUCCESSION' }}
                         </span>
-                        <a href="{{ path('app_notary_simulation_view', {reference: sim.reference}) }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        
+                        {# AJOUT DU PARAMÈTRE FROM #}
+                        <a href="{{ path('app_notary_simulation_view', {reference: sim.reference, from: 'registre'}) }}" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
                             Voir le dossier
                         </a>
                     </div>
@@ -68,10 +71,14 @@
 </div>
 
 <style>
+    .fw-black { font-weight: 900; }
+    .bg-indigo-light { background-color: rgba(99, 102, 241, 0.1); }
+    .text-indigo { color: #6366f1; }
     .hover-shadow:hover {
         transform: translateY(-5px);
         box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important;
     }
     .transition { transition: all 0.3s ease; }
+    .smaller { font-size: 0.85rem; }
 </style>
 {% endblock %}
