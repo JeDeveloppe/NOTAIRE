@@ -1,0 +1,133 @@
+{# templates/notary/_faq.html.twig #}
+<div class="modal fade" id="faqModal" tabindex="-1" aria-labelledby="faqModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered shadow-lg">
+        <div class="modal-content border-0 rounded-4 overflow-hidden">
+            
+            {# Header avec dégradé léger #}
+            <div class="modal-header border-0 bg-light py-4 px-4">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-1" id="faqModalLabel">
+                        Centre d'aide & Fonctionnement
+                    </h5>
+                    <p class="text-muted small mb-0">Tout savoir sur l'utilisation de votre espace Notaire</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    
+                    {# Navigation latérale (Desktop) #}
+                    <div class="col-md-4 bg-light border-end d-none d-md-block p-4">
+                        <nav class="nav flex-column gap-2 sticky-top" style="top: 20px;">
+                            <a href="#faq-indice" class="nav-link btn btn-sm btn-white text-start border-0 rounded-3 text-dark fw-medium py-2 px-3 shadow-sm">
+                                <i class="bi bi-lightning-charge text-primary me-2"></i> Indice étude
+                            </a>
+                            <a href="#faq-selection" class="nav-link btn btn-sm btn-white text-start border-0 rounded-3 text-dark fw-medium py-2 px-3 shadow-sm">
+                                <i class="bi bi-bookmark-check text-primary me-2"></i> Sélections
+                            </a>
+                            <a href="#faq-territoire" class="nav-link btn btn-sm btn-white text-start border-0 rounded-3 text-dark fw-medium py-2 px-3 shadow-sm">
+                                <i class="bi bi-geo-alt text-primary me-2"></i> Codes Postaux
+                            </a>
+                        </nav>
+                    </div>
+
+                    {# Contenu Principal #}
+                    <div class="col-md-8 p-4" style="max-height: 600px; overflow-y: auto;">
+                        
+                        {# Section 1: L'indice #}
+                        <section id="faq-indice" class="mb-5">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary-subtle text-primary p-2 rounded-3 me-3">
+                                    <i class="bi bi-lightning-charge-fill"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0">L'indice de réactivité</h6>
+                            </div>
+                            <div class="card border-0 bg-light rounded-4 p-3 mb-3">
+                                <p class="small mb-2 fw-bold text-dark">Comment gagner des points ?</p>
+                                <ul class="small text-muted ps-3 mb-0">
+                                    <li class="mb-2"><strong>Rapidité :</strong> Récupérez un dossier dès son apparition.</li>
+                                    <li><strong>Connexion :</strong> Une activité régulière valorise votre profil.</li>
+                                </ul>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success rounded-pill fw-normal px-3">
+                                <i class="bi bi-info-circle me-1"></i> Plus de visibilité pour les profils à 100%
+                            </span>
+                        </section>
+
+                        <hr class="opacity-10 mb-5">
+
+                        {# Section 2: Sélection #}
+                        <section id="faq-selection" class="mb-5">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success-subtle text-success p-2 rounded-3 me-3">
+                                    <i class="bi bi-bookmark-check-fill"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0">Sélection & Mémoire</h6>
+                            </div>
+                            <p class="small text-muted mb-3">
+                                Le bouton <strong>"Sélectionner"</strong> permet de "mémoriser" un dossier. Une fois cliqué :
+                            </p>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="p-2 border rounded-3 text-center h-100 bg-white shadow-sm">
+                                        <i class="bi bi-unlock text-primary d-block mb-1"></i>
+                                        <span class="smaller fw-bold">Détails débloqués</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 border rounded-3 text-center h-100 bg-white shadow-sm">
+                                        <i class="bi bi-folder2-open text-primary d-block mb-1"></i>
+                                        <span class="smaller fw-bold">Archivage sécurisé</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <hr class="opacity-10 mb-5">
+
+                        {# Section 3: Territoire #}
+                        <section id="faq-territoire">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-info-subtle text-info p-2 rounded-3 me-3">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0">Territoire & Codes Postaux</h6>
+                            </div>
+                            <p class="small text-muted">
+                                Vous gérez votre zone d'influence en temps réel. 
+                                <span class="d-block mt-2">
+                                    <i class="bi bi-check2-circle text-success me-1"></i> <strong>Ajustable :</strong> Changez vos CP selon vos besoins.
+                                </span>
+                                <span class="d-block">
+                                    <i class="bi bi-check2-circle text-success me-1"></i> <strong>Quota :</strong> Limité par votre forfait actuel.
+                                </span>
+                            </p>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+
+            {# Footer épuré #}
+            <div class="modal-footer border-0 bg-light py-3 px-4">
+                <p class="smaller text-muted me-auto mb-0 d-none d-sm-block">
+                    Besoin d'une assistance technique ?
+                </p>
+                <button type="button" class="btn btn-white text-muted btn-sm border-0 rounded-pill px-3" data-bs-dismiss="modal">Fermer</button>
+                <a href="mailto:contact@votreplateforme.com" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                    <i class="bi bi-envelope me-2"></i>Support client
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Amélioration UX spécifique à la FAQ */
+    #faqModal section { scroll-margin-top: 20px; }
+    #faqModal .nav-link { transition: all 0.2s ease; margin-bottom: 5px; }
+    #faqModal .nav-link:hover { transform: translateX(5px); background: white !important; }
+    #faqModal .btn-white { background: white; border: 1px solid #eef2f7; }
+    #faqModal .smaller { font-size: 0.7rem; }
+</style>

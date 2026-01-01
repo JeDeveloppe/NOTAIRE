@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Service\OfferService;
 use App\Repository\OfferRepository;
 use App\Repository\SimulationRepository;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class NotaryController extends AbstractController
 {
     public function __construct(
-        private Security $security
+        private SimulationRepository $simulationRepository
     ) {}
 
     /**
@@ -23,7 +22,9 @@ class NotaryController extends AbstractController
      */
     private function checkNotaryStatus(): ?Response
     {
-        $user = $this->security->getUser();
+        /** @var User $user */
+        $user = $this->getUser();
+
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
@@ -60,7 +61,9 @@ class NotaryController extends AbstractController
     #[Route('/notaire/verification', name: 'app_site_notary_pending_verification')]
     public function pendingVerification(): Response
     {
-        $notary = $this->getUser()->getNotary();
+        /** @var User $user */
+        $user = $this->getUser();
+        $notary = $user->getNotary();
 
         // Si le notaire est déjà validé, on ne le laisse pas sur cette page
         if ($notary && $notary->isConfirmed()) {
@@ -71,31 +74,42 @@ class NotaryController extends AbstractController
     }
 
     #[Route('/notaire', name: 'app_notary_dashboard')]
-    public function dashboard(OfferService $offerService, SimulationRepository $simulationRepo): Response
+    public function dashboard(OfferService $offerService): Response
     {
         if ($response = $this->checkNotaryStatus()) {
             return $response;
         }
 
-        $notary = $this->getUser()->getNotary();
+        /** @var User $user */
+        $user = $this->getUser();
+        $notary = $user->getNotary();
         $activeSub = $notary->getActiveSubscription();
+        $hasActiveOffer = ($activeSub !== null);
 
-        // Calcul des quotas basés sur l'offre active (si elle existe)
+        // 1. Déterminer quels dossiers on affiche en "Teasing" ou "Zone"
+        if ($hasActiveOffer) {
+            $zipCodes = array_map(fn($z) => $z->getPostalCode(), $notary->getSelectedZipCodes()->toArray());
+            $availableSimulations = $this->simulationRepository->findByZipCodes($zipCodes);
+        } else {
+            // Teasing National (Derniers dossiers du pays du notaire)
+            $availableSimulations = $this->simulationRepository->findLastInCountry(10, $notary);
+        }
+
+        // 2. Calcul des stats
         $totalSlots = $offerService->getTotalAllowedSectors($notary);
         $usedSlots = count($notary->getSelectedZipCodes());
 
         return $this->render('notary/dashboard.html.twig', [
             'notary' => $notary,
-            'hasActiveOffer' => ($activeSub !== null),
+            'hasActiveOffer' => $hasActiveOffer,
             'activeSubscription' => $activeSub,
+            'availableSimulations' => $availableSimulations, // Dossiers à saisir
             'stats' => [
                 'totalSlots' => $totalSlots,
                 'usedSlots' => $usedSlots,
                 'percentage' => ($totalSlots > 0) ? ($usedSlots / $totalSlots) * 100 : 0,
-                'leadsInZone' => $simulationRepo->countByCities(
-                    array_map(fn($z) => $z->getCity()->getId(), $notary->getSelectedZipCodes()->toArray())
-                ),
-                'selectedLeads' => count($notary->getSimulations()),
+                'leadsInZone' => count($availableSimulations),
+                'selectedLeads' => count($notary->getSimulations()), // Dossiers déjà pris
             ]
         ]);
     }
@@ -105,7 +119,10 @@ class NotaryController extends AbstractController
     {
         // Si le notaire a déjà un profil, on le redirige vers le dashboard
         // qui s'occupera de vérifier s'il est confirmé ou non.
-        if ($this->getUser()->getNotary()) {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if ($user->getNotary()) {
             return $this->redirectToRoute('app_notary_dashboard');
         }
 
