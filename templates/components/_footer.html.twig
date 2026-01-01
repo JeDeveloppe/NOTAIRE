@@ -1,221 +1,241 @@
 {# templates/_partials/_footer.html.twig #}
-<footer class="footer-custom position-relative pt-5 pb-4 mt-5">
+<footer
+	class="footer-custom position-relative pt-5 pb-4 mt-5">
 
-    {# LE LOGO QUI S'ÉCHAPPE DU FOOTER #}
-    <div class="footer-logo-container">
-        <a href="{{ path('app_home') }}" class="logo-escape-box shadow-lg">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo Lignée" class="footer-main-logo">
-        </a>
-    </div>
+	{# LE LOGO QUI S'ÉCHAPPE DU FOOTER #}
+	<div class="footer-logo-container">
+		<a href="{{ path('app_home') }}" class="logo-escape-box shadow-lg">
+			<img src="{{ asset('images/logo.png') }}" alt="Logo Lignée" class="footer-main-logo">
+		</a>
+	</div>
 
-    <div class="container pt-4">
-        <div class="row gy-5 align-items-center">
+	<div class="container pt-4">
+		<div
+			class="row gy-5 align-items-center">
 
-            {# Navigation Gauche : Particuliers #}
-            <div class="col-lg-4 col-md-6 order-lg-1 order-2 text-center text-lg-start">
-                <div class="ps-lg-4">
-                    <h6 class="footer-heading">Particuliers</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2">
-                            Simuler une donation //TODO
-                        </li>
-                        <li class="mb-2">
-                            <div class="d-flex align-items-center justify-content-center justify-content-lg-start">
-                                <span class="footer-link opacity-50">Guide succession</span>
-                                <span class="badge-coming-soon">Bientôt</span>
-                            </div>
-                        </li>
-                        <li class="mb-2">
-                            <a href="{{ path('app_site_donation_rules') }}" class="footer-link">Abattements</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+			{# Navigation Gauche : Particuliers #}
+			<div class="col-lg-4 col-md-6 order-lg-1 order-2 text-center text-lg-start">
+				<div class="ps-lg-4">
+					<h6 class="footer-heading">Particuliers</h6>
+					<ul class="list-unstyled mb-0">
 
-            {# Pitch Central #}
-            <div class="col-lg-4 col-md-12 order-lg-2 order-1 text-center">
-                <div class="mt-4 mt-lg-5">
-                    <h2 class="h4 fw-bolder text-white mb-2">Lignée</h2>
-                    <p class="footer-description mx-auto mb-3">
-                        L'expertise notariale accessible en un clic.
-                    </p>
+						{% if app.user %}
+							{# L'utilisateur est connecté #}
+							<li class="mb-2">
+								<a href="{{ path('app_family_dashboard') }}" class="footer-link">
+									<i class="fas fa-users me-1 small"></i>
+									Ma Famille
+								</a>
+							</li>
+							<li
+								class="mb-2">
+								{# On redirige vers le dashboard s'il est connecté #}
+								<a href="{{ path('app_optimization_dashboard') }}" class="footer-link">
+									<i class="fas fa-chart-line me-1 small"></i>
+									Mon Optimisation
+								</a>
+							</li>
+						{% else %}
+							{# L'utilisateur est un simple visiteur #}
+							<li class="mb-2">
+								<a href="{{ path('app_register') }}" class="footer-link">
+									<i class="fas fa-magic me-1 small"></i>
+									Lancer une simulation
+								</a>
+							</li>
+						{% endif %}
 
-                    {% if total_simulations is defined and total_simulations > 0 %}
-                        <div class="simulation-counter mt-3">
-                            <span class="badge rounded-pill bg-white-translucent border-primary-subtle">
-                                <i class="fas fa-shield-check me-1 text-indigo"></i>
-                                Déjà <strong>+{{ total_simulations }}</strong> simulations sécurisées.
-                            </span>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+						<li class="mb-2">
+							<div class="d-flex align-items-center justify-content-center justify-content-lg-start">
+								<span class="footer-link opacity-50">Guide succession</span>
+								<span class="badge-coming-soon">Bientôt</span>
+							</div>
+						</li>
+						<li class="mb-2">
+							<a href="{{ path('app_site_donation_rules') }}" class="footer-link">Abattements 2025</a>
+						</li>
+					</ul>
+				</div>
+			</div>
 
-            {# Navigation Droite : Espace Notaire #}
-            <div class="col-lg-4 col-md-6 order-lg-3 order-3 text-center text-lg-end">
-                <div class="pe-lg-4">
-                    <h6 class="footer-heading">Espace Notaire</h6>
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2">
-                            {# CTA Plus direct et métier #}
-                            <a href="{{ path('app_site_notary_presentation') }}" class="footer-link-pro">
-                                <i class="fas fa-plus-circle me-1"></i> Pourquoi choisir Lignée
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="{{ path('app_register_notary') }}" class="footer-link">Inscription Pro</a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="mailto:pro@lignee.fr" class="footer-link small">Support & Assistance</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+			{# Bloc Central : Identité & Baseline #}
+			<div class="col-lg-4 col-md-12 order-lg-2 order-1 text-center">
+				<div class="mt-4 mt-lg-5">
+					<h2 class="h4 fw-bolder text-white mb-1">Lignée</h2>
 
-        <div class="footer-divider-elegant mt-5 mb-4"></div>
+					{# Baseline centrée sous le mot Lignée #}
+					<p class="footer-tagline mb-2">
+						Le trait d'union entre les particuliers et le notariat
+					</p>
 
-        {# Barre Légale Basse #}
-        <div class="row align-items-center">
-            <div class="col-md-5 text-center text-md-start">
-                <p class="footer-copyright small mb-md-0 mb-3">
-                    © {{ "now"|date("Y") }} <span class="text-white fw-bold">Lignée</span>. 
-                    <span class="opacity-50">Tous droits réservés.</span>
-                </p>
-            </div>
-            <div class="col-md-7 text-center text-md-end">
-                <ul class="list-inline mb-0 legal-nav">
-                    <li class="list-inline-item mx-2">
-                        <a href="{{ path('app_site_legal_cgu') }}">CGU</a>
-                    </li>
-                    <li class="list-inline-item mx-2">
-                        <a href="{{ path('app_site_legal_cgv_pro') }}">CGV Pro</a>
-                    </li>
-                    <li class="list-inline-item mx-2">
-                        <a href="{{ path('app_site_legal_cgu') }}#mentions">Mentions Légales</a>
-                    </li>
-                    <li class="list-inline-item mx-2">
-                        <a href="{{ path('app_site_legal_rgpd') }}">Protection des données</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
+					<div class="footer-year opacity-25 small mb-3">
+						&copy;
+						{{ "now"|date("Y") }}
+					</div>
+
+					{% if total_simulations is defined and total_simulations > 0 %}
+						<div class="simulation-counter mt-3">
+							<span class="badge rounded-pill bg-white-translucent">
+								<i class="fas fa-shield-check me-1 text-indigo"></i>
+								<strong>+{{ total_simulations }}</strong>
+								dossiers qualifiés
+							</span>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+
+			{# Navigation Droite : Espace Notaire #}
+			<div class="col-lg-4 col-md-6 order-lg-3 order-3 text-center text-lg-end">
+				<div class="pe-lg-4">
+					<h6 class="footer-heading">Espace Notaire</h6>
+					<ul class="list-unstyled mb-0">
+						{% if app.user and is_granted('ROLE_NOTARY') %}
+							<li class="mb-2">
+								<a href="{{ path('app_notary_dashboard') }}" class="footer-link-pro">
+									<i class="fas fa-briefcase me-1"></i>
+									Dashboard Pro
+								</a>
+							</li>
+						{% else %}
+							<li class="mb-2">
+								<a href="{{ path('app_site_notary_presentation') }}" class="footer-link-pro">
+									Devenir partenaire
+								</a>
+							</li>
+							<li class="mb-2">
+								<a href="{{ path('app_register_notary') }}" class="footer-link">Inscription Étude</a>
+							</li>
+						{% endif %}
+						<li class="mb-2">
+							<a href="mailto:pro@lignee.fr" class="footer-link small opacity-75">Support dédié</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="footer-divider-elegant mt-5 mb-4"></div>
+
+		{# Barre Légale Basse #}
+		<div class="row align-items-center">
+			<div class="col-12 text-center">
+				<ul class="list-inline mb-0 legal-nav">
+					<li class="list-inline-item mx-3">
+						<a href="{{ path('app_site_legal_cgu') }}">CGU</a>
+					</li>
+					<li class="list-inline-item mx-3">
+						<a href="{{ path('app_site_legal_cgv_pro') }}">CGV Pro</a>
+					</li>
+					<li class="list-inline-item mx-3">
+						<a href="{{ path('app_site_legal_cgu') }}#mentions">Mentions Légales</a>
+					</li>
+					<li class="list-inline-item mx-3">
+						<a href="{{ path('app_site_legal_rgpd') }}">Données personnelles</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
 </footer>
 
-<style>
-    :root {
-        --footer-bg: #0f172a;
-        --indigo-brand: #818cf8;
-        --text-muted: #94a3b8;
-    }
+<style>:root
+{
+	--footer-bg: #0f172a;
+	--indigo-brand: #818cf8;
+	--text-muted: #94a3b8;
+}
 
-    .footer-custom {
-        background-color: var(--footer-bg);
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
+.footer-custom {
+	background-color: var(--footer-bg);
+	border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
 
-    .footer-logo-container {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 100;
-    }
+.footer-logo-container {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 100;
+}
 
-    .logo-escape-box {
-        background-color: #ffffff;
-        padding: 25px 40px;
-        border-radius: 15px;
-        display: block;
-        transition: all 0.3s ease;
-        border: 2px solid var(--footer-bg);
-    }
+.logo-escape-box {
+	background-color: #ffffff;
+	padding: 20px 35px;
+	border-radius: 15px;
+	display: block;
+	border: 2px solid var(--footer-bg);
+	transition: transform 0.3s ease;
+}
 
-    .logo-escape-box:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    }
+.footer-main-logo {
+	height: 110px;
+	width: auto;
+}
 
-    .footer-main-logo { height: 140px; width: auto; }
+.footer-heading {
+	color: #ffffff;
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	font-weight: 800;
+	margin-bottom: 1.2rem;
+	opacity: 0.6;
+}
 
-    .footer-heading {
-        color: #ffffff;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 2.5px;
-        font-weight: 800;
-        margin-bottom: 1.25rem;
-        opacity: 0.7;
-    }
+.footer-tagline {
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	font-style: italic;
+	font-weight: 300;
+	max-width: 280px;
+	margin: 0 auto;
+	line-height: 1.4;
+}
 
-    .footer-description {
-        color: var(--text-muted);
-        font-size: 0.95rem;
-        font-style: italic;
-    }
+.footer-link {
+	color: var(--text-muted);
+	text-decoration: none;
+	font-size: 0.9rem;
+}
 
-    .footer-link {
-        color: var(--text-muted);
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: color 0.2s;
-    }
+.footer-link:hover {
+	color: #ffffff;
+}
 
-    .footer-link:hover { color: #ffffff; }
+.footer-link-pro {
+	color: var(--indigo-brand) !important;
+	font-weight: 700;
+	text-decoration: none;
+}
 
-    .footer-link-pro {
-        color: var(--indigo-brand) !important;
-        font-weight: 700;
-        text-decoration: none;
-        font-size: 0.95rem;
-        transition: transform 0.2s;
-        display: inline-block;
-    }
+.footer-divider-elegant {
+	height: 1px;
+	background: linear-gradient(to right, transparent, rgba(255,255,255,0.1) 50%, transparent);
+}
 
-    .footer-link-pro:hover { transform: scale(1.05); color: #a5b4fc !important; }
+.legal-nav a {
+	color: rgba(255, 255, 255, 0.4);
+	text-decoration: none;
+	font-size: 0.75rem;
+}
 
-    .badge-coming-soon {
-        font-size: 0.6rem;
-        background-color: rgba(129, 140, 248, 0.1);
-        color: var(--indigo-brand);
-        border: 1px solid rgba(129, 140, 248, 0.2);
-        padding: 1px 6px;
-        border-radius: 4px;
-        margin-left: 8px;
-        text-transform: uppercase;
-    }
+.legal-nav a:hover {
+	color: #fff;
+}
 
-    .footer-divider-elegant {
-        height: 1px;
-        background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.08) 50%, rgba(255,255,255,0));
-    }
+.bg-white-translucent {
+	background: rgba(255, 255, 255, 0.05);
+	padding: 6px 15px;
+	color: #cbd5e1;
+	font-size: 0.8rem;
+}
 
-    .legal-nav a {
-        color: rgba(255, 255, 255, 0.45);
-        text-decoration: none;
-        font-size: 0.72rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        transition: 0.3s;
-    }
-
-    .legal-nav a:hover { color: #ffffff; }
-
-    .footer-copyright { color: rgba(255, 255, 255, 0.35); }
-
-    .bg-white-translucent {
-        background-color: rgba(255, 255, 255, 0.03);
-        color: #cbd5e1;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 8px 16px;
-    }
-
-    .text-indigo { color: var(--indigo-brand); }
-
-    @media(max-width: 992px) {
-        .footer-main-logo { height: 90px; }
-        .logo-escape-box { padding: 15px 25px; }
-    }
-</style>
+.badge-coming-soon {
+	font-size: 0.6rem;
+	border: 1px solid rgba(129, 140, 248, 0.3);
+	color: var(--indigo-brand);
+	padding: 1px 5px;
+	border-radius: 4px;
+	margin-left: 5px;
+}</style>

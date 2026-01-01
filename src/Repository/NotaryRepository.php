@@ -16,6 +16,16 @@ class NotaryRepository extends ServiceEntityRepository
         parent::__construct($registry, Notary::class);
     }
 
+    public function countNotariesInBdd()
+    {
+        $count = $this->createQueryBuilder('n')
+        ->select('count(n.id)')
+        ->where('n.isConfirmed = :status')
+        ->setParameter('status', true)
+        ->getQuery()
+        ->getSingleScalarResult();
+    }
+
     //    /**
     //     * @return Notary[] Returns an array of Notary objects
     //     */

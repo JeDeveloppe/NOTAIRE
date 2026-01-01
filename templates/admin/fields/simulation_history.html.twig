@@ -1,0 +1,39 @@
+{# Ce template reçoit une variable 'field' qui contient la collection #}
+{% set steps = field.value %}
+
+<div class="field-collection">
+    {% if steps is empty %}
+        <span class="text-muted">Aucun historique pour le moment.</span>
+    {% else %}
+        <table class="table table-sm mt-2">
+            <thead>
+                <tr>
+                    <th>Statut en cours..</th>
+                    <th>fait part..</th>
+                    <th>en date du..</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for step in steps %}
+                    <tr>
+                        <td class="align-middle">
+                            <span class="badge" style="background: {{ step.status.color|default('#ccc') }}">
+                                {{ step.status.label }}
+                            </span>
+                        </td>
+                        <td class="align-middle">
+                            {% if step.changedBy %}
+                                {{ step.changedBy.email }}
+                            {% else %}
+                                <span class="text-muted"><i class="fas fa-robot"></i> Système</span>
+                            {% endif %}
+                        </td>
+                        <td class="align-middle">
+                            {{ step.createdAt|date('d/m/Y H:i') }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>

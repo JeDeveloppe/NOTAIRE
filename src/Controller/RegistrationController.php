@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\Notary;
 use App\Form\RegistrationFormType;
+use App\Repository\NotaryRepository;
 use App\Form\RegistrationNotaryFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Security\UserCustomAuthenticator;
@@ -17,6 +18,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class RegistrationController extends AbstractController
 {
+    public function __construct(
+        private readonly NotaryRepository $notaryRepository
+    ){}
+    
     #[Route('/inscription', name: 'app_register')]
     public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, Security $security, EntityManagerInterface $entityManager): Response
     {
@@ -50,6 +55,7 @@ class RegistrationController extends AbstractController
         EntityManagerInterface $entityManager, 
         UserPasswordHasherInterface $userPasswordHasher,
     ): Response {
+        $notaries = $this->notaryRepository->countNotariesInBdd() + 20;
         $notary = new Notary();
         $form = $this->createForm(RegistrationNotaryFormType::class, $notary);
         $form->handleRequest($request);
@@ -64,6 +70,7 @@ class RegistrationController extends AbstractController
                     $form->get('plainPassword')->getData()
                 )
             );
+            $user->setCity($form->get('city')->getData());
             $user->setRoles(['ROLE_NOTARY']);
 
             // 2. Lier l'utilisateur au notaire (si votre entité Notary a un champ user)
@@ -73,13 +80,17 @@ class RegistrationController extends AbstractController
             $entityManager->persist($notary);
             $entityManager->flush();
 
+            //message de confirmation
+            $this->addFlash('success', 'Votre profil a bien été enregistré.');
+
             // Redirection vers le paiement (Stripe) ou confirmation
-            return $this->redirectToRoute('app_home'); 
+            return $this->redirectToRoute('app_site_notary_pending_verification'); 
         }
 
         // Récupération des données pour votre template Twig
         return $this->render('registration/notary.html.twig', [
             'registrationForm' => $form->createView(),
+            'notariesCount' => $notaries
         ]);
     }
 }

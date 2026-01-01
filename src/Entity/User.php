@@ -52,9 +52,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Notary $notary = null;
 
+    /**
+     * @var Collection<int, SimulationStep>
+     */
+    #[ORM\OneToMany(targetEntity: SimulationStep::class, mappedBy: 'changedBy')]
+    private Collection $simulationSteps;
+
     public function __construct()
     {
         $this->people = new ArrayCollection();
+        $this->simulationSteps = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -206,5 +213,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->notary = $notary;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, SimulationStep>
+     */
+    public function getSimulationSteps(): Collection
+    {
+        return $this->simulationSteps;
+    }
+
+    public function addSimulationStep(SimulationStep $simulationStep): static
+    {
+        if (!$this->simulationSteps->contains($simulationStep)) {
+            $this->simulationSteps->add($simulationStep);
+            $simulationStep->setChangedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSimulationStep(SimulationStep $simulationStep): static
+    {
+        if ($this->simulationSteps->removeElement($simulationStep)) {
+            // set the owning side to null (unless already changed)
+            if ($simulationStep->getChangedBy() === $this) {
+                $simulationStep->setChangedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->email;
     }
 }

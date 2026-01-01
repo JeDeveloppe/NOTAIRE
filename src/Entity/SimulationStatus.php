@@ -37,9 +37,16 @@ class SimulationStatus
     #[ORM\OneToMany(targetEntity: Simulation::class, mappedBy: 'status')]
     private Collection $simulations;
 
+    /**
+     * @var Collection<int, SimulationStep>
+     */
+    #[ORM\OneToMany(targetEntity: SimulationStep::class, mappedBy: 'status')]
+    private Collection $simulationSteps;
+
     public function __construct()
     {
         $this->simulations = new ArrayCollection();
+        $this->simulationSteps = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -135,5 +142,40 @@ class SimulationStatus
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, SimulationStep>
+     */
+    public function getSimulationSteps(): Collection
+    {
+        return $this->simulationSteps;
+    }
+
+    public function addSimulationStep(SimulationStep $simulationStep): static
+    {
+        if (!$this->simulationSteps->contains($simulationStep)) {
+            $this->simulationSteps->add($simulationStep);
+            $simulationStep->setStatus($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSimulationStep(SimulationStep $simulationStep): static
+    {
+        if ($this->simulationSteps->removeElement($simulationStep)) {
+            // set the owning side to null (unless already changed)
+            if ($simulationStep->getStatus() === $this) {
+                $simulationStep->setStatus(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->label;
     }
 }

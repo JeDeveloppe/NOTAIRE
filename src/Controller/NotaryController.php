@@ -3,20 +3,19 @@
 namespace App\Controller;
 
 use App\Service\OfferService;
-use App\Repository\CityRepository;
 use App\Repository\OfferRepository;
 use App\Repository\SimulationRepository;
 use Symfony\Bundle\SecurityBundle\Security;
-use App\Repository\SelectedZipCodeRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class NotaryController extends AbstractController
 {
-    public function __construct(private Security $security) {}
+    public function __construct(
+        private Security $security
+    ) {}
 
     /**
      * Méthode utilitaire interne pour vérifier le statut du notaire.

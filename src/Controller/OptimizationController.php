@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use App\Service\DonationService;
+use App\Service\OptimizationService;
+use App\Service\SimulationService;
 use App\Service\TaxCalculatorService;
-use App\Service\TaxOptimizationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -16,7 +17,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class OptimizationController extends AbstractController
 {
     public function __construct(
-        private TaxOptimizationService $optimizationService,
+        private OptimizationService $optimizationService,
         private DonationService $donationService,
         private TaxCalculatorService $taxService
     ) {}
@@ -41,35 +42,30 @@ class OptimizationController extends AbstractController
     }
 
     #[Route('/optimisations-possibles', name: 'app_optimization_dashboard')]
-    public function futureDashboard(Request $request): Response
-    {
+    public function futureDashboard(
+        Request $request, 
+        SimulationService $simulationService
+    ): Response {
+        /** @var User $user */
         $user = $this->getUser();
 
-        // Récupération de la date de simulation depuis l'URL
-        $dateParam = $request->query->get('date');
-        $referenceDate = $dateParam ? new \DateTimeImmutable($dateParam) : new \DateTimeImmutable();
-
-        $analysis = $this->optimizationService->getDonationAnalyses($user);
-
-        // On génère le plan à la date choisie
-        $familyPlan = $this->optimizationService->getGlobalFamilyPlan($user, $referenceDate);
-        $totalAvailable = array_sum(array_column($familyPlan, 'available'));
-
-        // Calcul des économies fiscales totales possibles
-        $totalSaving = 0;
-        foreach ($familyPlan as $item) {
-            $totalSaving += $this->taxService->calculateSaving(
-                $item['available'], 
-                $item['relationship_code']
-            );
+        $people = $user->getPeople();
+        if (count($people) < 2) {
+            $this->addFlash('info', 'Ajoutez au moins un bénéficiaire pour débloquer l\'analyse fiscale.');
+            return $this->redirectToRoute('app_family_dashboard');
         }
 
+        $simulation = $simulationService->getOrCreateSimulation($user);
+
+        $data = $this->optimizationService->getSimulationDatas($request->query->get('date'), $user);
+
         return $this->render('family/optimization/simuled_opportunities.html.twig', [
-            'activePeriods'  => $analysis['active_periods'],
-            'familyPlan'     => $familyPlan,
-            'totalAvailable' => $totalAvailable,
-            'totalTaxSaving' => $totalSaving,
-            'referenceDate'  => $referenceDate, // Utile pour l'affichage
+            'activePeriods'  => $data['analysis']['active_periods'],
+            'familyPlan'     => $data['familyPlan'],
+            'totalAvailable' => $data['totalAvailable'],
+            'totalTaxSaving' => $data['totalSaving'],
+            'referenceDate'  => $data['referenceDate'],
+            'simulation'     => $simulation, // On passe l'objet pour afficher la réf et l'historique
         ]);
     }
 }

@@ -6,12 +6,15 @@ use App\Entity\User;
 use App\Entity\Donation;
 use App\Entity\DonationRule;
 use App\Repository\RelationshipRepository;
+use DateTime;
+use DateTimeImmutable;
 
-class TaxOptimizationService
+class OptimizationService
 {
     public function __construct(
         private RelationshipRepository $relationshipRepository,
-        private DonationService $donationService
+        private DonationService $donationService,
+        private TaxCalculatorService $taxService
     ) {}
 
     public function getDonationAnalyses(User $user): array
@@ -19,9 +22,9 @@ class TaxOptimizationService
         $people = $user->getPeople();
         $analysis = [
             'expired_periods' => [], // Abattements passés avec reliquat non utilisé
-            'active_periods' => [],  // Abattements en cours (cycle de 15 ans actif)
-            'never_used' => [],      // NOUVEAU : Droits jamais activés (perte de chance)
-            'total_missed' => 0      // Somme des reliquats + droits jamais activés
+            'active_periods' => [], // Abattements en cours (cycle de 15 ans actif)
+            'never_used' => [], // NOUVEAU : Droits jamais activés (perte de chance)
+            'total_missed' => 0 // Somme des reliquats + droits jamais activés
         ];
 
         // 1. Analyse des dons existants (Logique existante)
@@ -153,5 +156,29 @@ class TaxOptimizationService
         usort($plan, fn($a, $b) => [$a['priority'], $b['available']] <=> [$b['priority'], $a['available']]);
 
         return $plan;
+    }
+
+    public function getSimulationDatas(?string $dateParam = null, User $user)
+    {
+        $data = [];
+
+        $data['referenceDate'] = $dateParam ? new \DateTimeImmutable($dateParam) : new \DateTimeImmutable();
+
+        $data['analysis'] = $this->getDonationAnalyses($user);
+        $data['familyPlan'] = $this->getGlobalFamilyPlan($user, $data['referenceDate']);
+        
+        $data['totalAvailable'] = array_sum(array_column($data['familyPlan'], 'available'));
+
+        $totalSaving = 0;
+        $familyPlan = $data['familyPlan'];
+        foreach ($familyPlan as $item) {
+            $totalSaving += $this->taxService->calculateSaving(
+                $item['available'], 
+                $item['relationship_code']
+            );
+        }
+        $data['totalSaving'] = $totalSaving;
+
+        return $data;
     }
 }

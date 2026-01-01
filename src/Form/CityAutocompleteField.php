@@ -17,10 +17,10 @@ class CityAutocompleteField extends AbstractType
             'class' => City::class,
             'placeholder' => 'Cherchez une ville (ex: Nantes ou 44)',
             'choice_label' => function (City $city) {
-                return $city->getName() . ' (' . $city->getDepartmentCode() . ')';
+                return $city->getName() . ' (' . $city->getPostalCode() . ')';
             },
             // On définit comment on cherche dans la base
-            'searchable_fields' => ['name', 'departmentCode', 'inseeCode'],
+            'searchable_fields' => ['name', 'departmentCode', 'postalCode'],
             'max_results' => 10,
             'attr' => [
                 'class' => 'form-control border-0 bg-light rounded-4 px-4',

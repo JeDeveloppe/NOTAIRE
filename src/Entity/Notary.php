@@ -56,7 +56,7 @@ class Notary
     #[ORM\Column(length: 14)]
     private ?string $siret = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $website = null;
 
     #[ORM\Column]
@@ -256,7 +256,7 @@ class Notary
         return $this->website;
     }
 
-    public function setWebsite(string $website): static
+    public function setWebsite(?string $website): static
     {
         $this->website = $website;
 
@@ -295,5 +295,10 @@ class Notary
             }
         }
         return null;
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 }

@@ -6,6 +6,8 @@ use App\Entity\City;
 use App\Entity\Offer;
 use App\Entity\Notary;
 use App\Entity\OfferPrice;
+use App\Entity\Simulation;
+use App\Entity\SimulationStep;
 use Symfony\Component\HttpFoundation\Response;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -36,6 +38,9 @@ class DashboardController extends AbstractDashboardController
 
         yield MenuItem::linkToCrud('Offres', 'fas fa-bullhorn', Offer::class);
         yield MenuItem::linkToCrud('Prix des offres', 'fas fa-user-check', OfferPrice::class);
+
+        yield MenuItem::linkToCrud('Simulations', 'fas fa-calculator', Simulation::class);
+        yield MenuItem::linkToCrud('Etapes de simulation', 'fas fa-list', SimulationStep::class);
         // yield MenuItem::linkToCrud('The Label', 'fas fa-list', EntityClass::class);
     }
 }

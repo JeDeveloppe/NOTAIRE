@@ -44,8 +44,8 @@ class City
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'city')]
     private Collection $users;
 
-    #[ORM\Column]
-    private ?int $postalCode = null;
+    #[ORM\Column(length: 5)]
+    private ?string $postalCode = null;
 
     /**
      * @var Collection<int, SelectedZipCode>
@@ -188,12 +188,12 @@ class City
         return $this;
     }
 
-    public function getPostalCode(): ?int
+    public function getPostalCode(): ?string
     {
         return $this->postalCode;
     }
 
-    public function setPostalCode(int $postalCode): static
+    public function setPostalCode(string $postalCode): static
     {
         $this->postalCode = $postalCode;
 
@@ -262,7 +262,8 @@ class City
 
     public function __toString(): string
     {
-        return $this->name. ' (' . $this->postalCode . ')';
+        // Maintenant, $this->postalCode retournera bien "44000" (avec les zéros)
+        return $this->name . ' (' . $this->postalCode . ')';
     }
 
     public function getMaxNotariesCount(): ?int
