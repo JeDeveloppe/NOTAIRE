@@ -1,207 +1,176 @@
-{# templates/family/optimization/simuled_opportunities.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Optimisation Fiscale — Lignée{% endblock %}
-
 {% block body %}
-    {# --- LOGIQUE DE PRÉPARATION DES DONNÉES --- #}
+    {# 1. INITIALISATION #}
+    {% set currentYear = "now"|date("Y") %}
+    {% set rechargeYear = currentYear + 15 %}
     {% set groupedPlan = {} %}
+
     {% for item in familyPlan %}
-        {% set benKey = 'ID_' ~ item.beneficiary.id %}
+        {% set benKey = 'BEN_' ~ item.beneficiary.id %}
         {% if groupedPlan[benKey] is not defined %}
-            {% set groupedPlan = groupedPlan|merge({(benKey): {'name': item.beneficiary.firstname, 'items': []}}) %}
+            {% set groupedPlan = groupedPlan|merge({(benKey): {
+                'name': item.beneficiary.firstname, 
+                'items': [], 
+                'bId': item.beneficiary.id,
+                'rel': item.relationship_code,
+                'maxLegal': (item.relationship_code == 'ENFANT') ? 100000 : 31865
+            }}) %}
         {% endif %}
         {% set currentGroup = groupedPlan[benKey] %}
-        {% set newItems = currentGroup.items|merge([item]) %}
-        {% set groupedPlan = groupedPlan|merge({(benKey): currentGroup|merge({'items': newItems})}) %}
+        {% set groupedPlan = groupedPlan|merge({(benKey): currentGroup|merge({'items': currentGroup.items|merge([item])})}) %}
     {% endfor %}
 
-    <div class="container-fluid py-5 bg-light min-vh-100">
-        <div class="container">
+<div class="container py-5">
+    {# HEADER #}
+    <div class="text-center mb-4">
+        <h2 class="fw-black mb-0 text-dark">Stratégie de Transmission Familiale</h2>
+    </div>
 
-            {# --- HEADER & NAVIGATION STRATÉGIQUE --- #}
-            <div class="row mb-5 align-items-center">
-                <div class="col-lg-6">
-                    <div class="d-flex align-items-center mb-1">
-                        <h1 class="fw-bold h2 mb-0 text-dark">Tableau d'Optimisation</h1>
-                        <span class="badge bg-danger ms-3 shadow-sm animate__animated animate__flash animate__infinite animate__slow">
-                             Action requise
-                        </span>
-                    </div>
-                    <p class="text-muted">Identifiez les abattements qui expirent et réduisez votre exposition fiscale.</p>
-                </div>
-                
-                <div class="col-lg-6 text-lg-end">
-                    <div class="d-inline-flex align-items-center bg-white p-2 rounded-4 shadow-sm border">
-                        <form action="{{ path('app_optimization_dashboard') }}" method="get" class="row g-2 align-items-center m-0">
-                            <div class="col-auto">
-                                <span class="small fw-bold text-muted text-uppercase" style="font-size: 0.65rem;">Projection :</span>
-                            </div>
-                            <div class="col-auto border-end pe-3">
-                                <input type="date" name="date" class="form-control form-control-sm border-0 bg-light shadow-none fw-bold" 
-                                       value="{{ referenceDate|date('Y-m-d') }}" style="width: 140px;">
-                            </div>
-                            <div class="col-auto ps-2">
-                                <button type="submit" class="btn btn-primary btn-sm fw-bold px-3 rounded-3">Simuler</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+    {# --- SECTION 1 : LA FRISE ET LE TEXTE À TROUS --- #}
+    <div class="card border-0 shadow-lg rounded-5 bg-white p-5 mb-5 overflow-hidden">
+        {# Frise simplifiée #}
+        <div class="row align-items-center mb-5 position-relative">
+            <div class="position-absolute w-75 start-50 translate-middle-x d-none d-md-block" style="height: 2px; background: #f1f3f5; top: 20px; z-index: 1;">
+                <div id="timeline-progress" class="bg-success h-100" style="width: 0%; transition: width 0.6s ease;"></div>
             </div>
-
-            {# --- SECTION 1 : LES JAUGES D'EXPOSITION (ROUGE = OPPORTUNITÉ) --- #}
-            <div class="row g-4 mb-5">
-                <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-5 bg-white p-4 p-md-5 h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold text-dark mb-0">Abattements non utilisés</h5>
-                            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" title="Montant que vous pouvez transmettre sans impôts immédiatement."></i>
-                        </div>
-                        
-                        {% for group in groupedPlan %}
-                            {% set totalBen = 0 %}
-                            {% for op in group.items %}{% set totalBen = totalBen + op.available %}{% endfor %}
-                            
-                            {% set theoreticalMax = 100000 %} 
-                            {% set percentAvailable = (totalBen / theoreticalMax * 100)|round %}
-
-                            <div class="mb-5">
-                                <div class="d-flex justify-content-between align-items-end mb-2">
-                                    <div>
-                                        <span class="fw-bolder text-dark h5 mb-1 d-block">{{ group.name }}</span>
-                                        <div class="small text-danger fw-bold">
-                                            <i class="fas fa-arrow-alt-circle-right me-1"></i>
-                                            {{ totalBen|number_format(0, ',', ' ') }} € de potentiel fiscal à saisir
-                                        </div>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="h4 fw-bold text-dark mb-0">{{ percentAvailable }}%</span>
-                                        <span class="small text-muted d-block" style="font-size: 0.7rem;">DU PLAFOND DISPONIBLE</span>
-                                    </div>
-                                </div>
-                                <div class="progress rounded-pill shadow-inner" style="height: 16px; background-color: #f1f5f9;">
-                                    <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" 
-                                         role="progressbar" 
-                                         style="width: {{ percentAvailable }}%; opacity: 0.9;">
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-
-                        <div class="alert alert-soft-primary border-0 rounded-4 d-flex align-items-center m-0">
-                            <div class="me-3 fs-3">💡</div>
-                            <div class="small">
-                                <strong>Règle des 15 ans :</strong> En laissant ces jauges vides (rouges), vous retardez le renouvellement de vos droits. Transmettre aujourd'hui, c'est libérer de nouveaux droits pour {{ "now"|date_modify("+15 years")|date("Y") }}.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {# --- SECTION 2 : RÉCOMPENSE FINANCIÈRE --- #}
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-5 bg-danger text-white p-4 p-md-5 h-100 d-flex flex-column">
-                        <div class="mb-auto">
-                            <div class="badge bg-white text-danger rounded-pill px-3 mb-3 fw-bold">Gain successoral</div>
-                            <h2 class="display-4 fw-black mb-2 text-white">{{ totalTaxSaving|number_format(0, ',', ' ') }} €</h2>
-                            <p class="opacity-75 lead mb-4">C'est l'impôt que vous évitez à vos enfants en activant ces abattements maintenant.</p>
-                            
-                            <ul class="list-unstyled small">
-                                <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Protection du capital familial</li>
-                                <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Zéro droit de mutation</li>
-                                <li class="mb-2"><i class="fas fa-check-circle me-2"></i> Déclenchement du délai de 15 ans</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="pt-4">
-                            <a href="#" class="btn btn-white btn-lg w-100 rounded-pill fw-bold shadow">
-                                <i class="fas fa-paper-plane me-2"></i>Contacter un Notaire
-                            </a>
-                            <p class="text-center small mt-3 opacity-50 mb-0">Verrouillage exclusif du dossier sous 48h</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-4 text-center position-relative" style="z-index: 2;">
+                <div class="bg-primary text-white rounded-circle shadow-sm mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">{{ currentYear }}</div>
             </div>
-
-            {# --- SECTION 3 : DÉTAIL TECHNIQUE --- #}
-            <div class="row g-4 mb-5">
-                {% for group in groupedPlan %}
-                    <div class="col-lg-6">
-                        <div class="card border-0 shadow-sm rounded-4 p-4">
-                            <h5 class="fw-bold mb-4 text-dark"><i class="fas fa-fingerprint me-2 text-primary"></i>Origine des droits : {{ group.name }}</h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-borderless align-middle m-0">
-                                    <thead class="small text-muted text-uppercase border-bottom">
-                                        <tr>
-                                            <th>Donateur</th>
-                                            <th>Type de don</th>
-                                            <th class="text-end">Montant</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for op in group.items %}
-                                            <tr>
-                                                <td class="py-3">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar-circle me-2">{{ op.donor.firstname|slice(0,1) }}</div>
-                                                        <span class="fw-bold">{{ op.donor.firstname }}</span>
-                                                    </div>
-                                                </td>
-                                                <td class="py-3 small">{{ op.label }}</td>
-                                                <td class="py-3 text-end fw-black text-danger">{{ op.available|number_format(0, ',', ' ') }} €</td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
+            <div class="col-4 text-center position-relative" style="z-index: 2;">
+                <div id="step-mid" class="bg-light text-muted rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: 0.4s;">15 ans</div>
             </div>
-
-            {# --- SECTION 4 : HISTORIQUE ET RAPPELS --- #}
-            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
-                <h5 class="fw-bold mb-4 text-dark d-flex align-items-center">
-                    <i class="fas fa-history me-2 text-primary"></i>
-                    Calendrier de purge fiscale
-                </h5>
-                <div class="row g-3">
-                    {% for period in activePeriods|sort((a, b) => a.endDate <=> b.endDate) %}
-                        <div class="col-md-4">
-                            <div class="calendar-card {{ period.endDate < referenceDate ? 'cleared' : 'pending' }}">
-                                <div class="d-flex align-items-center">
-                                    <div class="cal-date text-center me-3">
-                                        <span class="d-block fw-black">{{ period.endDate|date('d/m') }}</span>
-                                        <span class="d-block small opacity-50">{{ period.endDate|date('Y') }}</span>
-                                    </div>
-                                    <div>
-                                        <div class="small fw-bold">{{ period.donor }} <i class="fas fa-long-arrow-alt-right mx-1 opacity-25"></i> {{ period.beneficiary }}</div>
-                                        <div class="small text-muted">{{ period.type }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
+            <div class="col-4 text-center position-relative" style="z-index: 2;">
+                <div id="step-end" class="bg-light text-muted rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: 0.4s;">{{ rechargeYear }}</div>
             </div>
+        </div>
 
+        {# LE TEXTE À TROUS DYNAMIQUE #}
+        <div class="bg-light rounded-4 p-4 text-center">
+            <h4 class="fw-normal lh-base mb-0" id="dynamic-story">
+                En activant la donation aujourd'hui, 
+                <span class="badge bg-white text-primary border px-3" id="slot-donor">Donateur</span> 
+                transmet un abattement à 
+                <span class="badge bg-white text-primary border px-3" id="slot-ben">Bénéficiaire</span>, 
+                permettant ainsi de restaurer la capacité de transmission en 
+                <span class="text-success fw-bold" id="slot-year">....</span>
+            </h4>
         </div>
     </div>
 
-    <style>
-        .fw-black { font-weight: 900; }
-        .bg-danger { background-color: #ef4444 !important; }
-        .text-danger { color: #ef4444 !important; }
-        .alert-soft-primary { background-color: #eef2ff; color: #4338ca; }
-        
-        .avatar-circle { width: 32px; height: 32px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: #64748b; }
-        
-        .calendar-card { padding: 15px; border-radius: 15px; border: 1px solid #f1f5f9; background: #f8fafc; transition: all 0.3s ease; }
-        .calendar-card.cleared { background: #f0fdf4; border-color: #bbf7d0; color: #15803d; }
-        .cal-date { background: white; border-radius: 10px; padding: 5px 10px; border: 1px solid rgba(0,0,0,0.05); min-width: 60px; }
-        
-        .btn-white { background: white; color: #ef4444; border: none; }
-        .btn-white:hover { background: #f8fafc; color: #dc2626; }
-        
-        .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
-    </style>
+    {# --- SECTION 2 : LES CARTES BÉNÉFICIAIRES --- #}
+    <div class="row g-4">
+        {% for benId, group in groupedPlan %}
+            {# On récupère le nom du premier donateur pour le texte par défaut #}
+            {% set firstDonor = group.items[0].donor.firstname %}
+            
+            <div class="col-md-6 col-xl-4">
+                <div class="card beneficiary-card border-0 shadow-sm rounded-5 bg-dark p-4 h-100" 
+                     style="cursor: pointer; transition: 0.3s;"
+                     data-ben="{{ group.name }}"
+                     data-donor="{{ firstDonor }}">
+                    
+                    <div class="text-center mb-4">
+                        <h5 class="fw-black text-white mb-1">{{ group.name }}</h5>
+                        <span class="badge bg-primary bg-opacity-20 text-primary x-small rounded-pill">{{ group.rel|replace({'_': ' '}) }}</span>
+                    </div>
+
+                    {# Réservoirs avec zone de taxe #}
+                    <div class="d-flex align-items-end justify-content-center position-relative mb-4" style="height: 150px;">
+                        <div class="position-absolute w-100" style="bottom: 110px; border-top: 2px dashed #ff4d4d; opacity: 0.4;"></div>
+                        
+                        <div class="mx-2 text-center" style="width: 50px;">
+                            <div class="bg-primary rounded-top" style="height: {{ (group.items[0].available / 1000) }}px;"></div>
+                            <div class="x-small text-white opacity-50 mt-2">Légal</div>
+                        </div>
+                        {# Affichage Sarkozy si présent #}
+                        {% for op in group.items %}
+                            {% if 'sarkozy' in op.type %}
+                                <div class="mx-2 text-center" style="width: 50px;">
+                                    <div class="bg-warning rounded-top" style="height: {{ (op.available / 1000) }}px;"></div>
+                                    <div class="x-small text-white opacity-50 mt-2">Argent</div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# FOOTER SUPPORT #}
+    <footer class="mt-5 pt-4 border-top d-flex justify-content-between text-muted x-small">
+        <div><i class="fas fa-shield-alt me-2"></i>Détails sécurisés & Archivage Notaire</div>
+        <div>{{ currentYear }} © Stratégie Patrimoniale</div>
+    </footer>
+</div>
+
+<style>
+    .fw-black { font-weight: 900; }
+    .x-small { font-size: 0.65rem; }
+    .rounded-5 { border-radius: 2rem !important; }
+    .bg-dark { background-color: #0f1113 !important; }
+    .card-active { transform: translateY(-10px); box-shadow: 0 1rem 3rem rgba(0,0,0,0.175)!important; border: 1px solid #0d6efd !important; }
+    #slot-donor, #slot-ben { transition: all 0.3s ease; min-width: 120px; display: inline-block; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.beneficiary-card');
+    const slotDonor = document.getElementById('slot-donor');
+    const slotBen = document.getElementById('slot-ben');
+    const slotYear = document.getElementById('slot-year');
+    const progress = document.getElementById('timeline-progress');
+    const stepMid = document.getElementById('step-mid');
+    const stepEnd = document.getElementById('step-end');
+
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const ben = card.getAttribute('data-ben');
+            const donor = card.getAttribute('data-donor');
+
+            // Mise à jour du texte à trous
+            slotDonor.innerText = donor;
+            slotDonor.classList.replace('bg-white', 'bg-primary');
+            slotDonor.classList.replace('text-primary', 'text-white');
+            
+            slotBen.innerText = ben;
+            slotBen.classList.replace('bg-white', 'bg-primary');
+            slotBen.classList.replace('text-primary', 'text-white');
+
+            slotYear.innerText = "{{ rechargeYear }}";
+
+            // Animation frise
+            progress.style.width = "100%";
+            stepMid.classList.replace('bg-light', 'bg-primary');
+            stepMid.classList.replace('text-muted', 'text-white');
+            stepEnd.classList.replace('bg-light', 'bg-success');
+            stepEnd.classList.replace('text-muted', 'text-white');
+
+            card.classList.add('card-active');
+        });
+
+        card.addEventListener('mouseleave', () => {
+            // Reset
+            slotDonor.innerText = "Donateur";
+            slotDonor.classList.replace('bg-primary', 'bg-white');
+            slotDonor.classList.replace('text-white', 'text-primary');
+
+            slotBen.innerText = "Bénéficiaire";
+            slotBen.classList.replace('bg-primary', 'bg-white');
+            slotBen.classList.replace('text-white', 'text-primary');
+
+            slotYear.innerText = "....";
+
+            progress.style.width = "0%";
+            stepMid.classList.replace('bg-primary', 'bg-light');
+            stepMid.classList.replace('text-white', 'text-muted');
+            stepEnd.classList.replace('bg-success', 'bg-light');
+            stepEnd.classList.replace('text-white', 'text-muted');
+
+            card.classList.remove('card-active');
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -2,11 +2,12 @@
 
 namespace App\Service;
 
+use App\Entity\User;
+use App\Entity\Notary;
 use App\Entity\Simulation;
 use App\Entity\SimulationStep;
-use App\Entity\User;
-use App\Repository\SimulationStatusRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\SimulationStatusRepository;
 
 class SimulationService
 {
@@ -78,7 +79,7 @@ class SimulationService
     /**
      * Méthode générique pour ajouter n'importe quelle étape (utilisable aussi par le notaire plus tard)
      */
-    public function addStep(Simulation $simulation, string $statusCode, ?User $author = null): SimulationStep
+    public function addStep(Simulation $simulation, string $statusCode, ?User $user = null, ?Notary $notary = null): SimulationStep
     {
         $status = $this->statusRepo->findOneBy(['code' => $statusCode]);
         
@@ -89,7 +90,8 @@ class SimulationService
         $step = new SimulationStep();
         $step->setSimulation($simulation);
         $step->setStatus($status);
-        $step->setChangedBy($author); 
+        $step->setChangedByUser($user);
+        $step->setChangeByNotary($notary);
         $step->setCreatedAt(new \DateTimeImmutable());
 
         $this->em->persist($step);

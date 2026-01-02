@@ -16,7 +16,6 @@
                     Accueil
                 </a>
             </li>
-
             {# SECTION NOTAIRE #}
             {% if is_granted('ROLE_NOTARY') %}
                 {% set notary = app.user.notary %}
@@ -57,7 +56,7 @@
             {% if is_granted('ROLE_USER') and not is_granted('ROLE_NOTARY') %}
                 <li>
                     <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
-                        <i class="fas fa-users-rectangle me-2"></i> Ma Famille
+                        <i class="fa-solid fa-people-roof me-2"></i> Ma Famille
                     </a>
                 </li>
             {% endif %}

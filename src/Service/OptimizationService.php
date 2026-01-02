@@ -14,7 +14,7 @@ class OptimizationService
     public function __construct(
         private RelationshipRepository $relationshipRepository,
         private DonationService $donationService,
-        private TaxCalculatorService $taxService
+        private TaxBracketService $taxService
     ) {}
 
     public function getDonationAnalyses(User $user): array

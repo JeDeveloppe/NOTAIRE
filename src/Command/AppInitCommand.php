@@ -8,6 +8,7 @@ use App\Entity\Notary;
 use App\Entity\Person;
 use App\Entity\Donation;
 use App\Entity\OfferPrice;
+use App\Entity\TaxBracket;
 use App\Entity\DonationRule;
 use App\Entity\Relationship;
 use App\Service\CityService;
@@ -37,7 +38,8 @@ class AppInitCommand extends Command
         private string $adminEmail,
         private string $adminPassword,
         private array $simulationStatuses,
-        private array $offers
+        private array $offers,
+        private array $taxBrackets
     ) {
         parent::__construct();
     }
@@ -114,6 +116,36 @@ class AppInitCommand extends Command
             $this->em->persist($rule);
             $io->text("-> Ajout de la règle : " . $data['label']);
         }
+
+        //5a. Importation des taxbrackets
+        $io->section('Importation des tranches fiscales (Tax Brackets)');
+
+        foreach ($this->taxBrackets as $categoryName => $tranches) {
+            foreach ($tranches as $data) {
+                $bracket = new TaxBracket();
+                
+                // Mappe 'progressif_direct', 'freres_soeurs', etc.
+                $bracket->setCategory($categoryName); 
+                
+                // Mappe la limite (ex: 8072 ou null)
+                $bracket->setAmountLimit($data['limit']); 
+                
+                // Mappe le taux (ex: 0.05)
+                $bracket->setRate($data['rate']); 
+                
+                $this->em->persist($bracket);
+                
+                $io->text(sprintf(
+                    "-> Ajout tranche [%s] : Jusqu'à %s € à %d%%", 
+                    $categoryName, 
+                    $data['limit'] ?? 'Infini', 
+                    $data['rate'] * 100
+                ));
+            }
+        }
+
+        $this->em->flush();
+        $io->success('Toutes les tranches ont été importées avec succès.');
 
         // 6. Création Admin
         $io->section('Création de l\'administrateur');

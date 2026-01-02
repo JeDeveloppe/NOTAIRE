@@ -13,7 +13,7 @@
 		<div class="container">
 <div class="d-flex justify-content-between align-items-center mb-5 bg-white p-4 rounded-4 shadow-sm border-0 position-relative overflow-hidden">
     {# Accent vertical pour le statut #}
-    <div class="position-absolute start-0 top-0 bottom-0 bg-{{ person.deceased ? 'secondary' : 'primary' }}" style="width: 5px; opacity: 0.8;"></div>
+    <div class="position-absolute start-0 top-0 bottom-0 bg-{{ person.deceased ? 'secondary' : 'primary' }} status-accent"></div>
 
     <div class="d-flex align-items-center">
         {# Avatar avec initiale #}
@@ -44,8 +44,8 @@
     </div>
 
     {# Bloc de résultat financier (Scorecard) #}
-    <div class="text-end p-3 rounded-4 bg-light border border-white shadow-sm" style="min-width: 240px; background: linear-gradient(145deg, #ffffff, #f8fafc);">
-        <div class="text-muted small text-uppercase fw-bold mb-1" style="font-size: 0.6rem; letter-spacing: 1.5px; opacity: 0.8;">
+    <div class="text-end p-3 rounded-4 bg-light border border-white shadow-sm scorecard-gradient">
+        <div class="text-muted small text-uppercase fw-bold mb-1 scorecard-label">
             Capacité de transmission
         </div>
         <div class="h2 fw-bold text-success mb-0">
@@ -53,8 +53,8 @@
             <span class="ms-1 h5 mb-0 opacity-75">€</span>
         </div>
         <div class="mt-2 d-flex align-items-center justify-content-end gap-2">
-            <span class="small text-muted" style="font-size: 0.7rem;">Optimisation maximale</span>
-            <div class="spinner-grow spinner-grow-sm text-success" role="status" style="width: 8px; height: 8px;"></div>
+            <span class="small text-muted scorecard-subtitle">Optimisation maximale</span>
+            <div class="spinner-grow spinner-grow-sm text-success spinner-tiny" role="status"></div>
         </div>
     </div>
 </div>
@@ -76,7 +76,7 @@
 										<div class="tree-node parent">
 											<span class="node-label">PARENT</span>
 											<span class="node-name">
-												<i class="fas {{ parent.genderIcon }} me-1" style="font-size: 0.7rem;"></i>
+												<i class="fas {{ parent.genderIcon }} me-1 icon-gender-sm"></i>
 												{{ parent.firstname }}
 											</span>
 										</div>
@@ -111,7 +111,7 @@
 										<div class="tree-node child">
 											<span class="node-label">ENFANT</span>
 											<span class="node-name">
-												<i class="fas {{ child.genderIcon }} me-1" style="font-size: 0.7rem;"></i>
+												<i class="fas {{ child.genderIcon }} me-1 icon-gender-sm"></i>
 												{{ child.firstname }}
 											</span>
 										</div>
@@ -191,7 +191,7 @@
 				<div class="table-responsive">
 					<table class="table table-hover align-middle mb-0">
 						<thead class="bg-light">
-							<tr class="small text-muted" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+							<tr class="small text-muted table-header-custom">
 								<th class="ps-4 py-3">DATE DE L'ACTE</th>
 								<th>NATURE DU FLUX</th>
 								<th>TIERS CONCERNÉ</th>

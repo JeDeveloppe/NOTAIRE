@@ -30,7 +30,7 @@ Le projet intègre les règles fiscales de 2025, notamment :
 
 * **Abattements de ligne directe** : Parent-Enfant (100 000 €), Petit-Enfant (31 865 €).
 * **Dons Familiaux de Sommes d'Argent** : Dispositif "Sarkozy" de 31 865 € sous conditions d'âge.
-* **Règle du Rappel Fiscal** : Gestion du délai de 15 ans entre deux donations pour bénéficier à nouveau des abattements.
+* **Règle des donations actives (15 ans)** : Gestion du délai de 15 ans entre deux donations pour bénéficier à nouveau des abattements.
 
 ## 💻 Installation & Configuration
 

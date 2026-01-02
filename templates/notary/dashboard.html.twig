@@ -1,287 +1,481 @@
 {# templates/notary/dashboard.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord - {{ notary.name }}{% endblock %}
+{% block title %}Tableau de bord -
+	{{ notary.name }}
+{% endblock %}
 
 {% block body %}
-<style>
-    :root {
-        --indigo-brand: #6366f1;
-        --indigo-light: rgba(99, 102, 241, 0.1);
-        --slate-600: #475569;
-        --slate-400: #94a3b8;
-    }
-    .text-indigo { color: var(--indigo-brand) !important; }
-    .bg-indigo-light { background-color: var(--indigo-light) !important; }
-    .fw-black { font-weight: 900; }
-    .smaller { font-size: 0.75rem !important; }
+	<style>:root
+	{
+		--indigo-brand: #6366f1;
+		--indigo-light: rgba(99, 102, 241, 0.1);
+		--slate-600: #475569;
+		--slate-400: #94a3b8;
+	}
+	.text-indigo {
+		color: var(--indigo-brand) !important;
+	}
+	.bg-indigo-light {
+		background-color: var(--indigo-light) !important;
+	}
+	.fw-black {
+		font-weight: 900;
+	}
+	.smaller {
+		font-size: 0.75rem !important;
+	}
 
-    /* --- HEADER & SCORE --- */
-    .kpi-score-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 1.25rem !important;
-    }
-    .score-circle {
-        width: 54px; height: 54px;
-        display: flex; align-items: center; justify-content: center;
-        background-color: var(--indigo-brand); color: white;
-        border-radius: 50%; font-weight: 800;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    }
+	/* --- HEADER & SCORE --- */
+	.kpi-score-card {
+		background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%) !important;
+		border: 1px solid #e2e8f0 !important;
+		border-radius: 1.25rem !important;
+	}
+	.score-circle {
+		width: 54px;
+		height: 54px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--indigo-brand);
+		color: white;
+		border-radius: 50%;
+		font-weight: 800;
+		box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+	}
 
-    /* --- BOUTON AIDE UX "CAPSULE" --- */
-    .btn-help-ux {
-        background: #fff;
-        padding: 4px 12px 4px 4px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid #e2e8f0 !important;
-        text-decoration: none !important;
-    }
-    .btn-help-ux .icon-wrapper {
-        background: var(--indigo-brand); color: white;
-        width: 28px; height: 28px;
-        display: flex; align-items: center; justify-content: center;
-        border-radius: 50%; font-size: 0.9rem;
-    }
-    .btn-help-ux .text-help { font-size: 0.65rem; letter-spacing: 0.05rem; color: var(--slate-600); }
-    .btn-help-ux:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.15) !important; }
+	/* --- BOUTON AIDE UX "CAPSULE" --- */
+	.btn-help-ux {
+		background: #fff;
+		padding: 4px 12px 4px 4px;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		border: 1px solid #e2e8f0 !important;
+		text-decoration: none !important;
+	}
+	.btn-help-ux .icon-wrapper {
+		background: var(--indigo-brand);
+		color: white;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		font-size: 0.9rem;
+	}
+	.btn-help-ux .text-help {
+		font-size: 0.65rem;
+		letter-spacing: 0.05rem;
+		color: var(--slate-600);
+	}
+	.btn-help-ux:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.15) !important;
+	}
 
-    /* --- ACCORDÉON --- */
-    .accordion-item { border: 1px solid #f1f5f9 !important; margin-bottom: 0.5rem; border-radius: 0.75rem !important; overflow: hidden; }
-    .accordion-button:not(.collapsed) { background-color: var(--indigo-light) !important; color: var(--indigo-brand) !important; box-shadow: none; }
+	/* --- ACCORDÉON --- */
+	.accordion-item {
+		border: 1px solid #f1f5f9 !important;
+		margin-bottom: 0.5rem;
+		border-radius: 0.75rem !important;
+		overflow: hidden;
+	}
+	.accordion-button:not(.collapsed) {
+		background-color: var(--indigo-light) !important;
+		color: var(--indigo-brand) !important;
+		box-shadow: none;
+	}
 
-    /* --- FLUX & BLUR --- */
-    .blur-container { position: relative; min-height: 350px; overflow: hidden; border-radius: 0 0 1rem 1rem; }
-    .blur-content { filter: blur(8px); opacity: 0.4; pointer-events: none; }
-    .teaser-overlay {
-        position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100;
-        display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.5);
-    }
-    .teaser-card {
-        background: white; padding: 2rem; border-radius: 1.5rem;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15); text-align: center; max-width: 420px;
-    }
+	/* --- FLUX & BLUR --- */
+	.blur-container {
+		position: relative;
+		min-height: 350px;
+		overflow: hidden;
+		border-radius: 0 0 1rem 1rem;
+	}
+	.blur-content {
+		filter: blur(8px);
+		opacity: 0.4;
+		pointer-events: none;
+	}
+	.teaser-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.5);
+	}
+	.teaser-card {
+		background: white;
+		padding: 2rem;
+		border-radius: 1.5rem;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+		text-align: center;
+		max-width: 420px;
+	}
 
-    .dot-live {
-        height: 10px; width: 10px; background-color: #22c55e; border-radius: 50%;
-        display: inline-block; animation: pulse-green 2s infinite;
-    }
-    @keyframes pulse-green {
-        0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-        70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-    }
-    
-    .btn-edit-pill {
-        background: var(--indigo-light); color: var(--indigo-brand);
-        border: none; padding: 0.4rem 1rem; border-radius: 50px;
-        font-weight: 700; font-size: 0.75rem; text-decoration: none;
-        transition: all 0.2s;
-    }
-    .btn-edit-pill:hover { background: var(--indigo-brand); color: white; }
+	.dot-live {
+		height: 10px;
+		width: 10px;
+		background-color: #22c55e;
+		border-radius: 50%;
+		display: inline-block;
+		animation: pulse-green 2s infinite;
+	}
+	@keyframes pulse-green {
+		0% {
+			box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+		}
+		70% {
+			box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+		}
+		100% {
+			box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+		}
+	}
+
+	.btn-edit-pill {
+		background: var(--indigo-light);
+		color: var(--indigo-brand);
+		border: none;
+		padding: 0.4rem 1rem;
+		border-radius: 50px;
+		font-weight: 700;
+		font-size: 0.75rem;
+		text-decoration: none;
+		transition: all 0.2s;
+	}
+	.btn-edit-pill:hover {
+		background: var(--indigo-brand);
+		color: white;
+	}
+	.bg-success-soft {
+		background-color: #e8f5e9;
+	}
+	.bg-danger-soft {
+		background-color: #ffebee;
+	}
+	.smaller-2 {
+		font-size: 0.65rem;
+	}
+	@media(min-width: 768px) {
+		.border-start-md {
+			border-left: 1px solid #eee !important;
+		}
+		.border-end-md {
+			border-right: 1px solid #eee !important;
+		}
+	}
 </style>
 
-<div class="container py-5">
-    {# --- HEADER : INFOS NOTAIRE --- #}
-    <div class="card kpi-score-card shadow-sm border-0 mb-5 p-4">
-        <div class="row align-items-center">
-            <div class="col-md-7">
-                <h4 class="fw-black mb-1">Maître {{ notary.name }}</h4>
-                <div class="d-flex align-items-center gap-3 mt-2">
-                    <span class="text-muted smaller"><i class="bi bi-patch-check-fill text-primary me-1"></i> Étude certifiée</span>
-                    <div class="vr opacity-25" style="height: 15px;"></div>
-                    
-                    <div class="d-flex align-items-center gap-2">
-                        <a href="#" class="text-decoration-none smaller text-indigo fw-bold bg-white border px-3 py-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalSubscriptionDetail">
-                            <i class="bi bi-credit-card-2-front me-1"></i> Offre : {{ activeSubscription.offer.name|default('Aucune') }}
-                        </a>
-                        <button type="button" class="btn btn-help-ux d-flex align-items-center gap-2 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#faqModal">
-                            <span class="icon-wrapper"><i class="bi bi-patch-question-fill"></i></span>
-                            <span class="text-help fw-bold text-uppercase">Besoin d'aide ?</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-5 text-md-end mt-3 mt-md-0">
-                <div class="d-inline-flex align-items-center bg-white p-2 pe-4 rounded-pill shadow-sm border">
-                    <div class="score-circle me-3">{{ notary.score|default('100') }}</div>
-                    <div class="text-start">
-                        <div class="fw-bold text-dark mb-0" style="font-size: 0.85rem;">Indice de réactivité</div>
-                        <div class="text-muted smaller">Performance dossiers</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div
+	class="container py-5">
+	{# --- HEADER : INFOS NOTAIRE --- #}
+	{% set scoreGlobal = 100 + notaryStats.points_cumules|default(0) %}
+	{% set isLowScore = scoreGlobal < 100 %}
+	{% set taux = notaryStats.metrics.transformation_rate|default(0) %}
 
-    <div class="row g-4">
-        {# --- COLONNE GAUCHE : COUVERTURE --- #}
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 h-100 rounded-4">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h5 class="fw-bold mb-0 text-dark">Ma couverture</h5>
-                        <span class="badge bg-indigo-light text-indigo rounded-pill px-3 py-2 smaller">
-                            {{ stats.usedSlots }} / {{ stats.totalSlots }} CP
-                        </span>
-                    </div>
+	<div
+		class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+		{# Barre de statut supérieure discrète #}
+		<div class="py-1 {{ isLowScore ? 'bg-danger' : 'bg-primary' }} opacity-75"></div>
 
-                    {% if hasActiveOffer and groupedSectors is not empty %}
-                        <div class="accordion accordion-flush" id="accordionSectors">
-                            {% for cp, cities in groupedSectors %}
-                                <div class="accordion-item shadow-sm">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ cp }}">
-                                            <i class="bi bi-geo-alt-fill text-indigo me-2"></i> {{ cp }}
-                                        </button>
-                                    </h2>
-                                    <div id="collapse{{ cp }}" class="accordion-collapse collapse">
-                                        <div class="accordion-body bg-white py-2">
-                                            <ul class="list-unstyled mb-0">
-                                                {% for city in cities %}
-                                                    <li class="smaller py-1 text-muted border-bottom border-light">
-                                                        <i class="bi bi-dot text-indigo"></i> {{ city.name|upper }}
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <a href="{{ path('notary_setup_zipcodes') }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-bold mt-4">
-                            <i class="bi bi-pencil-square me-2"></i>Modifier ma zone
-                        </a>
-                    {% else %}
-                        <div class="text-center py-5 bg-light rounded-4 border">
-                            <i class="bi bi-shield-lock text-muted opacity-25 fs-1"></i>
-                            <p class="smaller text-muted mt-3 mb-4 px-4">Activez une offre pour choisir vos secteurs.</p>
-                            {% include 'components/buttons/_notary_choice_price.html.twig' %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+		<div
+			class="card-body p-4">
+			{# --- CALCULS PRÉALABLES --- #}
+			{% set scoreGlobal = notaryStats.score_global|default(100) %}
+			{% set taux = notaryStats.metrics.transformation_rate|default(0) %}
+			{% set isLowScore = scoreGlobal < 100 %}
 
-        {# --- COLONNE DROITE : OPPORTUNITÉS & SUIVI --- #}
-        <div class="col-lg-8">
-            {# 1. Opportunités détectées #}
-            <div class="card shadow-sm border-0 mb-4 border-start border-primary border-5 rounded-4 overflow-hidden">
-                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <h5 class="fw-bold mb-0 text-primary">Opportunités détectées</h5>
-                        <span class="ms-3 d-flex align-items-center bg-light px-2 py-1 rounded-pill">
-                            <span class="dot-live me-2"></span>
-                            <span class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">Direct</span>
-                        </span>
-                    </div>
-                </div>
+			<div
+				class="row align-items-center">
+				{# Section 1 : Identité & Offre #}
+				<div class="col-xl-4 col-lg-5 border-end-lg">
+					<div class="d-flex align-items-center mb-3">
+						<div class="flex-shrink-0 bg-light rounded-3 p-3 me-3 text-primary">
+							<i class="fas fa-briefcase fs-3"></i>
+						</div>
+						<div>
+							<h4 class="fw-bold mb-0 text-dark">{{ notary.name }}</h4>
+							<span class="badge bg-primary-soft text-primary rounded-pill smaller-2 px-3">
+								<i class="bi bi-shield-check me-1"></i>Étude certifiée
+							</span>
+						</div>
+					</div>
+					<div class="d-flex gap-2">
+						<a href="#" class="btn btn-sm btn-outline-light text-dark border shadow-xs rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalSubscriptionDetail">
+							<i class="bi bi-credit-card-2-front me-2 text-primary"></i>
+							{{ activeSubscription.offer.name|default('Standard') }}
+						</a>
+						<button class="btn btn-sm btn-light rounded-pill px-3 text-uppercase fw-bold" style="font-size: 0.65rem;" data-bs-toggle="modal" data-bs-target="#faqModal">
+							<i class="bi bi-question-circle-fill me-1 text-warning"></i>Aide
+						</button>
+					</div>
+				</div>
 
-                <div class="blur-container">
-                    {% if not hasActiveOffer %}
-                        <div class="teaser-overlay">
-                            <div class="teaser-card">
-                                <h5 class="fw-bold mb-4 text-dark">Débloquez vos opportunités</h5>
-                                <p class="smaller text-muted mb-4">Souscrivez pour accéder aux dossiers de votre zone.</p>
-                                {% include 'components/buttons/_notary_choice_price.html.twig' %}
-                            </div>
-                        </div>
-                    {% endif %}
+				{# Section 2 : Tunnel de conversion (Central) #}
+				<div class="col-xl-5 col-lg-4 mt-4 mt-lg-0 px-xl-5">
+					<div class="d-flex justify-content-between align-items-end mb-2">
+						<h6 class="text-uppercase text-muted fw-bold mb-0" style="font-size: 0.7rem; letter-spacing: 1px;">Efficacité commerciale</h6>
+						<span class="fw-bold {{ taux < 50 ? 'text-danger' : 'text-success' }}" style="font-size: 0.85rem;">{{ taux }}% de rappel</span>
+					</div>
+					{# Timeline des volumes (Clés en majuscules pour correspondre au Repository) #}
+					<div class="d-flex align-items-center justify-content-between text-center bg-light rounded-3 p-2 border">
+						<div class="px-2">
+							<div class="smaller-2 text-muted">SÉLECTION</div>
+							<div class="fw-bold text-dark">{{ notaryStats.counts.reserved|default(0) }}</div>
+						</div>
+						<i class="bi bi-chevron-right text-muted smaller"></i>
+						<div class="px-2">
+							<div class="smaller-2 text-muted">CONTACT</div>
+							<div class="fw-bold text-success">{{ notaryStats.counts.contacted|default(0) }}</div>
+						</div>
+						<i class="bi bi-chevron-right text-muted smaller"></i>
+						<div class="px-2">
+							<div class="smaller-2 text-muted">EXPIRÉ</div>
+							<div class="fw-bold {{ (notaryStats.counts.expired|default(0)) > 0 ? 'text-danger' : 'text-dark' }}">
+								{{ notaryStats.counts.expired|default(0) }}
+							</div>
+						</div>
+					</div>
+					<div class="progress mt-2" style="height: 6px; border-radius: 10px;">
+						<div class="progress-bar {{ taux < 50 ? 'bg-danger' : 'bg-success' }} shadow-sm" style="width: {{ taux }}%"></div>
+					</div>
+				</div>
 
-                    <div class="table-responsive {{ not hasActiveOffer ? 'blur-content' : '' }}">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light smaller text-muted">
-                                <tr>
-                                    <th class="ps-4 border-0">Secteur</th>
-                                    <th class="border-0">Type / Réf</th>
-                                    <th class="border-0">Potentiel Fiscal</th>
-                                    <th class="border-0 text-end pe-4">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for sim in availableSimulations %}
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="fw-bold text-dark">{{ sim.user.city.postalCode }}</div>
-                                            <div class="smaller text-muted">{{ sim.user.city.name|upper }}</div>
-                                        </td>
-                                        <td>
-                                            {% set type = sim.reference|split('-')|last %}
-                                            <span class="badge {% if type == 'DON' %}bg-info{% else %}bg-primary{% endif %} rounded-pill mb-1" style="font-size: 0.6rem;">
-                                                {{ type == 'DON' ? 'DONATION' : 'SUCCESSION' }}
-                                            </span>
-                                            <div class="smaller fw-bold text-muted" style="font-size: 0.6rem;">{{ sim.reference }}</div>
-                                        </td>
-                                        <td>
-                                            <div class="fw-bold text-success">
-                                                <i class="bi bi-piggy-bank-fill me-1"></i>
-                                                {{ sim.totalSaving|default(0)|number_format(0, ',', ' ') }} € économisables
-                                            </div>
-                                            <div class="smaller text-muted">
-                                                Sur {{ sim.totalAvailable|default(0)|number_format(0, ',', ' ') }} € d'abattements
-                                            </div>
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            {# NAVIGATION : FROM DASHBOARD #}
-                                            <a href="{{ path('app_notary_simulation_view', {reference: sim.reference, from: 'dashboard'}) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
-                                                Voir
-                                            </a>
-                                        </td>
-                                    </tr>
-                                {% else %}
-                                    <tr><td colspan="4" class="text-center py-5 text-muted smaller">Aucune opportunité dans votre secteur actuellement.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+				{# Section 3 : Score de Réactivité (Focus UX) #}
+				<div class="col-xl-3 col-lg-3 text-center mt-4 mt-lg-0">
+					<div class="p-3 rounded-4 {{ isLowScore ? 'bg-danger-soft-grad' : 'bg-success-soft-grad' }} border shadow-sm">
+						<div class="text-uppercase fw-bold mb-1 {{ isLowScore ? 'text-danger' : 'text-success' }}" style="font-size: 0.65rem;">Indice de réactivité</div>
+						<div class="display-6 fw-black mb-0">{{ scoreGlobal }}</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-                    {% if viewAllSimulations is true %}
-                        <div class="text-center py-3 border-top bg-light">
-                            <a href="{{ path('app_site_notary_all_simulations') }}" class="btn btn-link text-indigo fw-bold text-decoration-none smaller">
-                                <i class="bi bi-book-half me-2"></i> 
-                                Voir tous les autres dossiers dans votre zone
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+	<style>
+		/* Couleurs personnalisées */
+		.bg-primary-soft {
+			background-color: rgba(13, 110, 253, 0.1);
+		}
+		.bg-success-soft-grad {
+			background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+			border-color: #c6f6d5 !important;
+		}
+		.bg-danger-soft-grad {
+			background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+			border-color: #fed7d7 !important;
+		}
+		.fw-black {
+			font-weight: 900;
+		}
+		.smaller-2 {
+			font-size: 0.65rem;
+		}
+		.shadow-xs {
+			box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+		}
 
-            {# 2. Mes dossiers suivis #}
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-white border-0 py-3">
-                    <h5 class="fw-bold mb-0 text-dark">Mes dossiers suivis (Réservés)</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <tbody>
-                            {% for lead in notary.simulations %}
-                                <tr>
-                                    <td class="ps-4">
-                                        <span class="fw-bold smaller text-indigo">{{ lead.reference }}</span>
-                                    </td>
-                                    <td class="smaller">
-                                        <div class="fw-medium">{{ lead.user.email }}</div>
-                                        <div class="text-muted" style="font-size: 0.65rem;">Réservé le {{ lead.reservedAt|date('d/m/Y') }}</div>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        {# NAVIGATION : FROM DASHBOARD #}
-                                        <a href="{{ path('app_notary_simulation_view', {reference: lead.reference, from: 'dashboard'}) }}" class="btn-edit-pill">Ouvrir</a>
-                                    </td>
-                                </tr>
-                            {% else %}
-                                <tr><td colspan="3" class="text-center py-5 text-muted smaller">Aucun dossier en cours de suivi.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+		@media(min-width: 992px) {
+			.border-end-lg {
+				border-right: 1px solid #eee !important;
+			}
+		}
+	</style>
+
+	<div
+		class="row g-4">
+		{# --- COLONNE GAUCHE : COUVERTURE --- #}
+		<div class="col-lg-4">
+			<div class="card shadow-sm border-0 h-100 rounded-4">
+				<div class="card-body p-4">
+					<div class="d-flex justify-content-between align-items-center mb-4">
+						<h5 class="fw-bold mb-0 text-dark">Ma couverture</h5>
+						<span class="badge bg-indigo-light text-indigo rounded-pill px-3 py-2 smaller">
+							{% if hasActiveOffer %}
+								{{ stats.usedSlots }}
+								/
+								{{ stats.totalSlots }}
+								CP
+							{% else %}
+								0 / 0 CP
+							{% endif %}
+						</span>
+					</div>
+
+					{% if hasActiveOffer %}
+						<div class="accordion accordion-flush" id="accordionSectors">
+							{% for cp, cities in groupedSectors %}
+								<div class="accordion-item shadow-sm">
+									<h2 class="accordion-header">
+										<button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ cp }}">
+											<i class="bi bi-geo-alt-fill text-indigo me-2"></i>
+											{{ cp }}
+										</button>
+									</h2>
+									<div id="collapse{{ cp }}" class="accordion-collapse collapse">
+										<div class="accordion-body bg-white py-2">
+											<ul class="list-unstyled mb-0">
+												{% for city in cities %}
+													<li class="smaller py-1 text-muted border-bottom border-light">
+														<i class="bi bi-dot text-indigo"></i>
+														{{ city.name|upper }}
+													</li>
+												{% endfor %}
+											</ul>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+						<a href="{{ path('notary_setup_zipcodes') }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-bold mt-4">
+							<i class="bi bi-pencil-square me-2"></i>Modifier ma zone
+						</a>
+					{% else %}
+						<div class="text-center py-5 bg-light rounded-4 border">
+							<i class="bi bi-shield-lock text-muted opacity-25 fs-1"></i>
+							<p class="smaller text-muted mt-3 mb-4 px-4">Activez une offre pour choisir vos secteurs.</p>
+							{% include 'components/buttons/_notary_choice_price.html.twig' %}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		{# --- COLONNE DROITE : OPPORTUNITÉS & SUIVI --- #}
+		<div
+			class="col-lg-8">
+			{# 1. Opportunités détectées #}
+			<div class="card shadow-sm border-0 mb-4 border-start border-primary border-5 rounded-4 overflow-hidden">
+				<div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+					<div class="d-flex align-items-center">
+						<h5 class="fw-bold mb-0 text-primary">Votre zone</h5>
+						<span class="ms-3 d-flex align-items-center bg-light px-2 py-1 rounded-pill">
+							<span class="dot-live me-2"></span>
+							<span class="text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">Direct</span>
+						</span>
+					</div>
+				</div>
+
+				<div class="blur-container">
+					{% if not hasActiveOffer %}
+						<div class="teaser-overlay">
+							<div class="teaser-card">
+								<h5 class="fw-bold mb-4 text-dark">Débloquez vos opportunités</h5>
+								<p class="smaller text-muted mb-4">Souscrivez pour accéder aux dossiers de votre zone.</p>
+								{% include 'components/buttons/_notary_choice_price.html.twig' %}
+							</div>
+						</div>
+					{% endif %}
+
+					<div class="table-responsive {{ not hasActiveOffer ? 'blur-content' : '' }}">
+						<table class="table table-hover align-middle mb-0">
+							<thead class="bg-light smaller text-muted">
+								<tr>
+									<th class="ps-4 border-0">Secteur</th>
+									<th class="border-0">Type / Réf</th>
+									<th class="border-0">Potentiel Fiscal</th>
+									<th class="border-0 text-end pe-4">Action</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for sim in availableSimulations %}
+									<tr>
+										<td class="ps-4">
+											<div class="fw-bold text-dark">{{ sim.user.city.postalCode }}</div>
+											<div class="smaller text-muted">{{ sim.user.city.name|upper }}</div>
+										</td>
+										<td>
+											{% set type = sim.reference|split('-')|last %}
+											<span class="badge {% if type == 'DON' %}bg-info{% else %}bg-primary{% endif %} rounded-pill mb-1" style="font-size: 0.6rem;">
+												{{ type == 'DON' ? 'DONATION' : 'SUCCESSION' }}
+											</span>
+											<div class="smaller fw-bold text-muted" style="font-size: 0.6rem;">{{ sim.reference }}</div>
+										</td>
+										<td>
+											<div class="fw-bold text-success">
+												<i class="bi bi-piggy-bank-fill me-1"></i>
+												{{ sim.totalSaving|default(0)|number_format(0, ',', ' ') }}
+												€ économisables
+											</div>
+											<div class="smaller text-muted">
+												Sur
+												{{ sim.totalAvailable|default(0)|number_format(0, ',', ' ') }}
+												€ d'abattements
+											</div>
+										</td>
+										<td
+											class="text-end pe-4">
+											{# NAVIGATION : FROM DASHBOARD #}
+											<a href="{{ path('app_notary_simulation_view', {reference: sim.reference, from: 'dashboard'}) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
+												Voir
+											</a>
+										</td>
+									</tr>
+								{% else %}
+									<tr>
+										<td colspan="4" class="text-center py-5 text-muted smaller">Aucun dossier dans votre zone actuellement.</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+
+					{% if viewAllSimulations is true %}
+						<div class="text-center py-3 border-top bg-light">
+							<a href="{{ path('app_site_notary_all_simulations') }}" class="btn btn-link text-indigo fw-bold text-decoration-none smaller">
+								<i class="bi bi-book-half me-2"></i>
+								Voir tous les autres dossiers dans votre zone
+							</a>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+
+			{# 2. Mes dossiers suivis #}
+			<div class="card shadow-sm border-0 rounded-4">
+				<div class="card-header bg-white border-0 py-3">
+					<h5 class="fw-bold mb-0 text-dark">Mes dossiers suivis (Réservés)</h5>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-hover align-middle mb-0">
+						<tbody>
+							{% for lead in notary.simulations %}
+								<tr>
+									<td class="ps-4">
+										<span class="fw-bold smaller text-indigo">{{ lead.reference }}</span>
+									</td>
+									<td class="smaller">
+										<div class="fw-medium">{{ lead.user.email }}</div>
+										<div class="text-muted" style="font-size: 0.65rem;">Réservé le
+											{{ lead.reservedAt|date('d/m/Y') }}</div>
+									</td>
+									<td
+										class="text-end pe-4">
+										{# NAVIGATION : FROM DASHBOARD #}
+										<a href="{{ path('app_notary_simulation_view', {reference: lead.reference, from: 'dashboard'}) }}" class="btn-edit-pill">Ouvrir</a>
+									</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="3" class="text-center py-5 text-muted smaller">Aucun dossier en cours de suivi.</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
 {# --- INCLUSION DES COMPOSANTS --- #}
 {% include 'notary/_modal_subscription_detail.html.twig' %}
-{% include 'notary/_faq.html.twig' %}
-
-{% endblock %}
+{% include 'notary/_faq.html.twig' %}{% endblock %}

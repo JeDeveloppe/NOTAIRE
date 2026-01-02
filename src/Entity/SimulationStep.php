@@ -25,8 +25,11 @@ class SimulationStep
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'simulationSteps')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $changedBy = null;
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $changedByUser = null;
+
+    #[ORM\ManyToOne(inversedBy: 'simulationSteps')]
+    private ?Notary $changeByNotary = null;
 
     public function getId(): ?int
     {
@@ -69,14 +72,14 @@ class SimulationStep
         return $this;
     }
 
-    public function getChangedBy(): ?User
+    public function getChangedByUser(): ?User
     {
-        return $this->changedBy;
+        return $this->changedByUser;
     }
 
-    public function setChangedBy(?User $changedBy): static
+    public function setChangedByUser(?User $changedByUser): static
     {
-        $this->changedBy = $changedBy;
+        $this->changedByUser = $changedByUser;
 
         return $this;
     }
@@ -84,5 +87,17 @@ class SimulationStep
     public function __toString(): string
     {
         return $this->status?->getLabel() . ' (' . $this->createdAt->format('d/m/Y') . ')';
+    }
+
+    public function getChangeByNotary(): ?Notary
+    {
+        return $this->changeByNotary;
+    }
+
+    public function setChangeByNotary(?Notary $changeByNotary): static
+    {
+        $this->changeByNotary = $changeByNotary;
+
+        return $this;
     }
 }

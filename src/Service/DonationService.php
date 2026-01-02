@@ -140,7 +140,7 @@ class DonationService
 
     private function getConsumedAmountsByTaxSystem(Person $donor, Person $beneficiary, \DateTimeInterface $referenceDate): array
     {
-        // Le rappel fiscal est de 15 ans AVANT la date de simulation
+        // Le Donations actives (15 ans) est de 15 ans AVANT la date de simulation
         $limitDate = \DateTimeImmutable::createFromInterface($referenceDate)->modify('-15 years');
         $totals = ['classic' => 0.0, 'sarkozy' => 0.0];
 
@@ -148,7 +148,7 @@ class DonationService
             // Un don compte s'il est :
             // 1. Entre le même donateur et bénéficiaire
             // 2. Effectué AVANT la date de simulation
-            // 3. Effectué APRÈS la date limite (rappel fiscal des 15 ans)
+            // 3. Effectué APRÈS la date limite (Donations actives (15 ans) des 15 ans)
             if (
                 $past->getDonor() === $donor
                 && $past->getCreatedAt() <= $referenceDate

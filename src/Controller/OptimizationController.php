@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Service\DonationService;
 use App\Service\OptimizationService;
 use App\Service\SimulationService;
-use App\Service\TaxCalculatorService;
+use App\Service\TaxBracketService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,7 +19,7 @@ class OptimizationController extends AbstractController
     public function __construct(
         private OptimizationService $optimizationService,
         private DonationService $donationService,
-        private TaxCalculatorService $taxService
+        private TaxBracketService $taxService
     ) {}
 
     #[Route('/opportunites-manquees', name: 'app_optimization_missed')]
@@ -43,21 +43,45 @@ class OptimizationController extends AbstractController
 
     #[Route('/optimisations-possibles', name: 'app_optimization_dashboard')]
     public function futureDashboard(
-        Request $request, 
-        SimulationService $simulationService
+        Request $request,
+        SimulationService $simulationService,
+        TaxBracketService $taxBracketService
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
 
         $people = $user->getPeople();
         if (count($people) < 2) {
-            $this->addFlash('info', 'Ajoutez au moins un bénéficiaire pour débloquer l\'analyse fiscale.');
+            $this->addFlash('info', 'Ajoutez au moins un bénéficiaire.');
             return $this->redirectToRoute('app_family_dashboard');
         }
 
         $simulation = $simulationService->getOrCreateSimulation($user);
-
         $data = $this->optimizationService->getSimulationDatas($request->query->get('date'), $user);
+        
+        // --- LOGIQUE DE SIMULATION DE TAXE ---
+        $extraToSimulate = 50000;
+        $simulatedTax = [];
+        $relationships = []; // On stocke aussi le nom du lien pour le template
+
+        foreach ($data['familyPlan'] as $item) {
+            $beneficiary = $item['beneficiary'];
+            $donor = $item['donor']; // Important car le lien dépend du donateur !
+            $bId = $beneficiary->getId();
+
+            if (!isset($simulatedTax[$bId])) {
+                // On utilise ton service existant ici :
+                $relationCode = $this->donationService->determineRelationshipCode($donor, $beneficiary);
+
+                $simulatedTax[$bId] = $taxBracketService->calculateSaving(
+                    $extraToSimulate,
+                    $relationCode
+                );
+
+                // On mémorise le libellé pour l'affichage (ex: "Petit-enfant")
+                $relationships[$bId] = str_replace('_', ' ', $relationCode);
+            }
+        }
 
         return $this->render('family/optimization/simuled_opportunities.html.twig', [
             'activePeriods'  => $data['analysis']['active_periods'],
@@ -65,7 +89,10 @@ class OptimizationController extends AbstractController
             'totalAvailable' => $data['totalAvailable'],
             'totalTaxSaving' => $data['totalSaving'],
             'referenceDate'  => $data['referenceDate'],
-            'simulation'     => $simulation, // On passe l'objet pour afficher la réf et l'historique
+            'simulation'     => $simulation,
+            'simulatedExtra' => $extraToSimulate,
+            'simulatedTax'   => $simulatedTax,
+            'taxBracketService' => $taxBracketService,
         ]);
     }
 }

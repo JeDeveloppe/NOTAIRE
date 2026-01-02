@@ -65,11 +65,18 @@ class Notary
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $confirmedAt = null;
 
+    /**
+     * @var Collection<int, SimulationStep>
+     */
+    #[ORM\OneToMany(targetEntity: SimulationStep::class, mappedBy: 'changeByNotary')]
+    private Collection $simulationSteps;
+
     public function __construct()
     {
         $this->simulations = new ArrayCollection();
         $this->subscriptions = new ArrayCollection();
         $this->selectedZipCodes = new ArrayCollection();
+        $this->simulationSteps = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -300,5 +307,35 @@ class Notary
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @return Collection<int, SimulationStep>
+     */
+    public function getSimulationSteps(): Collection
+    {
+        return $this->simulationSteps;
+    }
+
+    public function addSimulationStep(SimulationStep $simulationStep): static
+    {
+        if (!$this->simulationSteps->contains($simulationStep)) {
+            $this->simulationSteps->add($simulationStep);
+            $simulationStep->setChangeByNotary($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSimulationStep(SimulationStep $simulationStep): static
+    {
+        if ($this->simulationSteps->removeElement($simulationStep)) {
+            // set the owning side to null (unless already changed)
+            if ($simulationStep->getChangeByNotary() === $this) {
+                $simulationStep->setChangeByNotary(null);
+            }
+        }
+
+        return $this;
     }
 }
