@@ -3,20 +3,21 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Service\NotaryService;
 use App\Service\OfferService;
-use App\Service\OptimizationService;
-use App\Repository\OfferRepository;
+use App\Service\NotaryService;
 use App\Repository\CityRepository;
-use App\Repository\SimulationRepository;
-use App\Form\Notary\ZoneCoverageType;
+use App\Repository\OfferRepository;
 use App\Repository\NotaryRepository;
+use App\Service\OptimizationService;
+use App\Form\Notary\ZoneCoverageType;
+use App\Form\Notary\NotaryProfileType;
+use App\Repository\SimulationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class NotaryController extends AbstractController
 {
@@ -64,26 +65,12 @@ class NotaryController extends AbstractController
 
         $notary = $this->getUser()->getNotary();
         $activeSub = $this->notaryService->getActiveSubscription($notary);
-        
-        $availableSimulations = $this->notaryService->getAvailableSimulations($notary, 11);
-        
-        $groupedSectors = [];
-        foreach ($notary->getSelectedZipCodes() as $sz) {
-            $cp = $sz->getCity()->getPostalCode();
-            if (!isset($groupedSectors[$cp])) {
-                $groupedSectors[$cp] = $this->cityRepository->findBy(['postalCode' => $cp], ['name' => 'ASC']);
-            }
-        }
 
-        //les stats du notaire
-        $notaryStats = $this->notaryRepository->getPerformanceStats($notary);
+        $availableSimulations = $this->notaryService->getAvailableSimulations($notary, 11);
 
         return $this->render('notary/dashboard.html.twig', [
             'notary' => $notary,
-            'hasActiveOffer' => ($activeSub !== null),
-            'activeSubscription' => $activeSub,
             'availableSimulations' => array_slice($availableSimulations, 0, 10),
-            'groupedSectors' => $groupedSectors,
             'stats' => [
                 'totalSlots' => $this->offerService->getTotalAllowedSectors($notary, $activeSub),
                 'usedSlots' => count($notary->getSelectedZipCodes()),
@@ -91,7 +78,6 @@ class NotaryController extends AbstractController
                 'selectedLeads' => $notary->getSimulations()->count(),
             ],
             'viewAllSimulations' => count($availableSimulations) > 10,
-            'notaryStats' => $notaryStats
         ]);
     }
 
@@ -154,36 +140,70 @@ class NotaryController extends AbstractController
             $this->notaryService->injectOptimizationDatas($sim);
         }
 
-        return $this->render('notary/all_simulations.html.twig', [
+        return $this->render('notary/folders/all_simulations.html.twig', [
             'pagination' => $pagination,
             'notary' => $notary
         ]);
     }
 
-    #[Route('/notaire/configurer-ma-zone', name: 'notary_setup_zipcodes')]
-    public function setupZipcodes(Request $request): Response
-    {
-        $notary = $this->getUser()->getNotary();
-        $activeSub = $this->notaryService->getActiveSubscription($notary);
-        $totalSlots = $this->offerService->getTotalAllowedSectors($notary, $activeSub);
+    // src/Controller/Notary/ZoneController.php
 
+    #[Route('/notaire/configurer-ma-zone', name: 'app_notary_setup_zipcodes')]
+    public function setupZipcodes(
+        Request $request,
+        NotaryService $notaryService, // Injection indispensable
+        OfferService $offerService    // Injection indispensable
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        $notary = $user->getNotary();
+
+        // 1. Sécurité Profil
+        if (!$notary) {
+            $this->addFlash('danger', 'Profil notaire introuvable.');
+            return $this->redirectToRoute('app_account');
+        }
+
+        // 2. Blocage si pas d'abonnement (Réel ou Simulé en DEV)
+        $activeSub = $notaryService->getActiveSubscription($notary);
+
+        if (!$activeSub) {
+            $this->addFlash('warning', 'Vous devez avoir un abonnement actif pour configurer votre zone.');
+            return $this->redirectToRoute('app_notary_dashboard');
+        }
+
+        // 3. Logique métier liée au forfait
+        $totalSlots = $offerService->getTotalAllowedSectors($notary, $activeSub);
+
+        // Préparation du formulaire
         $initialCities = array_map(fn($sz) => $sz->getCity(), $notary->getSelectedZipCodes()->toArray());
-        $form = $this->createForm(ZoneCoverageType::class, ['cities' => $initialCities], ['quota' => $totalSlots]);
+        $form = $this->createForm(ZoneCoverageType::class, ['cities' => $initialCities], [
+            'quota' => $totalSlots
+        ]);
 
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $rejected = $this->notaryService->updateZoneCoverage($notary, $form->get('cities')->getData(), $totalSlots);
-            
-            !empty($rejected) 
-                ? $this->addFlash('warning', 'Certains secteurs sont complets : '.implode(', ', $rejected))
-                : $this->addFlash('success', 'Zone de couverture mise à jour.');
+            // Mise à jour via le service
+            $rejected = $notaryService->updateZoneCoverage(
+                $notary,
+                $form->get('cities')->getData(),
+                $totalSlots
+            );
+
+            if (!empty($rejected)) {
+                $this->addFlash('warning', 'Certains secteurs sont complets : ' . implode(', ', $rejected));
+            } else {
+                $this->addFlash('success', 'Votre zone a été mise à jour en temps réel.');
+            }
 
             return $this->redirectToRoute('app_notary_dashboard');
         }
 
         return $this->render('notary/setup_zipcodes.html.twig', [
             'form' => $form->createView(),
-            'totalSlots' => $totalSlots
+            'totalSlots' => $totalSlots,
+            'activeSubscription' => $activeSub
         ]);
     }
 
@@ -192,7 +212,7 @@ class NotaryController extends AbstractController
     {
         if ($response = $this->checkNotaryStatus()) return $response;
 
-        return $this->render('notary/pricing.html.twig', [
+        return $this->render('notary/subscription/pricing.html.twig', [
             'offers' => $this->offerRepository->findBy([
                 'isAddon' => false,
                 'isOnWebSite' => true
@@ -201,14 +221,23 @@ class NotaryController extends AbstractController
     }
 
     #[Route('/notaire/souscrire', name: 'app_notary_subscribe')]
-    public function subscribe(Request $request): Response
+    public function subscribe(Request $request, NotaryService $notaryService): Response
     {
         if ($response = $this->checkNotaryStatus()) return $response;
 
-        return $this->render('notary/subscribe_choice.html.twig', [
+        /** @var Notary $notary */
+        $notary = $this->getUser()->getNotary();
+        $activeSub = $notaryService->getActiveSubscription($notary);
+
+        // Si le notaire a déjà une offre active, on peut adapter la vue
+        $hasMainOffer = ($activeSub !== null);
+
+        return $this->render('notary/subscription/subscribe_choice.html.twig', [
             'mainOffers' => $this->offerRepository->findBy(['isAddon' => false, 'isOnWebSite' => true]),
             'addons' => $this->offerRepository->findBy(['isAddon' => true, 'isOnWebSite' => true]),
-            'preselectedId' => $request->query->get('preselect')
+            'preselectedId' => $request->query->get('preselect'),
+            'activeSubscription' => $activeSub,
+            'hasMainOffer' => $hasMainOffer
         ]);
     }
 
@@ -222,9 +251,66 @@ class NotaryController extends AbstractController
     }
 
     #[Route('/notaire/mon-etude', name: 'app_notary_my_study')]
-    public function myStudy(): Response
+    public function myStudy(Request $request, EntityManagerInterface $em): Response
     {
-        if ($this->getUser()->getNotary()) return $this->redirectToRoute('app_notary_dashboard');
-        return $this->render('notary/complete_profile.html.twig');
+        /** @var User $user */
+        $user = $this->getUser();
+        $notary = $user->getNotary();
+
+        // Sécurité : Si l'utilisateur n'a pas de profil Notaire du tout
+        if (!$notary) {
+            $this->addFlash('danger', 'Profil notaire introuvable.');
+            return $this->redirectToRoute('app_account'); // Ou rediriger vers la création
+        }
+
+        // On utilise ton nouveau formulaire complet
+        $form = $this->createForm(NotaryProfileType::class, $notary);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Le setter dans Notary.php formatera le téléphone automatiquement
+            $em->flush();
+
+            $this->addFlash('success', 'Les informations de l\'étude ont été mises à jour avec succès.');
+
+            // On reste sur la page pour voir les changements
+            return $this->redirectToRoute('app_notary_my_study');
+        }
+
+        return $this->render('notary/complete_profile.html.twig', [
+            'form' => $form->createView(),
+            'notary' => $notary
+        ]);
+    }
+
+    #[Route('/notaire/dossiers', name: 'app_notary_my_folders')]
+    public function myfolders(
+        NotaryService $notaryService, // <--- Injection indispensable
+        EntityManagerInterface $em
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        $notary = $user->getNotary();
+
+        // 1. Sécurité : Profil Notaire existant
+        if (!$notary) {
+            $this->addFlash('danger', 'Profil notaire introuvable.');
+            return $this->redirectToRoute('app_account');
+        }
+
+        // 2. Sécurité : Vérification de l'abonnement (Réel ou Simulé en DEV)
+        $activeSub = $notaryService->getActiveSubscription($notary);
+
+        if (!$activeSub) {
+            $this->addFlash('warning', 'Vous devez avoir un abonnement actif pour voir vos dossiers.');
+            return $this->redirectToRoute('app_notary_dashboard');
+        }
+
+        // 3. Accès autorisé
+        return $this->render('notary/folders/my_folders.html.twig', [
+            'folders' => $notary->getSimulations(),
+            'notary' => $notary,
+            'activeSubscription' => $activeSub // Utile pour afficher le nom du pack dans la vue
+        ]);
     }
 }

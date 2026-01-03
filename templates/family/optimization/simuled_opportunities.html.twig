@@ -1,176 +1,131 @@
+{# templates/family/optimization/simuled_opportunities.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {# 1. INITIALISATION #}
-    {% set currentYear = "now"|date("Y") %}
-    {% set rechargeYear = currentYear + 15 %}
-    {% set groupedPlan = {} %}
-
-    {% for item in familyPlan %}
-        {% set benKey = 'BEN_' ~ item.beneficiary.id %}
-        {% if groupedPlan[benKey] is not defined %}
-            {% set groupedPlan = groupedPlan|merge({(benKey): {
-                'name': item.beneficiary.firstname, 
-                'items': [], 
-                'bId': item.beneficiary.id,
-                'rel': item.relationship_code,
-                'maxLegal': (item.relationship_code == 'ENFANT') ? 100000 : 31865
-            }}) %}
-        {% endif %}
-        {% set currentGroup = groupedPlan[benKey] %}
-        {% set groupedPlan = groupedPlan|merge({(benKey): currentGroup|merge({'items': currentGroup.items|merge([item])})}) %}
-    {% endfor %}
+{% set currentYear = "now"|date("Y") %}
 
 <div class="container py-5">
-    {# HEADER #}
-    <div class="text-center mb-4">
-        <h2 class="fw-black mb-0 text-dark">Stratégie de Transmission Familiale</h2>
-    </div>
-
-    {# --- SECTION 1 : LA FRISE ET LE TEXTE À TROUS --- #}
-    <div class="card border-0 shadow-lg rounded-5 bg-white p-5 mb-5 overflow-hidden">
-        {# Frise simplifiée #}
-        <div class="row align-items-center mb-5 position-relative">
-            <div class="position-absolute w-75 start-50 translate-middle-x d-none d-md-block" style="height: 2px; background: #f1f3f5; top: 20px; z-index: 1;">
-                <div id="timeline-progress" class="bg-success h-100" style="width: 0%; transition: width 0.6s ease;"></div>
+    {# --- HEADER --- #}
+    <div class="card border-0 shadow-sm rounded-5 bg-white p-4 mb-5">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-black text-dark mb-1">Potentiel de Transmission</h1>
+                <p class="text-muted">Analyse personnalisée des abattements disponibles par bénéficiaire.</p>
             </div>
-            <div class="col-4 text-center position-relative" style="z-index: 2;">
-                <div class="bg-primary text-white rounded-circle shadow-sm mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">{{ currentYear }}</div>
+            <div class="col-md-4 text-md-end">
+                <div class="display-5 fw-black text-primary">{{ totalAvailable|number_format(0, ',', ' ') }} €</div>
+                <div class="small text-muted fw-bold text-uppercase">Total disponible famille</div>
             </div>
-            <div class="col-4 text-center position-relative" style="z-index: 2;">
-                <div id="step-mid" class="bg-light text-muted rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: 0.4s;">15 ans</div>
-            </div>
-            <div class="col-4 text-center position-relative" style="z-index: 2;">
-                <div id="step-end" class="bg-light text-muted rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; transition: 0.4s;">{{ rechargeYear }}</div>
-            </div>
-        </div>
-
-        {# LE TEXTE À TROUS DYNAMIQUE #}
-        <div class="bg-light rounded-4 p-4 text-center">
-            <h4 class="fw-normal lh-base mb-0" id="dynamic-story">
-                En activant la donation aujourd'hui, 
-                <span class="badge bg-white text-primary border px-3" id="slot-donor">Donateur</span> 
-                transmet un abattement à 
-                <span class="badge bg-white text-primary border px-3" id="slot-ben">Bénéficiaire</span>, 
-                permettant ainsi de restaurer la capacité de transmission en 
-                <span class="text-success fw-bold" id="slot-year">....</span>
-            </h4>
         </div>
     </div>
 
-    {# --- SECTION 2 : LES CARTES BÉNÉFICIAIRES --- #}
     <div class="row g-4">
-        {% for benId, group in groupedPlan %}
-            {# On récupère le nom du premier donateur pour le texte par défaut #}
-            {% set firstDonor = group.items[0].donor.firstname %}
-            
-            <div class="col-md-6 col-xl-4">
-                <div class="card beneficiary-card border-0 shadow-sm rounded-5 bg-dark p-4 h-100" 
-                     style="cursor: pointer; transition: 0.3s;"
-                     data-ben="{{ group.name }}"
-                     data-donor="{{ firstDonor }}">
-                    
-                    <div class="text-center mb-4">
-                        <h5 class="fw-black text-white mb-1">{{ group.name }}</h5>
-                        <span class="badge bg-primary bg-opacity-20 text-primary x-small rounded-pill">{{ group.rel|replace({'_': ' '}) }}</span>
-                    </div>
-
-                    {# Réservoirs avec zone de taxe #}
-                    <div class="d-flex align-items-end justify-content-center position-relative mb-4" style="height: 150px;">
-                        <div class="position-absolute w-100" style="bottom: 110px; border-top: 2px dashed #ff4d4d; opacity: 0.4;"></div>
-                        
-                        <div class="mx-2 text-center" style="width: 50px;">
-                            <div class="bg-primary rounded-top" style="height: {{ (group.items[0].available / 1000) }}px;"></div>
-                            <div class="x-small text-white opacity-50 mt-2">Légal</div>
+        {# --- COLONNE GAUCHE : LES DONATEURS --- #}
+        <div class="col-lg-4">
+            <h5 class="fw-bold mb-4 d-flex align-items-center">
+                <span class="badge bg-dark rounded-circle me-2" style="width:28px; height:28px;">1</span>
+                Donateurs
+            </h5>
+            {% set donors = [] %}
+            {% for item in familyPlan %}
+                {% if item.donor.id not in donors %}
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-3 border-start border-primary border-4">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-circle bg-light text-primary me-3">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0">{{ item.donor.firstname }}</h6>
+                                <small class="text-muted small">Source des abattements</small>
+                            </div>
                         </div>
-                        {# Affichage Sarkozy si présent #}
-                        {% for op in group.items %}
-                            {% if 'sarkozy' in op.type %}
-                                <div class="mx-2 text-center" style="width: 50px;">
-                                    <div class="bg-warning rounded-top" style="height: {{ (op.available / 1000) }}px;"></div>
-                                    <div class="x-small text-white opacity-50 mt-2">Argent</div>
+                    </div>
+                    {% set donors = donors|merge([item.donor.id]) %}
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {# --- COLONNE DROITE : LES CARTES PAR BÉNÉFICIAIRE --- #}
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-4 d-flex align-items-center">
+                <span class="badge bg-dark rounded-circle me-2" style="width:28px; height:28px;">2</span>
+                Détail par ligne de transmission
+            </h5>
+
+            <div class="row g-3">
+                {% for item in familyPlan %}
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+                        <div class="p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <span class="x-small text-muted text-uppercase fw-bold">Bénéficiaire</span>
+                                    <h6 class="fw-black mb-0">{{ item.beneficiary.firstname }}</h6>
                                 </div>
-                            {% endif %}
-                        {% endfor %}
+                                <div class="text-end">
+                                    <span class="x-small text-muted text-uppercase fw-bold">Donateur</span>
+                                    <div class="small fw-bold">{{ item.donor.firstname }}</div>
+                                </div>
+                            </div>
+
+                            {# On affiche le type d'abattement spécifique envoyé par ton service #}
+                            <div class="p-3 border rounded-4 bg-light mb-3 shadow-xs">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="small">
+                                        {% if 'sarkozy' in item.type|lower %}
+                                            <i class="fa-solid fa-coins text-warning me-2"></i><strong>Don "Sarkozy"</strong>
+                                        {% else %}
+                                            <i class="fa-solid fa-landmark text-primary me-2"></i><strong>Abattement Légal</strong>
+                                        {% endif %}
+                                    </div>
+                                    <span class="fw-black text-dark">
+                                        {{ item.available|number_format(0, ',', ' ') }} €
+                                    </span>
+                                </div>
+                                <div class="x-small text-muted mt-1 ps-4">
+                                    {{ item.label }}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <div class="x-small text-muted fw-bold">DISPONIBLE</div>
+                                    <div class="h5 fw-black text-primary mb-0">{{ item.available|number_format(0, ',', ' ') }} €</div>
+                                </div>
+                                <div class="badge bg-success-subtle text-success rounded-pill x-small">
+                                    Exonéré
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 pb-3 text-center">
+                            <a href="" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold x-small">
+                                Préparer avec un notaire
+                            </a>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-        {% endfor %}
+        </div>
     </div>
 
-    {# FOOTER SUPPORT #}
-    <footer class="mt-5 pt-4 border-top d-flex justify-content-between text-muted x-small">
-        <div><i class="fas fa-shield-alt me-2"></i>Détails sécurisés & Archivage Notaire</div>
-        <div>{{ currentYear }} © Stratégie Patrimoniale</div>
-    </footer>
+    {# --- RAPPEL JURIDIQUE --- #}
+    <div class="mt-5 p-4 rounded-4 bg-light border border-dashed text-center">
+        <p class="small text-muted mb-0">
+            <i class="fa-solid fa-scale-balanced me-2"></i>
+            Chaque enfant possède ses propres abattements. Un don fait à <strong>{{ familyPlan[0].beneficiary.firstname|default('un enfant') }}</strong> n'impacte pas les droits de ses frères et sœurs.
+        </p>
+    </div>
 </div>
 
 <style>
     .fw-black { font-weight: 900; }
     .x-small { font-size: 0.65rem; }
-    .rounded-5 { border-radius: 2rem !important; }
-    .bg-dark { background-color: #0f1113 !important; }
-    .card-active { transform: translateY(-10px); box-shadow: 0 1rem 3rem rgba(0,0,0,0.175)!important; border: 1px solid #0d6efd !important; }
-    #slot-donor, #slot-ben { transition: all 0.3s ease; min-width: 120px; display: inline-block; }
+    .rounded-5 { border-radius: 2.5rem !important; }
+    .icon-circle { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .bg-primary-subtle { background-color: #eef2ff; }
+    .bg-success-subtle { background-color: #f0fdf4; }
+    .shadow-xs { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 </style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cards = document.querySelectorAll('.beneficiary-card');
-    const slotDonor = document.getElementById('slot-donor');
-    const slotBen = document.getElementById('slot-ben');
-    const slotYear = document.getElementById('slot-year');
-    const progress = document.getElementById('timeline-progress');
-    const stepMid = document.getElementById('step-mid');
-    const stepEnd = document.getElementById('step-end');
-
-    cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            const ben = card.getAttribute('data-ben');
-            const donor = card.getAttribute('data-donor');
-
-            // Mise à jour du texte à trous
-            slotDonor.innerText = donor;
-            slotDonor.classList.replace('bg-white', 'bg-primary');
-            slotDonor.classList.replace('text-primary', 'text-white');
-            
-            slotBen.innerText = ben;
-            slotBen.classList.replace('bg-white', 'bg-primary');
-            slotBen.classList.replace('text-primary', 'text-white');
-
-            slotYear.innerText = "{{ rechargeYear }}";
-
-            // Animation frise
-            progress.style.width = "100%";
-            stepMid.classList.replace('bg-light', 'bg-primary');
-            stepMid.classList.replace('text-muted', 'text-white');
-            stepEnd.classList.replace('bg-light', 'bg-success');
-            stepEnd.classList.replace('text-muted', 'text-white');
-
-            card.classList.add('card-active');
-        });
-
-        card.addEventListener('mouseleave', () => {
-            // Reset
-            slotDonor.innerText = "Donateur";
-            slotDonor.classList.replace('bg-primary', 'bg-white');
-            slotDonor.classList.replace('text-white', 'text-primary');
-
-            slotBen.innerText = "Bénéficiaire";
-            slotBen.classList.replace('bg-primary', 'bg-white');
-            slotBen.classList.replace('text-white', 'text-primary');
-
-            slotYear.innerText = "....";
-
-            progress.style.width = "0%";
-            stepMid.classList.replace('bg-primary', 'bg-light');
-            stepMid.classList.replace('text-white', 'text-muted');
-            stepEnd.classList.replace('bg-success', 'bg-light');
-            stepEnd.classList.replace('text-white', 'text-muted');
-
-            card.classList.remove('card-active');
-        });
-    });
-});
-</script>
 {% endblock %}

@@ -38,21 +38,28 @@ class NotaryService
             return null;
         }
 
-        // Si pas d'abonnement réel et qu'on est en DEV, on simule un PACK_STANDARD
-        if (!$activeSub && $this->env === 'dev') {
-            $activeSub = new Subscription();
-            $activeSub->setNotary($notary);
+        // 1. Si un abonnement réel existe en base, on le retourne
+        if ($activeSub) {
+            return $activeSub;
+        }
 
-            // On cherche le pack standard (doit correspondre au nom en base/service.yaml)
-            $baseOffer = $this->offerRepository->findOneBy(['name' => 'PACK_STANDARD']) //! comme dans service.yaml
-                ?? $this->offerRepository->findOneBy([]);
+        // 2. Simulation uniquement en environnement de développement (DEV)
+        if ($this->env === 'dev') {
+            $simulatedSub = new Subscription();
+            $simulatedSub->setNotary($notary);
 
+            // On cherche par CODE technique plutôt que par NAME
+            $baseOffer = $this->offerRepository->findOneBy(['code' => 'PACK_STANDARD']);
+
+            // Si on a trouvé une offre, on simule l'abonnement
             if ($baseOffer) {
-                $activeSub->setOffer($baseOffer);
+                $simulatedSub->setOffer($baseOffer);
+
+                return $simulatedSub;
             }
         }
 
-        return $activeSub;
+        return null;
     }
 
     /**
@@ -142,7 +149,7 @@ class NotaryService
 
         // 2. On utilise ta nouvelle fonction pour créer l'étape 'RESERVED'
         // C'est cette ligne qui va déclencher le listener et le gain de points
-        $this->simulationService->addStep($simulation, 'RESERVED', null , $notary); //! comme dans service.yaml
+        $this->simulationService->addStep($simulation, 'RESERVED', null, $notary); //! comme dans service.yaml
 
         // 3. On persiste les changements sur la simulation
         $this->em->persist($simulation);
@@ -151,5 +158,18 @@ class NotaryService
         $this->em->flush();
 
         return true;
+    }
+
+    public function getGroupedZips(Notary $notary): array
+    {
+        $groupedSectors = [];
+        foreach ($notary->getSelectedZipCodes() as $sz) {
+            $cp = $sz->getCity()->getPostalCode();
+            if (!isset($groupedSectors[$cp])) {
+                $groupedSectors[$cp] = $this->cityRepository->findBy(['postalCode' => $cp], ['name' => 'ASC']);
+            }
+        }
+
+        return $groupedSectors;
     }
 }

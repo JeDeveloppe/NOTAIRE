@@ -1,4 +1,4 @@
-{# templates/notary/simulation_view.html.twig #}
+{# templates/notary/view.html.twig #}
 {% extends 'base.html.twig' %}
 
 {% block title %}Dossier #{{ simulation.reference }}{% endblock %}
@@ -85,6 +85,7 @@
                             <div class="mt-2">
                                 <div class="fw-bold text-dark">{{ client.firstname }} {{ client.lastname|upper }}</div>
                                 <div class="text-primary small"><i class="bi bi-envelope-at me-1"></i> {{ client.email }}</div>
+                                <div class="text-primary small"><i class="bi bi-envelope-at me-1"></i> {{ client.phone }}</div>
                             </div>
                         {% endif %}
                     </div>

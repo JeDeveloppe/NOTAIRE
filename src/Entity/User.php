@@ -58,6 +58,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: SimulationStep::class, mappedBy: 'changedBy')]
     private Collection $simulationSteps;
 
+    #[ORM\Column(length: 255)]
+    private ?string $firstname = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $lastname = null;
+
+    #[ORM\Column(length: 25)]
+    private ?string $phone = null;
+
     public function __construct()
     {
         $this->people = new ArrayCollection();
@@ -248,5 +257,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return $this->email;
+    }
+
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(string $firstname): static
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(string $lastname): static
+    {
+        $this->lastname = $lastname;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(string $phone): static
+    {
+        // 1. On supprime tout ce qui n'est pas un chiffre
+        $digits = preg_replace('/\D/', '', $phone);
+
+        // 2. On découpe par paires de 2 chiffres
+        $pairs = str_split($digits, 2);
+
+        // 3. On rassemble avec des virgules
+        $this->phone = implode('.', $pairs);
+
+        return $this;
     }
 }

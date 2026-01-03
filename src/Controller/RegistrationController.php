@@ -63,6 +63,9 @@ class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // 1. Création de l'utilisateur (lié au Notaire)
             $user = new User();
+            $user->setFirstname('Profil:');
+            $user->setLastname($notary->getName());
+            $user->setPhone($notary->getPhone());
             $user->setEmail($form->get('email')->getData());
             $user->setPassword(
                 $userPasswordHasher->hashPassword(

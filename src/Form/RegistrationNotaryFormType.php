@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Notary;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -32,6 +33,16 @@ class RegistrationNotaryFormType extends AbstractType
             ])
             ->add('phone', TelType::class, [
                 'label' => 'Téléphone professionnel',
+                'attr' => [
+                    'class' => 'form-control border-0 bg-light rounded-4 px-4',
+                    'placeholder' => '00.00.00.00.00'
+                ],
+                'constraints' => [
+                    new Regex(
+                        pattern: '/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/',
+                        message:'Le numéro de téléphone n\'est pas valide.'
+                    )
+                ],
             ])
             ->add('address', TextType::class, [
                 'label' => 'Adresse du siège',
@@ -66,7 +77,7 @@ class RegistrationNotaryFormType extends AbstractType
                     ),
                 ],
             ])
-                        ->add('agreeTerms', CheckboxType::class, [
+            ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'label' => false, // Désactive le label automatique pour éviter le doublon
                 'attr' => ['class' => 'form-check-input me-2'],

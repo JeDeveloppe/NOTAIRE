@@ -40,6 +40,11 @@
 		{# Barre de navigation avec ton logo Arbre #}
 		{% include 'components/site/_navigation.html.twig' %}
 
+		{# On affiche le sous-menu uniquement si on est sur une route "notaire" #}
+		{% if app.request.attributes.get('_route') starts with 'app_notary_' %}
+			{{ include('components/notary/_sub_nav.html.twig') }}
+		{% endif %}
+
 		{# Contenu principal #}
 		<main class="flex-shrink-0 py-5">
 			<div class="container">

@@ -16,6 +16,14 @@
                     Accueil
                 </a>
             </li>
+            {# SECTION UTILISATEUR #}
+            {% if is_granted('ROLE_USER') and not is_granted('ROLE_NOTARY') %}
+                <li>
+                    <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
+                        <i class="fa-solid fa-people-roof me-2"></i> Ma Famille
+                    </a>
+                </li>
+            {% endif %}
             {# SECTION NOTAIRE #}
             {% if is_granted('ROLE_NOTARY') %}
                 {% set notary = app.user.notary %}
@@ -52,14 +60,6 @@
                     </li>
                 </ul>
             </li>
-
-            {% if is_granted('ROLE_USER') and not is_granted('ROLE_NOTARY') %}
-                <li>
-                    <a href="{{ path('app_family_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_family_dashboard' ? 'active' : '' }}">
-                        <i class="fa-solid fa-people-roof me-2"></i> Ma Famille
-                    </a>
-                </li>
-            {% endif %}
         </ul>
 
         <div class="nav-auth">

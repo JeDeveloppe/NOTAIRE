@@ -1,88 +1,124 @@
 {# templates/notary/setup_zipcodes.html.twig #}
 {% extends 'base.html.twig' %}
 
-{% block title %}Ma Zone de Couverture{% endblock %}
+{% block title %}Ma zone{% endblock %}
 
 {% block body %}
-<div class="container py-5">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-7">
+        <div class="col-lg-10 col-xl-8">
             
-            <div class="d-flex align-items-center mb-4">
-                <div class="bg-primary text-white rounded-3 p-3 me-3">
-                    <i class="fa-solid fa-map-location-dot fa-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="h3 fw-bold mb-0">Ma zone de couverture</h1>
-                    <p class="text-muted mb-0">Définissez la zone de couverture de votre office.</p>
-                </div>
+            {# En-tête simplifié (la navigation est dans le sub-nav) #}
+            <div class="mb-4">
+                <h2 class="fw-black text-dark mb-1">Ma zone</h2>
+                <p class="text-muted">Gérez les codes postaux sur lesquels vous recevez des dossiers en temps réel.</p>
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-light border-0 py-3 px-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="fw-semibold text-secondary">Configuration des codes postaux</span>
-                        <span class="badge bg-white text-primary border border-primary-subtle rounded-pill px-3 py-2">
-                            <i class="fa-solid fa-circle-info me-1"></i> 
-                            Quota : {{ totalSlots }} codes postaux
-                        </span>
+                <div class="card-body p-4 p-md-5">
+                    
+                    {# --- SECTION QUOTA --- #}
+                    <div class="mb-5 p-4 rounded-4 bg-light border-start border-primary border-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-0">Utilisation du forfait</h5>
+                                <small class="text-muted">Votre abonnement actuel vous autorise <strong>{{ totalSlots }}</strong> codes postaux.</small>
+                            </div>
+                            <span class="h4 fw-black text-primary mb-0">
+                                {{ notary.selectedZipCodes|length }} / {{ totalSlots }}
+                            </span>
+                        </div>
+                        
+                        {# Barre de progression dynamique #}
+                        {% set usage_pct = (notary.selectedZipCodes|length / totalSlots) * 100 %}
+                        <div class="progress rounded-pill" style="height: 10px;">
+                            <div class="progress-bar bg-primary shadow-sm" 
+                                 role="progressbar" 
+                                 style="width: {{ usage_pct }}%" 
+                                 aria-valuenow="{{ usage_pct }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="card-body p-4">
-                    {{ form_start(form) }}
+
+                    {# --- FORMULAIRE --- #}
+                    {{ form_start(form, {'attr': {'data-turbo': 'false'}}) }}
                         <div class="mb-4 custom-autocomplete-wrapper">
-                            {{ form_label(form.cities, null, {'label_attr': {'class': 'fw-bold mb-2'}}) }}
+                            <label class="info-label">Secteurs d'intervention</label>
                             {{ form_widget(form.cities) }}
-                            <div class="form-text mt-2">
-                                <i class="fa-solid fa-lightbulb text-warning me-1"></i>
-                                Saisissez un code postal pour l'ajouter à votre liste d'intervention.
+                            <div class="form-text mt-3 d-flex align-items-center">
+                                <i class="fa-solid fa-lightbulb text-warning me-2"></i>
+                                <span>Ajoutez des codes postaux. Le système bloquera automatiquement si vous dépassez <strong>{{ totalSlots }}</strong>.</span>
                             </div>
                             {{ form_errors(form.cities) }}
                         </div>
                         
-                        <hr class="my-4 opacity-25">
-
-                        <div class="d-flex align-items-center justify-content-between">
-                            <a href="{{ path('app_notary_dashboard') }}" class="text-decoration-none text-muted">
-                                <i class="fa-solid fa-arrow-left me-1"></i> Retour
+                        <div class="d-flex align-items-center justify-content-between pt-4 border-top">
+                            <a href="{{ path('app_notary_dashboard') }}" class="text-muted text-decoration-none small fw-bold">
+                                Annuler
                             </a>
-                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
-                                <i class="fa-solid fa-check me-2"></i> Enregistrer ma zone
+                            <button type="submit" class="btn btn-primary px-5 rounded-pill fw-bold shadow-sm">
+                                <i class="fa-solid fa-save me-2"></i> Enregistrer ma zone
                             </button>
                         </div>
                     {{ form_end(form) }}
                 </div>
             </div>
             
-            {# Petit rappel informatif #}
-            <div class="alert alert-info border-0 rounded-4 mt-4 p-3 shadow-sm">
-                <div class="d-flex">
-                    <i class="fa-solid fa-circle-question fa-xl me-3 mt-2"></i>
-                    <div>
-                        <small>Besoin de plus de secteurs ? Vous pouvez souscrire à des <strong>Addons de zone</strong> depuis votre gestion d'abonnement.</small>
-                    </div>
+            {# Aide & Upsell #}
+            <div class="mt-4 d-flex align-items-center gap-3 p-3 rounded-4 bg-white shadow-sm border">
+                <div class="icon-circle bg-warning-soft text-warning p-3 rounded-3">
+                    <i class="fa-solid fa-rocket"></i>
                 </div>
+                <div>
+                    <p class="mb-0 small fw-bold">Besoin de plus de visibilité ?</p>
+                    <p class="mb-0 x-small text-muted">Vous pouvez ajouter des <strong>Addons de zone</strong> (+1, +3 ou +5 CP) depuis votre espace facturation.</p>
+                </div>
+                <a href="{{ path('app_notary_subscribe') }}" class="btn btn-sm btn-outline-dark rounded-pill ms-auto px-3">Voir les offres</a>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Style pour rendre l'autocomplete plus "Badge" */
+    .fw-black { font-weight: 900; }
+    .x-small { font-size: 0.8rem; }
+    
+    .bg-warning-soft { background-color: #fff9db; }
+
+    .info-label {
+        font-size: 0.75rem; 
+        font-weight: 800; 
+        text-transform: uppercase;
+        letter-spacing: 0.05em; 
+        color: #94a3b8; 
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    /* Style TomSelect pour correspondre au reste de l'interface notaire */
     .ts-control { 
         border-radius: 12px !important; 
-        padding: 10px 15px !important;
-        border: 1px solid #dee2e6 !important;
+        padding: 12px 15px !important;
+        border: 1px solid #e2e8f0 !important;
+        background-color: #f8fafc !important;
+        transition: all 0.2s ease;
     }
-    .ts-control .item {
-        background-color: #0d6efd !important;
-        color: white !important;
-        border-radius: 50px !important;
-        padding: 3px 12px !important;
-        font-weight: 500 !important;
+    .ts-wrapper.focus .ts-control {
+        background-color: #fff !important;
+        border-color: var(--indigo-brand, #6366f1) !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
     }
-    .ts-dropdown { border-radius: 12px !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important; }
 
+    /* Style des "Badges" de villes sélectionnées */
+    .ts-control .item {
+        background-color: var(--indigo-brand, #6366f1) !important;
+        color: white !important;
+        border-radius: 6px !important;
+        padding: 4px 12px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+    }
 </style>
 {% endblock %}

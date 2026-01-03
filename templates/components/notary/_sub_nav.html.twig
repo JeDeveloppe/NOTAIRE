@@ -1,0 +1,134 @@
+{# templates/notary/_sub_nav.html.twig #}
+<div class="sub-nav-wrapper">
+	<div class="container-fluid max-nav-width">
+		<div
+			class="d-flex justify-content-between align-items-center w-100">
+
+			{# Menu principal du Notaire #}
+			<ul class="sub-nav-links">
+				<li>
+					<a href="{{ path('app_notary_dashboard') }}" class="{{ app.request.attributes.get('_route') == 'app_notary_dashboard' ? 'active' : '' }}">
+						<i class="fas fa-chart-pie me-2"></i>Tableau de bord
+					</a>
+				</li>
+				<li>
+					<div class="d-flex align-items-center">
+						{% if hasActiveOffer %}
+							{# CAS 1 : L'OFFRE EST ACTIVE #}
+							<a href="{{ path('app_notary_my_folders') }}" class="d-flex align-items-center {{ app.request.attributes.get('_route') == 'app_notary_my_folders' ? 'active' : '' }}">
+								<i class="fas fa-folder-open me-2"></i>
+								Mes Dossiers
+								{% if app.user.notary.simulations|length > 0 %}
+									<span class="badge-count ms-2">
+										{{ app.user.notary.simulations|length }}
+									</span>
+								{% endif %}
+							</a>
+						{% else %}
+							{# CAS 2 : PAS D'OFFRE (Lien grisé + Cadenas) #}
+							<a href="#" class="d-flex align-items-center opacity-50 cursor-not-allowed" title="Abonnement requis pour accéder aux dossiers">
+								<i class="fas fa-lock me-2"></i>
+								Mes Dossiers
+							</a>
+						{% endif %}
+					</div>
+				</li>
+				<li>
+					{% if hasActiveOffer %}
+						<a href="{{ path('app_notary_setup_zipcodes') }}" class="{{ app.request.attributes.get('_route') == 'app_notary_setup_zipcodes' ? 'active' : '' }}">
+							<i class="fas fa-map-location-dot me-2"></i>Ma zone
+						</a>
+					{% else %}
+						<a href="#" class="text-muted opacity-50">
+							<i class="fas fa-lock me-2"></i>Ma zone
+						</a>
+					{% endif %}
+				</li>
+				<li>
+					<a href="{{ path('app_notary_my_study') }}" class="{{ app.request.attributes.get('_route') == 'app_notary_my_study' ? 'active' : '' }}">
+						<i class="fas fa-university me-2"></i>Configuration
+					</a>
+				</li>
+			</ul>
+
+			{# Statut de l'étude (Réactivité) #}
+			<div class="sub-nav-status d-none d-md-flex align-items-center">
+				<div class="reactivity-container d-flex align-items-center bg-light px-3 py-1 rounded-pill border">
+					<span class="status-dot {{ app.user.notary.score > 50 ? 'bg-success' : 'bg-warning' }}"></span>
+					<span class="small fw-bold text-muted text-uppercase" style="font-size: 0.7rem;">
+						Réactivité :
+						{{ app.user.notary.score|default(0) }}%
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% include 'notary/modal/_subscription_detail.html.twig' %}
+{% include 'notary/modal/_faq.html.twig' %}
+<style>
+	.sub-nav-wrapper {
+		background: white;
+		border-bottom: 1px solid #e2e8f0;
+		position: sticky;
+		top: 65px; /* S'adapte sous ta navbar principale */
+		z-index: 1040;
+	}
+
+	.max-nav-width {
+		max-width: 1400px;
+	}
+
+	.sub-nav-links {
+		list-style: none;
+		display: flex;
+		margin: 0;
+		padding: 0;
+	}
+
+	.sub-nav-links a {
+		display: flex;
+		align-items: center;
+		padding: 1rem 1.5rem;
+		color: #64748b;
+		text-decoration: none;
+		font-size: 0.85rem;
+		font-weight: 700;
+		border-bottom: 3px solid transparent;
+		transition: all 0.2s ease;
+	}
+
+	.sub-nav-links a:hover:not(.opacity-50) {
+		color: var(--indigo-brand, #6366f1);
+		background: rgba(99, 102, 241, 0.03);
+	}
+
+	.sub-nav-links a.active {
+		color: var(--indigo-brand, #6366f1);
+		border-bottom-color: var(--indigo-brand, #6366f1);
+	}
+
+	/* Badge compteur dossiers */
+	.badge-count {
+		background-color: var(--indigo-brand, #6366f1);
+		color: white;
+		font-size: 0.65rem;
+		font-weight: 800;
+		padding: 2px 7px;
+		border-radius: 50px;
+		box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+	}
+
+	/* Indicateur de statut */
+	.status-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		margin-right: 8px;
+		display: inline-block;
+	}
+
+	.reactivity-container {
+		border-color: #f1f5f9 !important;
+	}
+</style>

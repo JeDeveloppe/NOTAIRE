@@ -28,7 +28,7 @@ class Notary
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\Column]
+    #[ORM\Column(options: ["default" => 100])]
     private ?int $score = 100;
 
     /**
@@ -241,7 +241,14 @@ class Notary
 
     public function setPhone(string $phone): static
     {
-        $this->phone = $phone;
+        // 1. On supprime tout ce qui n'est pas un chiffre
+        $digits = preg_replace('/\D/', '', $phone);
+
+        // 2. On découpe par paires de 2 chiffres
+        $pairs = str_split($digits, 2);
+
+        // 3. On rassemble avec des virgules
+        $this->phone = implode('.', $pairs);
 
         return $this;
     }

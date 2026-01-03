@@ -1,66 +1,109 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Créer un profil{% endblock %}
+{% block title %}Créer mon compte{% endblock %}
 
 {% block body %}
 <div class="container d-flex align-items-center justify-content-center min-vh-100 py-5">
     <div class="register-card p-4 p-md-5 rounded-5 shadow-lg border-0 bg-white position-relative overflow-hidden">
         
-        {# Barre de progression décorative #}
-        <div class="position-absolute top-0 start-0 w-100" style="background: linear-gradient(90deg, #10b981, #3b82f6); height: 6px;"></div>
+        {# Liseré décoratif bleu (User) #}
+        <div class="position-absolute top-0 start-0 w-100" style="background: linear-gradient(90deg, #3b82f6, #2563eb); height: 6px;"></div>
 
         <div class="text-center mb-5">
-            <div class="icon-circle bg-success-subtle text-success mx-auto mb-4">
-                <i class="fas fa-user-plus fa-2x"></i>
+            <div class="icon-circle bg-primary-subtle text-primary mx-auto mb-4">
+                <i class="fas fa-user-circle fa-2x"></i>
             </div>
-            <h1 class="h3 fw-bolder text-dark">Créer votre profil</h1>
-            <p class="text-muted">Commencez l'analyse de votre patrimoine</p>
+            <h1 class="h3 fw-bolder text-dark">Espace Particulier</h1>
+            <p class="text-muted">Commencez l'analyse de votre patrimoine en quelques clics</p>
         </div>
 
         {{ form_start(registrationForm, {'attr': {'class': 'needs-validation'}}) }}
             
             {% if form_errors(registrationForm) %}
                 <div class="alert alert-danger border-0 rounded-4 mb-4 shadow-sm">
-                    {{ form_errors(registrationForm) }}
+                    <i class="fas fa-exclamation-circle me-2"></i> {{ form_errors(registrationForm) }}
                 </div>
             {% endif %}
 
-            <div class="form-floating mb-3">
-                {{ form_widget(registrationForm.email) }}
-                <label for="{{ registrationForm.email.vars.id }}" class="ms-2 text-muted">Adresse Email</label>
-            </div>
-
-            {# Champ VILLE - Aligné sur le design des autres inputs #}
-            <div class="mb-3">
-                <label for="{{ registrationForm.city.vars.id }}" class="form-label small text-muted ms-3 mb-1">Votre Ville (ou Code Postal)</label>
-                {{ form_widget(registrationForm.city) }}
-                {{ form_errors(registrationForm.city) }}
-            </div>
-
-            <div class="form-floating mb-3">
-                {{ form_widget(registrationForm.plainPassword) }}
-                <label for="{{ registrationForm.plainPassword.vars.id }}" class="ms-2 text-muted">Mot de passe</label>
-                <div class="form-text mt-2 px-2" style="font-size: 0.7rem;">
-                    <i class="fas fa-info-circle me-1"></i> Minimum 6 caractères
+            {# --- SECTION : IDENTITÉ --- #}
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        {{ form_widget(registrationForm.firstname, {
+                            'attr': {'class': 'form-control rounded-4', 'placeholder': 'Prénom'}
+                        }) }}
+                        <label for="{{ registrationForm.firstname.vars.id }}">Prénom</label>
+                        {{ form_errors(registrationForm.firstname) }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        {{ form_widget(registrationForm.lastname, {
+                            'attr': {'class': 'form-control rounded-4', 'placeholder': 'Nom'}
+                        }) }}
+                        <label for="{{ registrationForm.lastname.vars.id }}">Nom</label>
+                        {{ form_errors(registrationForm.lastname) }}
+                    </div>
                 </div>
             </div>
 
+            {# --- SECTION : CONTACT --- #}
+            <div class="form-floating mb-3">
+                {{ form_widget(registrationForm.email, {
+                    'attr': {'class': 'form-control rounded-4', 'placeholder': 'email@exemple.com'}
+                }) }}
+                <label for="{{ registrationForm.email.vars.id }}">Adresse Email</label>
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <div class="form-floating mb-3">
+                {{ form_widget(registrationForm.phone, {
+                    'attr': {'class': 'form-control rounded-4', 'placeholder': '0600000000'}
+                }) }}
+                <label for="{{ registrationForm.phone.vars.id }}">Téléphone mobile</label>
+                {{ form_errors(registrationForm.phone) }}
+            </div>
+
+            {# Champ VILLE (Autocomplete) #}
+            <div class="mb-3">
+                <label for="{{ registrationForm.city.vars.id }}" class="form-label small text-muted ms-3 mb-1">
+                    <i class="fas fa-map-marker-alt me-1 text-primary"></i> Votre Ville
+                </label>
+                {{ form_widget(registrationForm.city) }}
+                <div class="ps-3 mt-1">{{ form_errors(registrationForm.city) }}</div>
+            </div>
+
+            <hr class="my-4 text-muted opacity-25">
+
+            {# --- SECTION : SÉCURITÉ --- #}
+            <div class="form-floating mb-3">
+                {{ form_widget(registrationForm.plainPassword, {
+                    'attr': {'class': 'form-control rounded-4', 'placeholder': 'Mot de passe'}
+                }) }}
+                <label for="{{ registrationForm.plainPassword.vars.id }}">Choisissez un mot de passe</label>
+                <div class="form-text mt-2 px-2 d-flex align-items-center" style="font-size: 0.75rem;">
+                    <i class="fas fa-lock me-2 text-primary"></i> Sécurisé : 6 caractères minimum
+                </div>
+                {{ form_errors(registrationForm.plainPassword) }}
+            </div>
+
             <div class="mb-4 px-2">
-                <div class="form-check custom-checkbox d-flex align-items-center">
-                    {{ form_widget(registrationForm.agreeTerms) }}
+                <div class="form-check d-flex align-items-center">
+                    {{ form_widget(registrationForm.agreeTerms, {'attr': {'class': 'form-check-input me-2'}}) }}
                     <label class="form-check-label small text-muted" for="{{ registrationForm.agreeTerms.vars.id }}">
                         J'accepte les <a href="#" class="text-primary text-decoration-none fw-bold">conditions générales</a>
                     </label>
                 </div>
+                {{ form_errors(registrationForm.agreeTerms) }}
             </div>
 
-            <button type="submit" class="btn btn-success btn-lg w-100 py-3 rounded-4 shadow-sm fw-bold hover-lift mb-4">
-                Créer mon compte <i class="fas fa-check-circle ms-2"></i>
+            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 rounded-4 shadow-sm fw-bold hover-lift mb-4 text-uppercase">
+                CRÉER MON COMPTE <i class="fas fa-user-plus ms-2"></i>
             </button>
 
             <div class="text-center">
                 <p class="small text-muted mb-0">Déjà inscrit ? 
-                    <a href="{{ path('app_login') }}" class="text-primary fw-bold text-decoration-none">Se connecter</a>
+                    <a href="{{ path('app_login') }}" class="text-primary fw-bold text-decoration-none">Connectez-vous</a>
                 </p>
             </div>
         {{ form_end(registrationForm) }}
@@ -69,81 +112,49 @@
 
 <style>
     body { background-color: #f8fafc; }
+    .register-card { max-width: 550px; border-radius: 2rem !important; }
+    
+    .form-control {
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        padding-left: 1rem;
+    }
 
-    .register-card {
-        width: 100%;
-        max-width: 500px;
-        transition: transform 0.3s ease;
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
     }
 
     .icon-circle {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
     }
 
-    /* --- CORRECTION ALIGNEMENT VILLE (UX AUTOCOMPLETE) --- */
-    .ts-control {
-        border: none !important;
-        background-color: #f8f9fa !important; /* bg-light matching form-floating */
-        border-radius: 1rem !important; /* rounded-4 */
-        padding: 0 1.5rem !important; /* On gère le padding horizontal */
-        min-height: 3.625rem !important; /* Hauteur identique aux form-floating de Bootstrap 5 */
-        display: flex !important;
-        align-items: center !important;
-        box-shadow: none !important;
-    }
+    .bg-primary-subtle { background-color: #eff6ff !important; }
+    .text-primary { color: #3b82f6 !important; }
+    .btn-primary { background-color: #3b82f6; border: none; }
+    .btn-primary:hover { background-color: #2563eb; }
 
-    /* Centre le texte et le placeholder verticalement */
-    .ts-control > input, .ts-control > .item {
-        margin: 0 !important;
-        padding: 0 !important;
-        font-size: 1rem !important;
-        line-height: 1.5 !important;
-    }
-
-    .ts-wrapper.focus .ts-control {
-        background-color: #fff !important;
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
-        border: 1px solid #10b981 !important;
-    }
-
-    .ts-dropdown {
-        border-radius: 1rem !important;
-        border: none !important;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-        padding: 0.5rem !important;
-        margin-top: 5px !important;
-    }
-
-    /* Style général des inputs classiques */
-    .form-control:focus {
-        background-color: #fff !important;
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-        border: 1px solid #10b981 !important;
-    }
-
-    .hover-lift {
-        transition: all 0.2s ease;
-    }
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .hover-lift:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(16, 185, 129, 0.2) !important;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2) !important;
     }
 
-    .bg-success-subtle { background-color: #ecfdf5 !important; }
-    .text-success { color: #10b981 !important; }
-    .btn-success { background-color: #10b981; border: none; }
-    .btn-success:hover { background-color: #059669; }
-    .text-primary { color: #3b82f6 !important; }
-
-    /* Correction visuelle pour la checkbox */
-    .form-check-input:checked {
-        background-color: #10b981;
-        border-color: #10b981;
+    {# Ajustement TomSelect pour matcher le design #}
+    .ts-control {
+        border: 1px solid #e2e8f0 !important;
+        background-color: #f8fafc !important;
+        border-radius: 1rem !important;
+        min-height: 58px !important;
+        padding: 0.75rem 1.25rem !important;
+        display: flex !important;
+        align-items: center !important;
     }
 </style>
 {% endblock %}

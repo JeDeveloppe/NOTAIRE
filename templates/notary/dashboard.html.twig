@@ -175,7 +175,7 @@
 </style>
 
 <div
-	class="container py-5">
+	class="container pb-4">
 	{# --- HEADER : INFOS NOTAIRE --- #}
 	{% set scoreGlobal = 100 + notaryStats.points_cumules|default(0) %}
 	{% set isLowScore = scoreGlobal < 100 %}
@@ -211,7 +211,7 @@
 					<div class="d-flex gap-2">
 						<a href="#" class="btn btn-sm btn-outline-light text-dark border shadow-xs rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalSubscriptionDetail">
 							<i class="bi bi-credit-card-2-front me-2 text-primary"></i>
-							{{ activeSubscription.offer.name|default('Standard') }}
+							{{ activeSubscription.offer.name|default('Aucune offre') }}
 						</a>
 						<button class="btn btn-sm btn-light rounded-pill px-3 text-uppercase fw-bold" style="font-size: 0.65rem;" data-bs-toggle="modal" data-bs-target="#faqModal">
 							<i class="bi bi-question-circle-fill me-1 text-warning"></i>Aide
@@ -297,7 +297,7 @@
 			<div class="card shadow-sm border-0 h-100 rounded-4">
 				<div class="card-body p-4">
 					<div class="d-flex justify-content-between align-items-center mb-4">
-						<h5 class="fw-bold mb-0 text-dark">Ma couverture</h5>
+						<h5 class="fw-bold mb-0 text-dark">Ma zone</h5>
 						<span class="badge bg-indigo-light text-indigo rounded-pill px-3 py-2 smaller">
 							{% if hasActiveOffer %}
 								{{ stats.usedSlots }}
@@ -335,13 +335,13 @@
 								</div>
 							{% endfor %}
 						</div>
-						<a href="{{ path('notary_setup_zipcodes') }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-bold mt-4">
+						<a href="{{ path('app_notary_setup_zipcodes') }}" class="btn btn-outline-primary btn-sm w-100 rounded-pill py-2 fw-bold mt-4">
 							<i class="bi bi-pencil-square me-2"></i>Modifier ma zone
 						</a>
 					{% else %}
 						<div class="text-center py-5 bg-light rounded-4 border">
 							<i class="bi bi-shield-lock text-muted opacity-25 fs-1"></i>
-							<p class="smaller text-muted mt-3 mb-4 px-4">Activez une offre pour choisir vos secteurs.</p>
+							<p class="smaller text-muted mt-3 mb-4 px-4">Activez une offre pour définir votre zone.</p>
 							{% include 'components/buttons/_notary_choice_price.html.twig' %}
 						</div>
 					{% endif %}
@@ -438,44 +438,9 @@
 					{% endif %}
 				</div>
 			</div>
-
-			{# 2. Mes dossiers suivis #}
-			<div class="card shadow-sm border-0 rounded-4">
-				<div class="card-header bg-white border-0 py-3">
-					<h5 class="fw-bold mb-0 text-dark">Mes dossiers suivis (Réservés)</h5>
-				</div>
-				<div class="table-responsive">
-					<table class="table table-hover align-middle mb-0">
-						<tbody>
-							{% for lead in notary.simulations %}
-								<tr>
-									<td class="ps-4">
-										<span class="fw-bold smaller text-indigo">{{ lead.reference }}</span>
-									</td>
-									<td class="smaller">
-										<div class="fw-medium">{{ lead.user.email }}</div>
-										<div class="text-muted" style="font-size: 0.65rem;">Réservé le
-											{{ lead.reservedAt|date('d/m/Y') }}</div>
-									</td>
-									<td
-										class="text-end pe-4">
-										{# NAVIGATION : FROM DASHBOARD #}
-										<a href="{{ path('app_notary_simulation_view', {reference: lead.reference, from: 'dashboard'}) }}" class="btn-edit-pill">Ouvrir</a>
-									</td>
-								</tr>
-							{% else %}
-								<tr>
-									<td colspan="3" class="text-center py-5 text-muted smaller">Aucun dossier en cours de suivi.</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			</div>
 		</div>
 	</div>
 </div>
 
-{# --- INCLUSION DES COMPOSANTS --- #}
-{% include 'notary/_modal_subscription_detail.html.twig' %}
-{% include 'notary/_faq.html.twig' %}{% endblock %}
+
+{% endblock %}

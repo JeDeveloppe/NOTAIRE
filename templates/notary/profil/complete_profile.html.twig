@@ -1,0 +1,152 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Configuration de l'étude{% endblock %}
+
+{% block body %}
+<div class="container pb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+            
+            {# On simplifie le titre car la navigation est gérée par le sous-menu #}
+            <div class="mb-4">
+                <h2 class="fw-black text-dark mb-1">Configuration de l'étude</h2>
+                <p class="text-muted">Mettez à jour les informations légales et de contact de votre établissement.</p>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    {% for label, messages in app.flashes %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ label }} rounded-3 border-0 shadow-sm mb-4">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endfor %}
+
+                    {# data-turbo="false" est gardé par sécurité si ton JS TomSelect est capricieux #}
+                    {{ form_start(form, {'attr': {'class': 'needs-validation', 'data-turbo': 'false'}}) }}
+                        
+                        {# --- SECTION : IDENTITÉ --- #}
+                        <div class="row mb-5">
+                            <div class="col-md-4">
+                                <h5 class="fw-bold text-dark">Identification</h5>
+                                <p class="small text-muted">Ces informations apparaissent sur vos documents officiels.</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        {{ form_label(form.name, null, {'label_attr': {'class': 'info-label'}}) }}
+                                        {{ form_widget(form.name) }}
+                                        {{ form_errors(form.name) }}
+                                    </div>
+                                    <div class="col-12">
+                                        {{ form_label(form.siret, null, {'label_attr': {'class': 'info-label'}}) }}
+                                        {{ form_widget(form.siret) }}
+                                        {{ form_errors(form.siret) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="opacity-10 mb-5">
+
+                        {# --- SECTION : CONTACT --- #}
+                        <div class="row mb-5">
+                            <div class="col-md-4">
+                                <h5 class="fw-bold text-dark">Contact & Visibilité</h5>
+                                <p class="small text-muted">Comment les clients peuvent vous joindre directement.</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        {{ form_label(form.phone, null, {'label_attr': {'class': 'info-label'}}) }}
+                                        {{ form_widget(form.phone) }}
+                                        {{ form_errors(form.phone) }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form_label(form.website, null, {'label_attr': {'class': 'info-label'}}) }}
+                                        {{ form_widget(form.website) }}
+                                        {{ form_errors(form.website) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="opacity-10 mb-5">
+
+                        {# --- SECTION : ADRESSE --- #}
+                        <div class="row mb-5">
+                            <div class="col-md-4">
+                                <h5 class="fw-bold text-dark">Localisation</h5>
+                                <p class="small text-muted">L'adresse physique de votre étude notariale.</p>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        {{ form_label(form.address, null, {'label_attr': {'class': 'info-label'}}) }}
+                                        {{ form_widget(form.address) }}
+                                        {{ form_errors(form.address) }}
+                                    </div>
+                                    <div class="col-12">
+                                        {{ form_label(form.city, null, {'label_attr': {'class': 'info-label'}}) }}
+                                        <div class="custom-autocomplete-container">
+                                            {{ form_widget(form.city) }}
+                                        </div>
+                                        {{ form_errors(form.city) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end align-items-center gap-3 pt-4 border-top">
+                            <a href="{{ path('app_notary_dashboard') }}" class="text-muted text-decoration-none small fw-bold">Annuler</a>
+                            <button type="submit" class="btn btn-primary px-5 rounded-pill fw-bold shadow-sm">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* On réutilise tes variables de navbar pour la cohérence */
+    .info-label {
+        font-size: 0.75rem; 
+        font-weight: 800; 
+        text-transform: uppercase;
+        letter-spacing: 0.05em; 
+        color: #94a3b8; 
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .form-control, .ts-control {
+        border: 1px solid #e2e8f0 !important;
+        background-color: #f8fafc !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 12px !important;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus, .ts-wrapper.focus .ts-control {
+        background-color: #fff !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1) !important;
+    }
+
+    /* Style spécifique pour les erreurs de validation Symfony */
+    .invalid-feedback ul {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0;
+        color: #ef4444;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}

@@ -1,3 +1,4 @@
+{# templates/components/DonationRuleSearch.html.twig #}
 <div {{ attributes }} class="donation-rule-search">
     {# --- BARRE DE RECHERCHE CONVERSATIONNELLE --- #}
     <div class="row justify-content-center mb-5">
@@ -13,7 +14,8 @@
                             <span class="input-group-text bg-transparent border-0 text-primary">
                                 <i class="fas fa-users"></i>
                             </span>
-                            <select data-model="relationshipId" class="form-select border-0 shadow-none fw-bold text-primary">
+                            {# on(change) force la mise à jour immédiate lors de la sélection #}
+                            <select data-model="on(change)|relationshipId" class="form-select border-0 shadow-none fw-bold text-primary">
                                 <option value="">Choisir un lien de parenté...</option>
                                 {% for rel in this.relationships %}
                                     <option value="{{ rel.id }}">{{ rel.label }}</option>
@@ -29,14 +31,16 @@
                             <span class="input-group-text bg-transparent border-0 text-muted">
                                 <i class="fas fa-search"></i>
                             </span>
+                            {# debounce(300) attend 300ms après la frappe avant d'envoyer la requête #}
                             <input type="text" 
-                                   data-model="query" 
+                                   data-model="debounce(300)|query" 
                                    class="form-control border-0 shadow-none" 
                                    placeholder="ou nom de la règle...">
                         </div>
                     </div>
                     
                     <div class="col text-center pe-4">
+                        {# Spinner qui ne s'affiche que pendant le chargement AJAX #}
                         <div data-loading="show" class="spinner-border spinner-border-sm text-primary"></div>
                     </div>
                 </div>
@@ -46,9 +50,9 @@
 
     {# --- GRILLE DE RÉSULTATS --- #}
     <div class="row g-4 position-relative">
-        <div data-loading="addClass(opacity-50)" class="row g-4">
+        {# On ajoute une légère opacité sur toute la grille pendant le chargement pour le feedback visuel #}
+        <div data-loading="addClass(opacity-50)" class="row g-4 m-0 p-0">
             {% for rule in this.rules %}
-                {# ID pour ancres : remplace espaces et accents #}
                 {% set rule_id = rule.label|lower|replace({' ': '-', "'": '-', 'é': 'e', 'è': 'e', 'à': 'a'}) %}
                 
                 <div class="col-lg-4 col-md-6 animate__animated animate__fadeInUp rule-anchor-target" id="regle-{{ rule_id }}">
@@ -75,7 +79,6 @@
                                 </a>
                             </h6>
 
-                            {# Badge de réversibilité (Propriété de l'entité) #}
                             {% if rule.isBidirectional %}
                                 <div class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill mb-2 badge-reversible">
                                     <i class="fas fa-arrows-left-right me-1"></i> Abattement réciproque
@@ -120,11 +123,11 @@
                 </div>
             {% else %}
                 <div class="col-12 text-center py-5">
-                    <div class="icon-circle bg-light mx-auto mb-3 icon-circle-large">
+                    <div class="icon-circle bg-light mx-auto mb-3 icon-circle-large" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
                         <i class="fas fa-search fa-2x text-muted"></i>
                     </div>
                     <h5 class="fw-bold">Aucun résultat trouvé</h5>
-                    <p class="text-muted">Essayez de sélectionner un autre bénéficiaire.</p>
+                    <p class="text-muted">Essayez de modifier vos critères de recherche.</p>
                 </div>
             {% endfor %}
         </div>
@@ -136,51 +139,52 @@
             <div class="col-md-6">
                 <p class="mb-0">
                     <i class="fas fa-info-circle me-2 text-primary"></i>
-                    <strong>* Théorique :</strong> L'âge de 99 ans indique une absence de limite légale stricte pour cet abattement, sous réserve de la pleine capacité juridique du donateur.
+                    <strong>* Théorique :</strong> L'âge de 99 ans indique une absence de limite légale stricte.
                 </p>
             </div>
             <div class="col-md-6 border-start-md">
                 <p class="mb-0">
                     <i class="fas fa-arrows-left-right me-2 text-warning"></i>
-                    <strong>Réciprocité :</strong> L'abattement réciproque signifie que la règle s'applique quel que soit le sens du don entre les deux personnes (ex: Parent vers Enfant ou Enfant vers Parent).
+                    <strong>Réciprocité :</strong> S'applique dans les deux sens (ex: Parent ↔ Enfant).
                 </p>
             </div>
         </div>
     </div>
+
+    {# --- STYLE INCLUS DANS LE DIV RACINE --- #}
+    <style>
+        .fw-black { font-weight: 900; }
+        .shadow-smooth { box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+        .x-small { font-size: 0.75rem; }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .rule-anchor-target { scroll-margin-top: 120px; }
+        .rule-anchor-target:target .card {
+            border: 2px solid #4f46e5 !important;
+            box-shadow: 0 0 25px rgba(79, 70, 229, 0.25);
+        }
+
+        .card-cumulable:hover {
+            border: 2px solid #198754 !important;
+            background-color: #f8fffb !important;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 45px -10px rgba(79, 70, 229, 0.15);
+        }
+
+        .link-anchor:hover { opacity: 1 !important; color: #4f46e5 !important; }
+        .bg-indigo-subtle { background-color: #f5f7ff; }
+        .text-indigo { color: #4f46e5; }
+        .bg-success-subtle { background-color: #e6ffed; }
+
+        @media (min-width: 768px) {
+            .border-start-md { border-left: 1px solid #dee2e6 !important; padding-left: 1.5rem; }
+        }
+    </style>
 </div>
-<style>
-    .fw-black { font-weight: 900; }
-    .shadow-smooth { box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
-    .x-small { font-size: 0.75rem; }
-    
-    .hover-lift {
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-    }
-
-    /* Gestion des ancres */
-    .rule-anchor-target { scroll-margin-top: 120px; }
-    .rule-anchor-target:target .card {
-        border: 2px solid #4f46e5 !important;
-        box-shadow: 0 0 25px rgba(79, 70, 229, 0.25);
-    }
-
-    .card-cumulable:hover {
-        border: 2px solid #198754 !important;
-        background-color: #f8fffb !important;
-    }
-
-    .hover-lift:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 45px -10px rgba(79, 70, 229, 0.15);
-    }
-
-    .link-anchor:hover { opacity: 1 !important; color: #4f46e5 !important; }
-    .bg-indigo-subtle { background-color: #f5f7ff; }
-    .text-indigo { color: #4f46e5; }
-    .bg-success-subtle { background-color: #e6ffed; }
-
-    @media (min-width: 768px) {
-        .border-start-md { border-left: 1px solid #dee2e6 !important; padding-left: 1.5rem; }
-    }
-</style>

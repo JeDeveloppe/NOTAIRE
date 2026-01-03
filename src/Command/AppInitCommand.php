@@ -35,8 +35,7 @@ class AppInitCommand extends Command
         private CityService $cityService, // Nouveau
         private array $relationships,
         private array $donationRules,
-        private string $adminEmail,
-        private string $adminPassword,
+        private array $adminConfig,
         private array $simulationStatuses,
         private array $offers,
         private array $taxBrackets
@@ -123,22 +122,22 @@ class AppInitCommand extends Command
         foreach ($this->taxBrackets as $categoryName => $tranches) {
             foreach ($tranches as $data) {
                 $bracket = new TaxBracket();
-                
+
                 // Mappe 'progressif_direct', 'freres_soeurs', etc.
-                $bracket->setCategory($categoryName); 
-                
+                $bracket->setCategory($categoryName);
+
                 // Mappe la limite (ex: 8072 ou null)
-                $bracket->setAmountLimit($data['limit']); 
-                
+                $bracket->setAmountLimit($data['limit']);
+
                 // Mappe le taux (ex: 0.05)
-                $bracket->setRate($data['rate']); 
-                
+                $bracket->setRate($data['rate']);
+
                 $this->em->persist($bracket);
-                
+
                 $io->text(sprintf(
-                    "-> Ajout tranche [%s] : Jusqu'à %s € à %d%%", 
-                    $categoryName, 
-                    $data['limit'] ?? 'Infini', 
+                    "-> Ajout tranche [%s] : Jusqu'à %s € à %d%%",
+                    $categoryName,
+                    $data['limit'] ?? 'Infini',
                     $data['rate'] * 100
                 ));
             }
@@ -150,13 +149,20 @@ class AppInitCommand extends Command
         // 6. Création Admin
         $io->section('Création de l\'administrateur');
         $admin = new User();
-        $admin->setEmail($this->adminEmail);
+        // On accède aux clés du tableau injecté via le bind $adminConfig
+        $admin->setEmail($this->adminConfig['email']);
+        $admin->setFirstname($this->adminConfig['firstname']);
+        $admin->setLastname($this->adminConfig['lastname']);
+        $admin->setPhone($this->adminConfig['phone']);
         $admin->setRoles(['ROLE_ADMIN']);
-        $admin->setPassword($this->hasher->hashPassword($admin, $this->adminPassword));
+        // Hachage du mot de passe depuis le tableau
+        $admin->setPassword(
+            $this->hasher->hashPassword($admin, $this->adminConfig['password'])
+        );
         $admin->setCity($this->cityRepository->findOneBy(['name' => 'Paris']));
-        // Optionnel : $admin->setCity('Paris'); // Si tu veux tester le nouveau champ
         $this->em->persist($admin);
-        $io->text("-> Admin créé : " . $this->adminEmail);
+        $this->em->flush(); // N'oublie pas le flush si tu veux que ce soit enregistré
+        $io->success("-> Admin créé avec succès : " . $this->adminConfig['email']);
 
         // 7. Création d'une famille de test
         $io->section('Création de la famille Dubois');
@@ -198,10 +204,13 @@ class AppInitCommand extends Command
 
         $notaryUser = new User();
         $notaryUser->setEmail('notaire@exemple.com');
+        $notaryUser->setFirstname('Notaire');
+        $notaryUser->setLastname('Exemple');
+        $notaryUser->setPhone('01 23 45 67 89');
         $notaryUser->setRoles(['ROLE_NOTARY']);
         $notaryUser->setPassword($this->hasher->hashPassword($notaryUser, 'notaire123'));
         $notaryUser->setCity($this->cityRepository->findOneBy(['name' => 'Paris']));
-        
+
         $this->em->persist($notaryUser);
 
         // On crée l'entité métier liée

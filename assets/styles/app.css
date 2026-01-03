@@ -351,7 +351,7 @@ section[id] {
 .nodes-row { display: flex; gap: 40px; justify-content: center; margin-bottom: 40px; }
 @media print { .tree-toolbar, .node-link { display: none; } .tree-wrapper { border: none; margin: 0; } }
 
-/* --- TEMPLATE: notary/subscribe_choice.html.twig --- */
+/* --- TEMPLATE: notary/subscription/subscribe_choice.html.twig --- */
 .text-indigo-brand { color: var(--indigo-brand) !important; }
 .step-number {
     width: 28px; height: 28px; background: var(--indigo-brand); color: white;
